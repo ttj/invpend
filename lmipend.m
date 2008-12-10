@@ -1,4 +1,20 @@
-%lmi
+%Inverted Pendulum
+%
+%Fall 2008
+%
+%Taylor Johnson
+%johnso99@nospam-illinois.edu
+%University of Illinois at Urbana-Champaign
+%Coordinated Science Laboratory
+%Department of Electrical and Computer Engineering
+%
+%Linear Matrix Inequality
+%
+%This code utilizes the following third-party modules:
+%1. YALMIP Matlab library
+%   http://control.ee.ethz.ch/~joloef/wiki/pmwiki.php
+%2. SDPT3 Semidefinite Programming (SDP) Solver
+%   http://www.math.nus.edu.sg/~mattohkc/sdpt3.html
 
 clear all;
 
