@@ -1,0 +1,765 @@
+\documentclass{beamer}
+\usepackage[latin1]{inputenc}
+
+% Add the compsoc option for Computer Society conferences.
+%
+% If IEEEtran.cls has not been installed into the LaTeX system files,
+% manually specify the path to it like:
+% \documentclass[conference]{../sty/IEEEtran}
+
+% Some very useful LaTeX packages include:
+% (uncomment the ones you want to load)
+
+\newif\ifans\anstrue
+% This is a package for drawing figures
+% it is a part of standard latex 2e distribution
+\usepackage{tikz}
+\usetikzlibrary{shapes}
+\usetikzlibrary{automata}
+
+\usepackage[usenames,dvipsnames]{pstricks}
+\usepackage{epsfig}
+%\usepackage{pst-grad} % For gradients
+%\usepackage{pst-plot} % For axes
+
+\usepackage{palatino}
+\RequirePackage{ifthen}
+\usepackage{latexsym}
+\RequirePackage{amsmath}
+\RequirePackage{amsthm}
+\RequirePackage{amssymb}
+\RequirePackage{xspace}
+\RequirePackage{graphics}
+\usepackage{xcolor}
+%\usepackage{fullpage}
+%\usepackage{schemabloc}
+
+\RequirePackage{textcomp}
+\usepackage{keyval}
+%\usepackage{listings}
+%\usepackage{xspace}
+\usepackage{mathrsfs}
+%\usepackage{textcomp}
+%\usepackage{graphicx}
+\usepackage{paralist}
+\usepackage{amsmath,amssymb,url,listings,mathrsfs}
+%\usepackage{pvs}
+%\usepackage{supertabular,alltt,latexsym}
+%\usepackage{multicol,multirow,epsfig}
+%\usepackage[dvips, usenames]{color}
+\usepackage{framed}
+\usepackage{lipsum}
+%\usepackage[dvipsnames]{color}
+
+
+
+\definecolor{reddish}{rgb}{1,.8,0.8}
+\definecolor{blueish}{rgb}{0.8,.8,1}
+\definecolor{greenish}{rgb}{.8,1,0.8}
+\definecolor{yellowish}{rgb}{1,1,.20}
+
+% *** MISC UTILITY PACKAGES ***
+%'
+%\usepackage{ifpdf}
+% Heiko Oberdiek's ifpdf.sty is very useful if you need conditional
+% compilation based on whether the output is pdf or dvi.
+% usage:
+% \ifpdf
+%   % pdf code
+% \else
+%   % dvi code
+% \fi
+% The latest version of ifpdf.sty can be obtained from:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/oberdiek/
+% Also, note that IEEEtran.cls V1.7 and later provides a builtin
+% \ifCLASSINFOpdf conditional that works the same way.
+% When switching from latex to pdflatex and vice-versa, the compiler may
+% have to be run twice to clear warning/error messages.
+
+
+
+
+
+
+% *** CITATION PACKAGES ***
+%
+\usepackage{cite}
+% cite.sty was written by Donald Arseneau
+% V1.6 and later of IEEEtran pre-defines the format of the cite.sty package
+% \cite{} output to follow that of IEEE. Loading the cite package will
+% result in citation numbers being automatically sorted and properly
+% "compressed/ranged". e.g., [1], [9], [2], [7], [5], [6] without using
+% cite.sty will become [1], [2], [5]--[7], [9] using cite.sty. cite.sty's
+% \cite will automatically add leading space, if needed. Use cite.sty's
+% noadjust option (cite.sty V3.8 and later) if you want to turn this off.
+% cite.sty is already installed on most LaTeX systems. Be sure and use
+% version 4.0 (2003-05-27) and later if using hyperref.sty. cite.sty does
+% not currently provide for hyperlinked citations.
+% The latest version can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/cite/
+% The documentation is contained in the cite.sty file itself.
+
+
+
+
+
+
+
+
+
+
+% *** MATH PACKAGES ***
+%
+%\usepackage[cmex10]{amsmath}
+% A popular package from the American Mathematical Society that provides
+% many useful and powerful commands for dealing with mathematics. If using
+% it, be sure to load this package with the cmex10 option to ensure that
+% only type 1 fonts will utilized at all point sizes. Without this option,
+% it is possible that some math symbols, particularly those within
+% footnotes, will be rendered in bitmap form which will result in a
+% document that can not be IEEE Xplore compliant!
+%
+% Also, note that the amsmath package sets \interdisplaylinepenalty to 10000
+% thus preventing page breaks from occurring within multiline equations. Use:
+%\interdisplaylinepenalty=2500
+% after loading amsmath to restore such page breaks as IEEEtran.cls normally
+% does. amsmath.sty is already installed on most LaTeX systems. The latest
+% version and documentation can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/required/amslatex/math/
+
+
+
+
+
+% *** SPECIALIZED LIST PACKAGES ***
+%
+%\usepackage{algorithmic}
+% algorithmic.sty was written by Peter Williams and Rogerio Brito.
+% This package provides an algorithmic environment fo describing algorithms.
+% You can use the algorithmic environment in-text or within a figure
+% environment to provide for a floating algorithm. Do NOT use the algorithm
+% floating environment provided by algorithm.sty (by the same authors) or
+% algorithm2e.sty (by Christophe Fiorio) as IEEE does not use dedicated
+% algorithm float types and packages that provide these will not provide
+% correct IEEE style captions. The latest version and documentation of
+% algorithmic.sty can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/algorithms/
+% There is also a support site at:
+% http://algorithms.berlios.de/index.html
+% Also of interest may be the (relatively newer and more customizable)
+% algorithmicx.sty package by Szasz Janos:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/algorithmicx/
+
+
+
+
+% *** ALIGNMENT PACKAGES ***
+%
+%\usepackage{array}
+% Frank Mittelbach's and David Carlisle's array.sty patches and improves
+% the standard LaTeX2e array and tabular environments to provide better
+% appearance and additional user controls. As the default LaTeX2e table
+% generation code is lacking to the point of almost being broken with
+% respect to the quality of the end results, all users are strongly
+% advised to use an enhanced (at the very least that provided by array.sty)
+% set of table tools. array.sty is already installed on most systems. The
+% latest version and documentation can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/required/tools/
+
+
+%\usepackage{mdwmath}
+%\usepackage{mdwtab}
+% Also highly recommended is Mark Wooding's extremely powerful MDW tools,
+% especially mdwmath.sty and mdwtab.sty which are used to format equations
+% and tables, respectively. The MDWtools set is already installed on most
+% LaTeX systems. The lastest version and documentation is available at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/mdwtools/
+
+
+% IEEEtran contains the IEEEeqnarray family of commands that can be used to
+% generate multiline equations as well as matrices, tables, etc., of high
+% quality.
+
+
+%\usepackage{eqparbox}
+% Also of notable interest is Scott Pakin's eqparbox package for creating
+% (automatically sized) equal width boxes - aka "natural width parboxes".
+% Available at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/eqparbox/
+
+
+
+
+
+% *** SUBFIGURE PACKAGES ***
+%\usepackage[tight,footnotesize]{subfigure}
+% subfigure.sty was written by Steven Douglas Cochran. This package makes it
+% easy to put subfigures in your figures. e.g., "Figure 1a and 1b". For IEEE
+% work, it is a good idea to load it with the tight package option to reduce
+% the amount of white space around the subfigures. subfigure.sty is already
+% installed on most LaTeX systems. The latest version and documentation can
+% be obtained at:
+% http://www.ctan.org/tex-archive/obsolete/macros/latex/contrib/subfigure/
+% subfigure.sty has been superceeded by subfig.sty.
+
+
+
+%\usepackage[caption=false]{caption}
+%\usepackage[font=footnotesize]{subfig}
+% subfig.sty, also written by Steven Douglas Cochran, is the modern
+% replacement for subfigure.sty. However, subfig.sty requires and
+% automatically loads Axel Sommerfeldt's caption.sty which will override
+% IEEEtran.cls handling of captions and this will result in nonIEEE style
+% figure/table captions. To prevent this problem, be sure and preload
+% caption.sty with its "caption=false" package option. This is will preserve
+% IEEEtran.cls handing of captions. Version 1.3 (2005/06/28) and later 
+% (recommended due to many improvements over 1.2) of subfig.sty supports
+% the caption=false option directly:
+%\usepackage[caption=false,font=footnotesize]{subfig}
+%
+% The latest version and documentation can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/subfig/
+% The latest version and documentation of caption.sty can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/caption/
+
+
+
+
+% *** FLOAT PACKAGES ***
+%
+%\usepackage{fixltx2e}
+% fixltx2e, the successor to the earlier fix2col.sty, was written by
+% Frank Mittelbach and David Carlisle. This package corrects a few problems
+% in the LaTeX2e kernel, the most notable of which is that in current
+% LaTeX2e releases, the ordering of single and double column floats is not
+% guaranteed to be preserved. Thus, an unpatched LaTeX2e can allow a
+% single column figure to be placed prior to an earlier double column
+% figure. The latest version and documentation can be found at:
+% http://www.ctan.org/tex-archive/macros/latex/base/
+
+
+
+%\usepackage{stfloats}
+% stfloats.sty was written by Sigitas Tolusis. This package gives LaTeX2e
+% the ability to do double column floats at the bottom of the page as well
+% as the top. (e.g., "\begin{figure*}[!b]" is not normally possible in
+% LaTeX2e). It also provides a command:
+%\fnbelowfloat
+% to enable the placement of footnotes below bottom floats (the standard
+% LaTeX2e kernel puts them above bottom floats). This is an invasive package
+% which rewrites many portions of the LaTeX2e float routines. It may not work
+% with other packages that modify the LaTeX2e float routines. The latest
+% version and documentation can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/sttools/
+% Documentation is contained in the stfloats.sty comments as well as in the
+% presfull.pdf file. Do not use the stfloats baselinefloat ability as IEEE
+% does not allow \baselineskip to stretch. Authors submitting work to the
+% IEEE should note that IEEE rarely uses double column equations and
+% that authors should try to avoid such use. Do not be tempted to use the
+% cuted.sty or midfloat.sty packages (also by Sigitas Tolusis) as IEEE does
+% not format its papers in such ways.
+
+
+
+
+
+% *** PDF, URL AND HYPERLINK PACKAGES ***
+%
+%\usepackage{url}
+% url.sty was written by Donald Arseneau. It provides better support for
+% handling and breaking URLs. url.sty is already installed on most LaTeX
+% systems. The latest version can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/misc/
+% Read the url.sty source comments for usage information. Basically,
+% \url{my_url_here}.
+
+
+
+
+
+% *** Do not adjust lengths that control margins, column widths, etc. ***
+% *** Do not use packages that alter fonts (such as pslatex).         ***
+% There should be no need to do such things with IEEEtran.cls V1.6 and later.
+% (Unless specifically asked to do so by the journal or conference you plan
+% to submit to, of course. )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\usetheme{Malmoe}
+%\useoutertheme[footline=]{miniframes}
+\title[Simplex Architecture Controlled Inverted Pendulum]{Stability Analysis Case Study:\\ Simplex Architecture Controlled Inverted Pendulum}
+\author{Taylor Johnson}
+\institute{University of Illinois at Urbana-Champaign\\ECE598SM1\\Fall 2008}
+\date{December 4, 2008}
+
+\setbeamertemplate{headline}
+{%
+	\begin{beamercolorbox}[right,rightskip=15pt]{pagenum}
+		\vskip2pt(\insertframenumber/\inserttotalframenumber)\vskip2pt
+	\end{beamercolorbox}%
+}
+
+\begin{document}
+\input{prelude1}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+
+\begin{frame}{Inverted Pendulum}
+
+
+\begin{center}
+\begin{figure}[h!]
+	\scalebox{1} {
+		\begin{pspicture}(0,-2.94)(6.12,2.94)
+		\psframe[linewidth=0.04,dimen=outer](5.42,0.56)(1.08,-1.1)
+		\pscircle[linewidth=0.04,dimen=outer](2.09,-1.57){0.47}
+		\psline[linewidth=0.04cm](0.0,-2.02)(6.1,-2.02)
+		\pscircle[linewidth=0.04,dimen=outer](4.14,-1.56){0.48}
+		\psline[linewidth=0.04cm,linestyle=dotted,dotsep=0.16cm](3.02,2.86)(3.0,0.56)
+		\psline[linewidth=0.08cm](3.02,0.52)(4.2,2.9)
+		\usefont{T1}{ptm}{m}{n}
+		\rput(3.4390626,2.3){\large $\theta$}
+		\usefont{T1}{ptm}{m}{n}
+		\rput(3.298125,-0.295){\large M}
+		\usefont{T1}{ptm}{m}{n}
+		\rput(4.4246874,1.72){\large m, l}
+		\psline[linewidth=0.04cm](0.2,-2.06)(0.2,-2.84)
+		\psline[linewidth=0.04cm,arrowsize=0.05291667cm 2.0,arrowlength=1.4,arrowinset=0.4]{->}(0.24,-2.4)(4.32,-2.4)
+		\usefont{T1}{ptm}{m}{n}
+		\rput(1.8825,-2.72){\large x}
+	\end{pspicture}}
+	\caption{Inverted Pendulum System}
+	\label{fig:pendulumSystem}
+\end{figure}
+\end{center}
+
+
+\end{frame}
+
+\begin{frame}{Nonlinear System Model}
+\begin{itemize}
+\pause \item $\dot{X}=f\left(X,u\right)$
+\pause \item Equations of Motion for Plant\\
+$\left(m+M\right)\ddot{x}+\frac{1}{2}ml\cos\left(\theta\right)\ddot{\theta}-\frac{1}{2}ml\sin\left(\theta\right)\dot{\theta}^2=F-f_c$\\
+$\frac{1}{2}ml\mathsf{\theta}\ddot{x}+\frac{1}{3}ml^2\ddot{\theta}-\frac{1}{2}mgl\sin\left(\theta\right)=-f_p$
+\pause \item Full System Model (including Motor Dynamics)\\
+$\ddot{x}=\frac{1}{D}\left[\frac{1}{3}ml^2\left(B_lV_a-f_c-C_1\right)+\frac{1}{2}ml\cos\left(\theta\right)\left(f_p+C_2\right)\right]$
+$\ddot{\theta}=\frac{1}{D}\left[-\frac{1}{2}ml\cos\left(\theta\right)\left(B_lV_a-f_c-C_1\right)-\bar{M}\left(f_p+C_2\right)\right]$ \\
+\pause where
+$D=\frac{1}{3}\bar{M}ml^2-\frac{1}{4}m^2l^2\cos^2\left(\theta\right)$\\
+$\bar{M}=\frac{m+M+(K_g*J_m)}{r^2}$\\
+$C_1=\bar{B}\dot{x}-\frac{1}{2}ml\sin\left(\theta\right)\dot{\theta}^2$\\
+$C_2=-\frac{1}{2}mgl\sin\left(\theta\right)$\\
+$\bar{B}=\frac{K_gB_m}{r^2}+\frac{K_g^2K_iK_b}{r^2R_a}$\\
+$B_l=\frac{K_gK_i}{rR_a}$
+\end{itemize}
+
+
+\end{frame}
+
+\begin{frame}{Linearized System Model}
+\begin{itemize}
+\pause \item $\dot{X}=AX+Bu$ \\ \pause $X=\left[ \begin{array}{c} x_1 \\ x_{2} \\ x_3 \\ x_{4} \end{array} \right]=\left[ \begin{array}{cccc} x-x_s \\ \dot{x} \\ \theta \\ \dot{\theta} \end{array} \right]$, \pause $A=\left[ \begin{array}{cccc} 0 & 1 & 0 & 0 \\ 0 & -a_{22} & -a_{23} & a_{24} \\ 0 & 0 & 0 & 1 \\ 0 & a_{42} & a_{43} & -a_{44} \end{array} \right]$, \pause $B=\left[ \begin{array}{c} 0 \\ b_{2} \\ 0 \\ -b_{4} \end{array} \right]$
+\pause \item Notable linearizations are $\sin\left(\theta\right)\approx\theta$ for small $\theta$ and armature inductance $L_a=0$ to remove the armature current $I_a$ state variable, reducing the order of the system, thus leaving only armature voltage $V_a$ for control ($u=V_a$)
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Linear State Feedback}
+
+\begin{itemize}
+\pause \item Linear model \\$\dot{X}\left(t\right)=AX\left(t\right)+Bu\left(t\right)$
+\pause \item Variation-of-constants formula (linear solution) \\ $X\left(t\right)=e^{A\left(t-t_0\right)}x\left(t_0\right)+\int_{t_0}^{t}e^{A\left(t-\tau\right)}Bu\left(\tau\right)d\tau$
+\pause \item Control is of the form \\$u\left(t\right)=KX\left(t\right)$
+\pause \item Linear state feedback \\ $\dot{X}\left(t\right)=\left(A+BK\right)X\left(t\right)$
+\pause \item Linear state feedback solution \\ $X\left(t\right)=e^{\left(A+BK\right)\left(t-t_0\right)}X\left(t_0\right)$
+\pause \item First-order approximations for $\dot{x}$ and $\dot{\theta}$\\
+$\dot{\theta}(t)=\frac{[\theta(t)-\theta(t-mT_s)]}{mT_s}$\\
+$\dot{x}(t)=\frac{[x(t)-x(t-mT_s)]}{mT_s}$\\
+where $m$ is an integer greater than one (chosen as $2$ by experimentation)
+\end{itemize}
+
+\end{frame}
+
+%\begin{frame}{System Model}
+%
+%\begin{center}
+%\begin{figure}[h!]
+%	\begin{tikzpicture}[auto, node distance=2cm,>=latex']
+%			\tikzstyle{block} = [draw, fill=blue!20, rectangle, 
+%			    minimum height=3em, minimum width=6em]
+%			\tikzstyle{sum} = [draw, fill=blue!20, circle, node distance=1cm]
+%			\tikzstyle{input} = [coordinate]
+%			\tikzstyle{output} = [coordinate]
+%			\tikzstyle{pinstyle} = [pin edge={to-,thin,black}]
+%			
+%	    % We start by placing the blocks
+%	    \node [input, name=topleft] {};
+%	    \node [block, below of=topleft] (actuator) {Actuator};
+%	    \node [input, name=botleft, below of=actuator] {};
+%	    \node [block, right of=topleft] (plant) {Plant};
+%			\node [block, right of=botleft] (controller) {Controller};
+%			\node [input, name=center, below of=plant] {};
+%			\node [block, right of=center] (sensor) {Sensor};
+%			\node [input, name=topright, above of=sensor] {};
+%			\node [input, name=botright, below of=sensor] {};
+%	
+%			\draw [->] (topleft) -- (plant);
+%			\draw [-] (plant) -- (topright);
+%			\draw [->] (topright) -- node {$x\left(t\right)$, $\theta\left(t\right)$} (sensor);
+%			\draw [-] (sensor) -- node {$x\left(t-\tau\right)$, \\$\theta\left(t-\tau\right)$} (botright);
+%			\draw [->] (botright) -- (controller);
+%			\draw [-] (controller) -- (botleft);
+%			\draw [->] (botleft) -- node {$kX\left(t-\tau\right)$} (actuator);
+%			\draw [-] (actuator) -- node {$kX\left(t-\tau-\tau_a\right)$} (topleft);
+%	
+%	    % Once the nodes are placed, connecting them is easy. 
+%	%    \draw [draw,->] (input) -- node {$r$} (sum);
+%	%    \draw [->] (sum) -- node {$e$} (controller);
+%	%    \draw [->] (system) -- node [name=y] {$y$}(output);
+%	%    \draw [->] (y) |- (measurements);
+%	%    \draw [->] (measurements) -| node[pos=0.99] {$-$} node [near end] {$y_m$} (sum);
+%	\end{tikzpicture}
+%	\caption{System Model}
+%	\label{fig:systemModel}
+%\end{figure}
+%\end{center}
+%
+%
+%\end{frame}
+
+\begin{frame}{System Constraints}
+
+\begin{itemize}
+\pause \item Plant Constraints\\
+\pause $x\in\left[-0.7,0.7\right]$ meters\\
+\pause $\dot{x}\in\left[-1.0,1.0\right]$ meters/second\\
+\pause $\theta\in\left[-30,30\right]^{\circ}$\\
+\pause $\dot{\theta}$ is unconstrained
+%\begin{equation}
+%X=\left[ \begin{array}{c} x_1 \\ x_{2} \\ x_3 \\ x_{4} \end{array} \right]=\left[ \begin{array}{cccc} x-x_s \\ \dot{x} \\ \theta \\ \dot{\theta} \end{array} \right]
+%\label{eq:stateMatrix}
+%\end{equation}
+\pause \item Control Constraints\\
+\pause $V_a\in\left[-4.96,4.96\right]$ volts
+\pause \item Feasible Region\\
+Defined by these constraints, that is, only certain physical conditions are feasible for the system
+\pause \item Stabilizable Region\\
+This is a subset of the feasible region, determined by solving a linear-matrix inequality (LMI) problem to find controller gains that maximize the region\\
+
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Simplex Architecture}
+\begin{itemize}
+\pause \item Analytical Redundancy
+\pause \item Controllers
+\begin{itemize}
+\pause \item Safety Controller ($u_{sc}\left(t\right)=K_{sc}X\left(t\right)$)
+\pause \item Baseline Controller ($u_{bc}\left(t\right)=K_{bc}X\left(t\right)$)
+\pause \item Experimental Controller ($u_{ec}\left(t\right)=K_{ec}X\left(t\right)$)
+\end{itemize}
+\pause \item Switching Controller\\Choose $u_{\sigma}\in\left[u_{sc}, u_{bc}, u_{ec}\right]$ based on the current (and future) stabilizable region(s) the system is within
+\pause \item Entire system modeled using HIOA (not shown here due to time-constraints)
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Simplex Architecture}
+
+\scalebox{0.9} % Change this value to rescale the drawing.
+{
+\begin{pspicture}(0,-4.2592187)(15.362812,4.2992187)
+\definecolor{color6b}{rgb}{1.0,1.0,0.8}
+\definecolor{color12b}{rgb}{1.0,0.6,0.6}
+\definecolor{color0b}{rgb}{0.8,0.8,1.0}
+\definecolor{color169b}{rgb}{0.8,1.0,0.8}
+\definecolor{color3b}{rgb}{0.8,1.0,0.6}
+\pause
+\psframe[linewidth=0.03,dimen=outer,fillstyle=solid,fillcolor=color6b](11.180938,2.5807812)(8.220938,1.1407813)
+\psframe[linewidth=0.03,dimen=outer,fillstyle=solid,fillcolor=color12b](3.2609375,2.5407813)(0.3009375,1.1007812)
+\psframe[linewidth=0.03,dimen=outer,fillstyle=solid,fillcolor=color0b](7.0009375,3.9407814)(4.0409374,2.5007813)
+\psframe[linewidth=0.04,dimen=outer,fillstyle=solid,fillcolor=color169b](7.8209376,1.9607812)(3.6209376,-4.2592187)
+\usefont{T1}{ptm}{m}{n}
+\rput(5.588281,3.0957813){\large $\dot{X}=f\left(X,u\right)$}
+\usefont{T1}{ptm}{m}{n}
+\rput(5.39875,3.5757813){\large Plant}
+\usefont{T1}{ptm}{m}{n}
+\rput(9.740781,2.2107813){Sensor}
+\usefont{T1}{ptm}{m}{n}
+\rput(10.532344,0.19078125){$x\left(t-\tau\right)$}
+\usefont{T1}{ptm}{m}{n}
+\rput(10.492344,-0.16921875){$\theta\left(t-\tau\right)$}
+\usefont{T1}{ptm}{m}{n}
+\rput(9.790313,1.7907813){$\tau$ delay}
+\usefont{T1}{ptm}{m}{n}
+\rput(5.860781,1.6707813){Switching Controller}
+\psline[linewidth=0.04,arrowsize=0.05291667cm 2.0,arrowlength=1.4,arrowinset=0.4]{->}(9.760938,1.1207813)(9.760938,-1.8592187)(7.9009376,-1.8392187)(7.8209376,-1.8392187)
+\psline[linewidth=0.04,arrowsize=0.05291667cm 2.0,arrowlength=1.4,arrowinset=0.4]{->}(3.6409376,-1.8592187)(1.6409374,-1.8792187)(1.6809375,1.0807812)
+\psline[linewidth=0.04,arrowsize=0.05291667cm 2.0,arrowlength=1.4,arrowinset=0.4]{->}(1.6809375,2.5407813)(1.6809375,3.5407813)(4.0609374,3.5207813)
+\psline[linewidth=0.04,arrowsize=0.05291667cm 2.0,arrowlength=1.4,arrowinset=0.4]{->}(7.0009375,3.5607812)(9.800938,3.5207813)(9.840938,2.5407813)
+\usefont{T1}{ptm}{m}{n}
+\rput(1.640625,2.2507813){Actuator}
+\usefont{T1}{ptm}{m}{n}
+\rput(8.862344,3.7707813){$\left[x\left(t\right) \dot{x}\left(t\right) \theta\left(t\right) \dot{\theta}\left(t\right)\right]^T$}
+\usefont{T1}{ptm}{m}{n}
+\rput(2.5523438,-0.00921875){$u_{\sigma}\left(t-\tau\right)$}
+\usefont{T1}{ptm}{m}{n}
+\rput(2.6123438,3.7707813){$u_{\sigma}\left(t-\tau-\tau_a\right)$}
+\usefont{T1}{ptm}{m}{n}
+\rput(1.6803125,1.7907813){$\tau_a$ delay}
+\usefont{T1}{ptm}{m}{n}
+\rput(8.912344,4.110781){$X\left(t\right)=$}
+\pause
+\psframe[linewidth=0.03,dimen=outer,fillstyle=solid,fillcolor=color3b](7.2809377,1.1807812)(4.3209376,-0.25921875)
+\usefont{T1}{ptm}{m}{n}
+\rput(5.920781,0.87078124){Safety Controller}
+\usefont{T1}{ptm}{m}{n}
+\rput(5.802344,0.49078125){$u_{sc}\left(t-\tau\right)=$}
+\usefont{T1}{ptm}{m}{n}
+\rput(5.6723437,0.09078125){$k_{sc}X\left(t-\tau\right)$}
+\pause
+\psframe[linewidth=0.03,dimen=outer,fillstyle=solid,fillcolor=color3b](7.2809377,-0.7392188)(4.3209376,-2.1792188)
+\usefont{T1}{ptm}{m}{n}
+\rput(5.8101563,-0.9892188){Baseline Ctrl.}
+\usefont{T1}{ptm}{m}{n}
+\rput(5.722344,-1.3492187){$u_{bc}\left(t-\tau\right)=$}
+\usefont{T1}{ptm}{m}{n}
+\rput(5.6523438,-1.7892188){$k_{bc}X\left(t-\tau\right)$}
+\pause
+\psframe[linewidth=0.03,dimen=outer,fillstyle=solid,fillcolor=color3b](7.2609377,-2.6392188)(4.3009377,-4.079219)
+\usefont{T1}{ptm}{m}{n}
+\rput(5.789375,-2.8892188){Experimental Ctrl.}
+\usefont{T1}{ptm}{m}{n}
+\rput(5.7923436,-3.2492187){$u_{ec}\left(t-\tau\right)=$}
+\usefont{T1}{ptm}{m}{n}
+\rput(5.702344,-3.6492188){$k_{ec}X\left(t-\tau\right)$}
+\end{pspicture}
+}
+
+
+\end{frame}
+
+\begin{frame}{Small-Gain Theorem}
+
+\begin{itemize}
+\pause \item If the original system $\dot{X}=f\left(X,u\right)$ is input-to-state stable (ISS), and a disturbance input is small enough, then the system with disturbance is ISS.
+\pause \item What is small enough?  \pause Effectively less than a system's stability margin, in the LTI case, the real-axis distance of eigenvalues to the right-half plane.
+\pause \item In the case of a disturbance (error) caused by delay, this allows one to bound 	the delay by bounding the error caused by the delay, allowing one to determine a tolerable (not maximal) delay to ensure ISS.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Small-Gain Theorem - Coupling with Disturbance from Delay}
+
+\pause
+
+% Generated with LaTeXDraw 2.0.1
+% Tue Dec 02 17:16:33 CST 2008
+% \usepackage[usenames,dvipsnames]{pstricks}
+% \usepackage{epsfig}
+% \usepackage{pst-grad} % For gradients
+% \usepackage{pst-plot} % For axes
+\scalebox{1} % Change this value to rescale the drawing.
+{
+\begin{pspicture}(0,-2.4)(9.522813,2.4)
+\definecolor{color0b}{rgb}{0.8,0.8,1.0}
+\psframe[linewidth=0.03,dimen=outer,fillstyle=solid,fillcolor=color0b](6.9609375,2.4)(2.3609376,0.58)
+\psframe[linewidth=0.03,dimen=outer,fillstyle=solid,fillcolor=color0b](6.9809375,-0.58)(2.3809376,-2.4)
+\psline[linewidth=0.04,arrowsize=0.05291667cm 2.0,arrowlength=1.4,arrowinset=0.4]{->}(6.9609375,1.62)(8.180938,1.6)(8.180938,-1.6)(6.9809375,-1.6)
+\psline[linewidth=0.04,arrowsize=0.05291667cm 2.0,arrowlength=1.4,arrowinset=0.4]{->}(2.3609376,-1.6)(1.3409375,-1.62)(1.3809375,1.66)(2.4009376,1.64)
+\usefont{T1}{ptm}{m}{n}
+\rput(4.722344,1.67){$\dot{X}\left(t\right)=f\left(X\left(t\right),u\left(t-\tau\right)\right)$}
+\usefont{T1}{ptm}{m}{n}
+\rput(4.4026564,-1){Disturbance}
+\usefont{T1}{ptm}{m}{n}
+\rput(4.602344,-1.5){$\epsilon\left(t\right)=KX\left(t-\tau\right)-KX\left(t\right)$}
+\end{pspicture} 
+}
+
+\end{frame}
+
+\begin{frame}{Bounding Our System for ISS and Small-Gains}
+
+\begin{itemize}
+
+\item Delayed control $u\left(t\right)=KX\left(t-\tau\right)$ \pause$=KX\left(t\right)+\epsilon\left(t\right)$
+\pause \item Error from delay \\ $\epsilon\left(t\right)=KX\left(t-\tau\right)-KX\left(t\right)$
+\pause \item System model with disturbance from delay \\ $\dot{X}\left(t\right)=\left(A+BK\right)X\left(t\right)+B\epsilon\left(t\right)$
+\pause \item Small Gain Argument\\$\epsilon=-\int^{t}_{t-\tau}K\left(AX\left(s\right)+BKX\left(s-\tau\right)\right)ds$
+\pause \\ $|\epsilon|\leq\tau\left(||KA||+||KBK||\right)\cdot||X||_{\left[t-2\tau,t\right]}$
+\pause \\ $d=(||KA||+||KBK||)$
+\pause \item Lyapunov function satisfied by $\dot{V}=-X^TQX+X^TPB\epsilon$
+\pause \\ Conservative bound \\ $\dot{V}\leq-X^TQX+|X|\cdot|\epsilon|\cdot||PB||$
+\pause \\ $\dot{V}\leq-\lambda_{min}\left(Q\right)|X|^2+|X|\cdot|\epsilon|\cdot||PB||$
+\pause \\ $\dot{V}=-|X|\left(\lambda_{min}\left(Q\right)|X|-||PB||\cdot|\epsilon|\right)$
+\pause \\ $|x|>\frac{||PB||}{\lambda_{min}\left(Q\right)}\cdot|\epsilon|$
+\pause \\ Define $\rho\left(r\right)=cr$ where $c=\frac{||PB||}{\lambda_{min}\left(Q\right)}$
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Small-Gain Theorem for Our Case}
+
+\begin{itemize}
+\item Assume the undelayed (undisturbed) system is ISS, then if there exists some $\tau$ such that $\tau cd<1$, \pause the disturbed system is ISS with respect to the disturbance caused by the delay error ($\epsilon$), and a tolerable delay is $\tau<\frac{1}{cd}$.
+\pause \item For this system, the following tolerable delays were found for each controller $\tau_{sc}=9$ms, $\tau_{bc}=12.3$ms, $\tau_{ec}=18.6$ms.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Conclusions and Future Work}
+
+\begin{itemize}
+\pause \item Control period is $T_s=20$ms, so this method cannot guarantee stability with respect to the actual delay experienced, so model-based state projection is necessary.
+\pause \item Note that small-gain is only a sufficient condition, so it could be the case that it is stable without state projection.  A future line of work could be to define and solve an optimization problem to find the maximum tolerable $\tau$.
+\pause \item When perfect state projection is considered, stability is then guaranteed for a delay $T_s+\tau$.  State projection is not perfect here however, due primarily to the first-order approximation used to reconstruct $\dot{x}$ and $\dot{\theta}$ since they are unobservable, in addition to other errors like quantization not explicitly shown here.  Further work could be done here as well.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Questions}
+\small ? \Large ? \Huge ? \Giant ? \CrazyBig ?
+\end{frame}
+
+\begin{frame}{Questions: Lyapunov Stability}
+
+\begin{itemize}
+\pause \item Stable in the Sense of Lyapunov (isL) if\\
+$\forall \epsilon>0 .\exists \delta=\delta\left(\epsilon\right)>0$ such that, if $||x\left(0\right)||<\delta$, then $||x\left(t\right)||<\epsilon$, $\forall t\geq0$
+\pause \item Asymptotically Stable\\If isL and if $\exists \delta > 0$ such that if $||x\left(0\right)||<\delta$, then $x(t)\rightarrow0$ as $t\rightarrow\inf$
+\pause \item LTI Case\\If $\exists P=P^T>0$ for some $Q=Q^T>0$ that satisfies Lyapunov equation $A^TP+PA+Q=0$, then the system is asymptotically stable, and the Lyapunov function is $V=X^TPX$
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Questions: Input-to-State Stability (ISS)}
+\begin{itemize}
+\pause \item Comparison Functions of Hahn\\
+Class $\K$: continuous, strictly increasing\\
+Class $\K_\infty$: same as class $\K$ and unbounded\\
+Class $\KL$: continuous, strictly decreasing
+\pause \item Consider $\dot{x}\left(t\right)=f\left(x\left(t\right),w\left(t\right)\right)$ with solutions $\varphi\left(t,x,w\right)$
+\pause \item System is ISS if $\exists\beta\in\KL$ and $\gamma\in\K_\infty$ such that $\forall x\left(t_0\right)$, $\forall w$, and $\forall t\geq0$, then $||\varphi\left(t,x,w\right)||\leq\max\left\{\beta\left(||x||,t\right),\gamma\left(||w||_\infty\right)\right\}$
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Questions: Nonlinear System Model Derived from Energy}
+
+\begin{itemize}
+\item Coordinates of Small Portion of Bar with Mass $dm$\\
+$x_{dm}=x+q\sin\left(\theta\right)\Rightarrow\dot{x}_{dm}=\dot{x}+q\cos\left(\theta\right)\dot{\theta}$\\$y_{dm}=q\cos\left(\theta\right)\Rightarrow\dot{y}_{dm}=-q\sin\left(\theta\right)\dot{\theta}$
+\pause \item Kinetic Energy of Small Portion of Bar with Mass $dm$\\$K_{dm}=\frac{1}{2}dm\left(\dot{x}_{dm}^2+\dot{y}_{dm}^2\right)$ \pause $=\frac{1}{2}\left(dm\right)\left(\dot{x}^2+2q\cos\left(\theta\right)\dot{x}\dot{\theta}+q^2\dot{\theta}^2\right)$
+\pause \item Potential Energy of Small Portion of Bar with Mass $dm$\\$P_{dm}=\left(dm\right)g\cos\left(\theta\right)$
+\pause \item Integrating over Bar Length $0$ to $l$\\
+$K=K_c+K_p=\frac{1}{2}\left(M+m\right)\dot{x}^2+\frac{1}{2}ml\cos\left(\theta\right)\dot{x}\dot{\theta}+\frac{1}{6}ml^2\dot{\theta}^2$\\
+$P=\frac{1}{2}mgl\cos\left(\theta\right)$
+\pause \item Lagrangian $L=K-P$
+\pause \item Euler-Lagrange Equations for Forces on System\\
+$\frac{d}{dt}\frac{\partial L}{\partial\dot{x}}-\frac{\partial L}{\partial x}=F-f_c$ and $\frac{d}{dt}\frac{\partial L}{\partial\dot{\theta}}-\frac{\partial L}{\partial \theta}=-f_p$
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Questions: Plant HIOA}
+
+\begin{figure}[h!]
+\centering
+  \hrule
+%  {\lstinputlisting[language=ioa,lastline=8]{Plant.hioa}}
+%  {\lstinputlisting[language=ioa,firstline=9]{Plant.hioa}}
+  {\lstinputlisting[language=ioa,firstline=1]{Plant.hioa}}
+  \hrule
+  \caption{Linearized Plant Model}
+  \label{fig:plant}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}{Questions: Sensor HIOA}
+
+\begin{figure}[h!]
+\centering
+  \hrule
+%  \two{.47}{.47}
+%  {\lstinputlisting[language=ioa,lastline=11]{Sensor.hioa}}
+%  {\lstinputlisting[language=ioa,firstline=12]{Sensor.hioa}}
+	{\lstinputlisting[language=ioa,firstline=1]{Sensor.hioa}}
+  \hrule
+  \caption{Sensor}
+  \label{fig:sensor}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}{Questions: Actuator HIOA}
+\begin{figure}[h!]
+\centering
+  \hrule
+%  \two{.47}{.47}
+%  {\lstinputlisting[language=ioa,lastline=14]{Actuator.hioa}}
+%  {\lstinputlisting[language=ioa,firstline=15]{Actuator.hioa}}
+	{\lstinputlisting[language=ioa,firstline=1]{Actuator.hioa}}
+  \hrule
+  \caption{Actuator}
+  \label{fig:actuator}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Questions: Safety, Baseline, Experimental Controller HIOAs}
+
+\begin{figure}[h!]
+\centering
+  \hrule
+%  \two{.47}{.47}
+  {\lstinputlisting[language=ioa,lastline=15]{SafetyController.hioa}}
+%  {\lstinputlisting[language=ioa,firstline=15]{SafetyController.hioa}}
+%  {\lstinputlisting[language=ioa,firstline=1]{SafetyController.hioa}}
+  \hrule
+  \caption{Safety Controller}
+  \label{fig:safetyController}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}{Questions: Safety, Baseline, Experimental Controller HIOAs (cont)}
+
+\begin{figure}[h!]
+\centering
+  \hrule
+%  \two{.47}{.47}
+%  {\lstinputlisting[language=ioa,lastline=15]{SafetyController.hioa}}
+  {\lstinputlisting[language=ioa,firstline=16]{SafetyController.hioa}}
+%  {\lstinputlisting[language=ioa,firstline=1]{SafetyController.hioa}}
+  \hrule
+  \caption{Safety Controller}
+  \label{fig:safetyController}
+\end{figure}
+
+\end{frame}
+
+
+\end{document}
