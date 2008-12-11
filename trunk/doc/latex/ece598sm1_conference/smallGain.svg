@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+    xmlns:latexdraw="http://latexdraw.sourceforge.net/namespaces/latexdraw"
+    version="1.1" baseProfile="full">
+    <defs>
+        <marker overflow="visible" orient="auto" id="arrow2-102">
+            <path
+                d="M 0.0 0.0 L 4.652083333333334 1.6614583333333335 L 2.79125 0.0 L 4.652083333333334 -1.6614583333333335 z "
+                latexdraw:arrSizeNum="2.0" fill="black"/>
+        </marker>
+        <marker overflow="visible" orient="auto" id="arrow2-105">
+            <path
+                d="M 0.0 0.0 L 4.652083333333334 1.6614583333333335 L 2.79125 0.0 L 4.652083333333334 -1.6614583333333335 z "
+                latexdraw:arrSizeNum="2.0" fill="black"/>
+        </marker>
+    </defs>
+    <g>
+        <g latexdraw:type="rectangle" id="id100">
+            <rect x="169.75" y="70.75" width="228.5" height="89.5"
+                latexdraw:borderPos="outer" stroke-width="1.5"
+                stroke="black" fill="#ccccff"/>
+        </g>
+        <g latexdraw:type="rectangle" id="id101">
+            <rect x="170.75" y="219.75" width="228.5" height="89.5"
+                latexdraw:borderPos="outer" stroke-width="1.5"
+                stroke="black" fill="#ccccff"/>
+        </g>
+        <g latexdraw:type="joinedLines" id="id102">
+            <polyline
+                points="399.0,109.0 460.0,110.0 460.0,270.0 400.0,270.0 "
+                stroke-width="2.0" stroke="black" fill="none"
+                latexdraw:rotationAngle="0.0" marker-end="url(#arrow2-102)"/>
+        </g>
+        <g latexdraw:type="joinedLines" id="id105">
+            <polyline
+                points="169.0,270.0 118.0,271.0 120.0,107.0 171.0,108.0 "
+                stroke-width="2.0" stroke="black" fill="none"
+                latexdraw:rotationAngle="0.0" marker-end="url(#arrow2-105)"/>
+        </g>
+        <g latexdraw:type="text" id="id108"
+            font-family="Times New Roman" fill="black" font-size="18" latexdraw:x="50.0">
+            <text x="50.0" y="112.0"><![CDATA[$\dot{X}\left(t\right)=f\left(X\left(t\right),u\left(t-\tau\right)\right)$]]></text>
+        </g>
+        <g latexdraw:type="text" id="id111"
+            font-family="Times New Roman" fill="black" font-size="18" latexdraw:x="238.0">
+            <text x="238.0" y="243.0"><![CDATA[Disturbance]]></text>
+        </g>
+        <g latexdraw:type="text" id="id114"
+            font-family="Times New Roman" fill="black" font-size="18" latexdraw:x="72.0">
+            <text x="72.0" y="284.0"><![CDATA[$\theta\left(t\right)=KX\left(t-\tau\right)-KX\left(t\right)$]]></text>
+        </g>
+    </g>
+    <metadata>
+        <latexdraw:metadata>
+            <latexdraw:displayBorders>false</latexdraw:displayBorders>
+            <latexdraw:autoAdjust>true</latexdraw:autoAdjust>
+            <latexdraw:ppc>50</latexdraw:ppc>
+            <latexdraw:zoom>1.0</latexdraw:zoom>
+            <latexdraw:unit>cm</latexdraw:unit>
+            <latexdraw:classicGrid>false</latexdraw:classicGrid>
+            <latexdraw:gridGap>10</latexdraw:gridGap>
+            <latexdraw:code>0</latexdraw:code>
+            <latexdraw:displayGrid>true</latexdraw:displayGrid>
+            <latexdraw:magneticGrid>false</latexdraw:magneticGrid>
+            <latexdraw:autoUpdate>true</latexdraw:autoUpdate>
+            <latexdraw:version>2.0.1</latexdraw:version>
+            <latexdraw:size>
+                <latexdraw:width>1040</latexdraw:width>
+                <latexdraw:height>754</latexdraw:height>
+            </latexdraw:size>
+            <latexdraw:position>
+                <latexdraw:x>-8</latexdraw:x>
+                <latexdraw:y>-8</latexdraw:y>
+            </latexdraw:position>
+            <latexdraw:dividerPosition>0.7403846153846154</latexdraw:dividerPosition>
+            <latexdraw:displayCodePanel>true</latexdraw:displayCodePanel>
+            <latexdraw:displayXScale>true</latexdraw:displayXScale>
+            <latexdraw:displayYScale>true</latexdraw:displayYScale>
+            <latexdraw:delimitorOpacity>130</latexdraw:delimitorOpacity>
+        </latexdraw:metadata>
+    </metadata>
+</svg>

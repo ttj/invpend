@@ -1,0 +1,1073 @@
+%% bare_conf.tex
+%% V1.3
+%% 2007/01/11
+%% by Michael Shell
+%% See:
+%% http://www.michaelshell.org/
+%% for current contact information.
+%%
+%% This is a skeleton file demonstrating the use of IEEEtran.cls
+%% (requires IEEEtran.cls version 1.7 or later) with an IEEE conference paper.
+%%
+%% Support sites:
+%% http://www.michaelshell.org/tex/ieeetran/
+%% http://www.ctan.org/tex-archive/macros/latex/contrib/IEEEtran/
+%% and
+%% http://www.ieee.org/
+
+%%*************************************************************************
+%% Legal Notice:
+%% This code is offered as-is without any warranty either expressed or
+%% implied; without even the implied warranty of MERCHANTABILITY or
+%% FITNESS FOR A PARTICULAR PURPOSE! 
+%% User assumes all risk.
+%% In no event shall IEEE or any contributor to this code be liable for
+%% any damages or losses, including, but not limited to, incidental,
+%% consequential, or any other damages, resulting from the use or misuse
+%% of any information contained here.
+%%
+%% All comments are the opinions of their respective authors and are not
+%% necessarily endorsed by the IEEE.
+%%
+%% This work is distributed under the LaTeX Project Public License (LPPL)
+%% ( http://www.latex-project.org/ ) version 1.3, and may be freely used,
+%% distributed and modified. A copy of the LPPL, version 1.3, is included
+%% in the base LaTeX documentation of all distributions of LaTeX released
+%% 2003/12/01 or later.
+%% Retain all contribution notices and credits.
+%% ** Modified files should be clearly indicated as such, including  **
+%% ** renaming them and changing author support contact information. **
+%%
+%% File list of work: IEEEtran.cls, IEEEtran_HOWTO.pdf, bare_adv.tex,
+%%                    bare_conf.tex, bare_jrnl.tex, bare_jrnl_compsoc.tex
+%%*************************************************************************
+
+% *** Authors should verify (and, if needed, correct) their LaTeX system  ***
+% *** with the testflow diagnostic prior to trusting their LaTeX platform ***
+% *** with production work. IEEE's font choices can trigger bugs that do  ***
+% *** not appear when using other class files.                            ***
+% The testflow support page is at:
+% http://www.michaelshell.org/tex/testflow/
+
+
+
+% Note that the a4paper option is mainly intended so that authors in
+% countries using A4 can easily print to A4 and see how their papers will
+% look in print - the typesetting of the document will not typically be
+% affected with changes in paper size (but the bottom and side margins will).
+% Use the testflow package mentioned above to verify correct handling of
+% both paper sizes by the user's LaTeX system.
+%
+% Also note that the "draftcls" or "draftclsnofoot", not "draft", option
+% should be used if it is desired that the figures are to be displayed in
+% draft mode.
+%
+\documentclass[conference]{IEEEtran}
+% Add the compsoc option for Computer Society conferences.
+%
+% If IEEEtran.cls has not been installed into the LaTeX system files,
+% manually specify the path to it like:
+% \documentclass[conference]{../sty/IEEEtran}
+
+% Some very useful LaTeX packages include:
+% (uncomment the ones you want to load)
+
+\newif\ifans\anstrue
+% This is a package for drawing figures
+% it is a part of standard latex 2e distribution
+\usepackage{tikz}
+\usetikzlibrary{shapes}
+\usetikzlibrary{automata}
+
+\usepackage[usenames,dvipsnames]{pstricks}
+\usepackage{epsfig}
+%\usepackage{pst-grad} % For gradients
+%\usepackage{pst-plot} % For axes
+
+\usepackage{palatino}
+\RequirePackage{ifthen}
+\usepackage{latexsym}
+\RequirePackage{amsmath}
+\RequirePackage{amsthm}
+\RequirePackage{amssymb}
+\RequirePackage{xspace}
+\RequirePackage{graphics}
+\usepackage{xcolor}
+\usepackage{fullpage}
+\usepackage{schemabloc}
+
+\RequirePackage{textcomp}
+\usepackage{keyval}
+%\usepackage{listings}
+\usepackage{xspace}
+\usepackage{mathrsfs}
+%\usepackage{textcomp}
+%\usepackage{graphicx}
+\usepackage{paralist}
+\usepackage{amsmath,amssymb,url,listings,mathrsfs}
+%\usepackage{pvs}
+%\usepackage{supertabular,alltt,latexsym}
+%\usepackage{multicol,multirow,epsfig}
+%\usepackage[dvips, usenames]{color}
+\usepackage{framed}
+\usepackage{lipsum}
+%\usepackage[dvipsnames]{color}
+
+
+
+\definecolor{reddish}{rgb}{1,.8,0.8}
+\definecolor{blueish}{rgb}{0.8,.8,1}
+\definecolor{greenish}{rgb}{.8,1,0.8}
+\definecolor{yellowish}{rgb}{1,1,.20}
+
+\def\titleName{{Stability Analysis of Simplex Architecture Controlled Inverted Pendulum}}
+\def\authorName{{Taylor Johnson}}
+
+\usepackage[pdftex]{hyperref}
+\hypersetup{
+  pdftitle={\titleName},
+  pdfauthor={\authorName},
+  colorlinks=true,
+  citecolor={blue},
+  linkcolor = {blue},
+  backref={true}
+}
+
+\input{prelude1}
+
+% *** MISC UTILITY PACKAGES ***
+%'
+%\usepackage{ifpdf}
+% Heiko Oberdiek's ifpdf.sty is very useful if you need conditional
+% compilation based on whether the output is pdf or dvi.
+% usage:
+% \ifpdf
+%   % pdf code
+% \else
+%   % dvi code
+% \fi
+% The latest version of ifpdf.sty can be obtained from:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/oberdiek/
+% Also, note that IEEEtran.cls V1.7 and later provides a builtin
+% \ifCLASSINFOpdf conditional that works the same way.
+% When switching from latex to pdflatex and vice-versa, the compiler may
+% have to be run twice to clear warning/error messages.
+
+
+
+
+
+
+% *** CITATION PACKAGES ***
+%
+\usepackage{cite}
+% cite.sty was written by Donald Arseneau
+% V1.6 and later of IEEEtran pre-defines the format of the cite.sty package
+% \cite{} output to follow that of IEEE. Loading the cite package will
+% result in citation numbers being automatically sorted and properly
+% "compressed/ranged". e.g., [1], [9], [2], [7], [5], [6] without using
+% cite.sty will become [1], [2], [5]--[7], [9] using cite.sty. cite.sty's
+% \cite will automatically add leading space, if needed. Use cite.sty's
+% noadjust option (cite.sty V3.8 and later) if you want to turn this off.
+% cite.sty is already installed on most LaTeX systems. Be sure and use
+% version 4.0 (2003-05-27) and later if using hyperref.sty. cite.sty does
+% not currently provide for hyperlinked citations.
+% The latest version can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/cite/
+% The documentation is contained in the cite.sty file itself.
+
+
+
+
+
+% *** GRAPHICS RELATED PACKAGES ***
+%
+\ifCLASSINFOpdf
+  % \usepackage[pdftex]{graphicx}
+  % declare the path(s) where your graphic files are
+  % \graphicspath{{../pdf/}{../jpeg/}}
+  % and their extensions so you won't have to specify these with
+  % every instance of \includegraphics
+  % \DeclareGraphicsExtensions{.pdf,.jpeg,.png}
+\else
+  % or other class option (dvipsone, dvipdf, if not using dvips). graphicx
+  % will default to the driver specified in the system graphics.cfg if no
+  % driver is specified.
+  % \usepackage[dvips]{graphicx}
+  % declare the path(s) where your graphic files are
+  % \graphicspath{{../eps/}}
+  % and their extensions so you won't have to specify these with
+  % every instance of \includegraphics
+  % \DeclareGraphicsExtensions{.eps}
+\fi
+% graphicx was written by David Carlisle and Sebastian Rahtz. It is
+% required if you want graphics, photos, etc. graphicx.sty is already
+% installed on most LaTeX systems. The latest version and documentation can
+% be obtained at: 
+% http://www.ctan.org/tex-archive/macros/latex/required/graphics/
+% Another good source of documentation is "Using Imported Graphics in
+% LaTeX2e" by Keith Reckdahl which can be found as epslatex.ps or
+% epslatex.pdf at: http://www.ctan.org/tex-archive/info/
+%
+% latex, and pdflatex in dvi mode, support graphics in encapsulated
+% postscript (.eps) format. pdflatex in pdf mode supports graphics
+% in .pdf, .jpeg, .png and .mps (metapost) formats. Users should ensure
+% that all non-photo figures use a vector format (.eps, .pdf, .mps) and
+% not a bitmapped formats (.jpeg, .png). IEEE frowns on bitmapped formats
+% which can result in "jaggedy"/blurry rendering of lines and letters as
+% well as large increases in file sizes.
+%
+% You can find documentation about the pdfTeX application at:
+% http://www.tug.org/applications/pdftex
+
+
+
+
+
+% *** MATH PACKAGES ***
+%
+%\usepackage[cmex10]{amsmath}
+% A popular package from the American Mathematical Society that provides
+% many useful and powerful commands for dealing with mathematics. If using
+% it, be sure to load this package with the cmex10 option to ensure that
+% only type 1 fonts will utilized at all point sizes. Without this option,
+% it is possible that some math symbols, particularly those within
+% footnotes, will be rendered in bitmap form which will result in a
+% document that can not be IEEE Xplore compliant!
+%
+% Also, note that the amsmath package sets \interdisplaylinepenalty to 10000
+% thus preventing page breaks from occurring within multiline equations. Use:
+%\interdisplaylinepenalty=2500
+% after loading amsmath to restore such page breaks as IEEEtran.cls normally
+% does. amsmath.sty is already installed on most LaTeX systems. The latest
+% version and documentation can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/required/amslatex/math/
+
+
+
+
+
+% *** SPECIALIZED LIST PACKAGES ***
+%
+%\usepackage{algorithmic}
+% algorithmic.sty was written by Peter Williams and Rogerio Brito.
+% This package provides an algorithmic environment fo describing algorithms.
+% You can use the algorithmic environment in-text or within a figure
+% environment to provide for a floating algorithm. Do NOT use the algorithm
+% floating environment provided by algorithm.sty (by the same authors) or
+% algorithm2e.sty (by Christophe Fiorio) as IEEE does not use dedicated
+% algorithm float types and packages that provide these will not provide
+% correct IEEE style captions. The latest version and documentation of
+% algorithmic.sty can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/algorithms/
+% There is also a support site at:
+% http://algorithms.berlios.de/index.html
+% Also of interest may be the (relatively newer and more customizable)
+% algorithmicx.sty package by Szasz Janos:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/algorithmicx/
+
+
+
+
+% *** ALIGNMENT PACKAGES ***
+%
+%\usepackage{array}
+% Frank Mittelbach's and David Carlisle's array.sty patches and improves
+% the standard LaTeX2e array and tabular environments to provide better
+% appearance and additional user controls. As the default LaTeX2e table
+% generation code is lacking to the point of almost being broken with
+% respect to the quality of the end results, all users are strongly
+% advised to use an enhanced (at the very least that provided by array.sty)
+% set of table tools. array.sty is already installed on most systems. The
+% latest version and documentation can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/required/tools/
+
+
+%\usepackage{mdwmath}
+%\usepackage{mdwtab}
+% Also highly recommended is Mark Wooding's extremely powerful MDW tools,
+% especially mdwmath.sty and mdwtab.sty which are used to format equations
+% and tables, respectively. The MDWtools set is already installed on most
+% LaTeX systems. The lastest version and documentation is available at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/mdwtools/
+
+
+% IEEEtran contains the IEEEeqnarray family of commands that can be used to
+% generate multiline equations as well as matrices, tables, etc., of high
+% quality.
+
+
+%\usepackage{eqparbox}
+% Also of notable interest is Scott Pakin's eqparbox package for creating
+% (automatically sized) equal width boxes - aka "natural width parboxes".
+% Available at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/eqparbox/
+
+
+
+
+
+% *** SUBFIGURE PACKAGES ***
+%\usepackage[tight,footnotesize]{subfigure}
+% subfigure.sty was written by Steven Douglas Cochran. This package makes it
+% easy to put subfigures in your figures. e.g., "Figure 1a and 1b". For IEEE
+% work, it is a good idea to load it with the tight package option to reduce
+% the amount of white space around the subfigures. subfigure.sty is already
+% installed on most LaTeX systems. The latest version and documentation can
+% be obtained at:
+% http://www.ctan.org/tex-archive/obsolete/macros/latex/contrib/subfigure/
+% subfigure.sty has been superceeded by subfig.sty.
+
+
+
+%\usepackage[caption=false]{caption}
+%\usepackage[font=footnotesize]{subfig}
+% subfig.sty, also written by Steven Douglas Cochran, is the modern
+% replacement for subfigure.sty. However, subfig.sty requires and
+% automatically loads Axel Sommerfeldt's caption.sty which will override
+% IEEEtran.cls handling of captions and this will result in nonIEEE style
+% figure/table captions. To prevent this problem, be sure and preload
+% caption.sty with its "caption=false" package option. This is will preserve
+% IEEEtran.cls handing of captions. Version 1.3 (2005/06/28) and later 
+% (recommended due to many improvements over 1.2) of subfig.sty supports
+% the caption=false option directly:
+%\usepackage[caption=false,font=footnotesize]{subfig}
+%
+% The latest version and documentation can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/subfig/
+% The latest version and documentation of caption.sty can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/caption/
+
+
+
+
+% *** FLOAT PACKAGES ***
+%
+%\usepackage{fixltx2e}
+% fixltx2e, the successor to the earlier fix2col.sty, was written by
+% Frank Mittelbach and David Carlisle. This package corrects a few problems
+% in the LaTeX2e kernel, the most notable of which is that in current
+% LaTeX2e releases, the ordering of single and double column floats is not
+% guaranteed to be preserved. Thus, an unpatched LaTeX2e can allow a
+% single column figure to be placed prior to an earlier double column
+% figure. The latest version and documentation can be found at:
+% http://www.ctan.org/tex-archive/macros/latex/base/
+
+
+
+%\usepackage{stfloats}
+% stfloats.sty was written by Sigitas Tolusis. This package gives LaTeX2e
+% the ability to do double column floats at the bottom of the page as well
+% as the top. (e.g., "\begin{figure*}[!b]" is not normally possible in
+% LaTeX2e). It also provides a command:
+%\fnbelowfloat
+% to enable the placement of footnotes below bottom floats (the standard
+% LaTeX2e kernel puts them above bottom floats). This is an invasive package
+% which rewrites many portions of the LaTeX2e float routines. It may not work
+% with other packages that modify the LaTeX2e float routines. The latest
+% version and documentation can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/sttools/
+% Documentation is contained in the stfloats.sty comments as well as in the
+% presfull.pdf file. Do not use the stfloats baselinefloat ability as IEEE
+% does not allow \baselineskip to stretch. Authors submitting work to the
+% IEEE should note that IEEE rarely uses double column equations and
+% that authors should try to avoid such use. Do not be tempted to use the
+% cuted.sty or midfloat.sty packages (also by Sigitas Tolusis) as IEEE does
+% not format its papers in such ways.
+
+
+
+
+
+% *** PDF, URL AND HYPERLINK PACKAGES ***
+%
+%\usepackage{url}
+% url.sty was written by Donald Arseneau. It provides better support for
+% handling and breaking URLs. url.sty is already installed on most LaTeX
+% systems. The latest version can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/misc/
+% Read the url.sty source comments for usage information. Basically,
+% \url{my_url_here}.
+
+
+
+
+
+% *** Do not adjust lengths that control margins, column widths, etc. ***
+% *** Do not use packages that alter fonts (such as pslatex).         ***
+% There should be no need to do such things with IEEEtran.cls V1.6 and later.
+% (Unless specifically asked to do so by the journal or conference you plan
+% to submit to, of course. )
+
+
+% correct bad hyphenation here
+\hyphenation{op-tical net-works semi-conduc-tor}
+
+
+\begin{document}
+%
+% paper title
+% can use linebreaks \\ within to get better formatting as desired
+\title{\titleName}
+
+
+% author names and affiliations
+% use a multiple column layout for up to three different
+% affiliations
+\author{\IEEEauthorblockN{Taylor Johnson}
+\IEEEauthorblockA{Department of Electrical and Computer Engineering\\
+University of Illinois at Urbana-Champaign\\
+Urbana, Illinois 61801\\
+Email: johnso99@illinois.edu}}
+%\and
+%\IEEEauthorblockN{Homer Simpson}
+%\IEEEauthorblockA{Twentieth Century Fox\\
+%Springfield, USA\\
+%Email: homer@thesimpsons.com}
+%\and
+%\IEEEauthorblockN{James Kirk\\ and Montgomery Scott}
+%\IEEEauthorblockA{Starfleet Academy\\
+%San Francisco, California 96678-2391\\
+%Telephone: (800) 555--1212\\
+%Fax: (888) 555--1212}}
+
+% conference papers do not typically use \thanks and this command
+% is locked out in conference mode. If really needed, such as for
+% the acknowledgment of grants, issue a \IEEEoverridecommandlockouts
+% after \documentclass
+
+% for over three affiliations, or if they all won't fit within the width
+% of the page, use this alternative format:
+% 
+%\author{\IEEEauthorblockN{Michael Shell\IEEEauthorrefmark{1},
+%Homer Simpson\IEEEauthorrefmark{2},
+%James Kirk\IEEEauthorrefmark{3}, 
+%Montgomery Scott\IEEEauthorrefmark{3} and
+%Eldon Tyrell\IEEEauthorrefmark{4}}
+%\IEEEauthorblockA{\IEEEauthorrefmark{1}School of Electrical and Computer Engineering\\
+%Georgia Institute of Technology,
+%Atlanta, Georgia 30332--0250\\ Email: see http://www.michaelshell.org/contact.html}
+%\IEEEauthorblockA{\IEEEauthorrefmark{2}Twentieth Century Fox, Springfield, USA\\
+%Email: homer@thesimpsons.com}
+%\IEEEauthorblockA{\IEEEauthorrefmark{3}Starfleet Academy, San Francisco, California 96678-2391\\
+%Telephone: (800) 555--1212, Fax: (888) 555--1212}
+%\IEEEauthorblockA{\IEEEauthorrefmark{4}Tyrell Inc., 123 Replicant Street, Los Angeles, California 90210--4321}}
+
+
+
+
+% use for special paper notices
+%\IEEEspecialpapernotice{(Invited Paper)}
+
+
+
+
+% make the title area
+\maketitle
+
+
+\begin{abstract}
+%\boldmath
+Switched controllers are being used frequently for control of complex systems.  However, they introduce new challenges for verification of stability, of which a great deal of work in the hybrid systems domain has been formalizing recently.  This work is a stability case study of the classical inverted pendulum, in this case controlled using the Simplex architecture of \cite{ShaACC1998}, combining to form a complete system as in \cite{SetoSha1999}.  The main result shown uses small-gain theorems to prove the stability of the system with regards to measurement delays.
+\end{abstract}
+% IEEEtran.cls defaults to using nonbold math in the Abstract.
+% This preserves the distinction between vectors and scalars. However,
+% if the conference you are submitting to favors bold math in the abstract,
+% then you can use LaTeX's standard command \boldmath at the very start
+% of the abstract to achieve this. Many IEEE journals/conferences frown on
+% math in the abstract anyway.
+
+% no keywords
+
+
+
+
+% For peer review papers, you can put extra information on the cover
+% page as needed:
+% \ifCLASSOPTIONpeerreview
+% \begin{center} \bfseries EDICS Category: 3-BBND \end{center}
+% \fi
+%
+% For peerreview papers, this IEEEtran command inserts a page break and
+% creates the second title. It will be ignored for other modes.
+\IEEEpeerreviewmaketitle
+
+
+
+\section{Introduction and Preliminaries}
+% no \IEEEPARstart
+
+The physical system in Figure ~\ref{fig:pendulumSystem} consists of a DC-motor driven cart and a pendulum attached to the cart, with the control goal of keeping the angle $\theta$ of the pendulum at $0^{\circ}$ measured from the vertical.  There is an additional control goal of moving the cart to a set point $x_s$ along the $x$-axis.  This system is described by the nonlinear form 
+\begin{equation}
+\dot{x}=f(x,u)
+\label{eq:nonlinearSystem}
+\end{equation}
+
+
+
+
+However, we work with a linearized model of the form
+\begin{equation}
+\dot{x}=Ax+Bu
+\label{eq:linearSystem}
+\end{equation}
+\begin{center}
+\begin{figure}[h!]
+	\scalebox{1} {
+		\begin{pspicture}(0,-2.94)(6.12,2.94)
+		\psframe[linewidth=0.04,dimen=outer](5.42,0.56)(1.08,-1.1)
+		\pscircle[linewidth=0.04,dimen=outer](2.09,-1.57){0.47}
+		\psline[linewidth=0.04cm](0.0,-2.02)(6.1,-2.02)
+		\pscircle[linewidth=0.04,dimen=outer](4.14,-1.56){0.48}
+		\psline[linewidth=0.04cm,linestyle=dotted,dotsep=0.16cm](3.02,2.86)(3.0,0.56)
+		\psline[linewidth=0.08cm](3.02,0.52)(4.2,2.9)
+		\usefont{T1}{ptm}{m}{n}
+		\rput(3.4390626,2.3){\large $\theta$}
+		\usefont{T1}{ptm}{m}{n}
+		\rput(3.298125,-0.295){\large M}
+		\usefont{T1}{ptm}{m}{n}
+		\rput(4.4246874,1.72){\large m, l}
+		\psline[linewidth=0.04cm](0.2,-2.06)(0.2,-2.84)
+		\psline[linewidth=0.04cm,arrowsize=0.05291667cm 2.0,arrowlength=1.4,arrowinset=0.4]{->}(0.24,-2.4)(4.32,-2.4)
+		\usefont{T1}{ptm}{m}{n}
+		\rput(1.8825,-2.72){\large x}
+	\end{pspicture}}
+	\caption{Inverted Pendulum System}
+	\label{fig:pendulumSystem}
+\end{figure}
+\end{center}
+The linearization is justified after the system description.  There are four state variables, the cart position $x$, cart velocity $\dot{x}$, pendulum angle $\theta$, and pendulum velocity $\dot{\theta}$ (we will now denote $X$ as the state vector and $x$ as the position, seen together in Equation ~\ref{eq:stateMatrix}).  As the system has been implemented, it is subject to physical constraints.  The range of $x$ is between $\left[-0.7,0.7\right]$ meters, $\dot{x}$ is between $\left[-1.0,1.0\right]$ meters/second, $\theta$ is between $\left[-30,30\right]^{\circ}$, and $\dot{\theta}$ is unconstrained.
+
+\begin{equation}
+X=\left[ \begin{array}{c} x_1 \\ x_{2} \\ x_3 \\ x_{4} \end{array} \right]=\left[ \begin{array}{cccc} x-x_s \\ \dot{x} \\ \theta \\ \dot{\theta} \end{array} \right]
+\label{eq:stateMatrix}
+\end{equation}
+
+The system is stabilized by linear state feedback of the form $\dot{X}=\left(A+BK\right)X$.  The control input, $u$ is the armature voltage of the DC-motor ($V_a$) and is constrained between $\left[-4.96,4.96\right]$ volts.
+
+The primary linearizations to note are that we ignore static friction and take the armature inductance ($L_a=18$ millihenries) to be $0$ henry hence reducing the order of the system by making the armature current state variable $I_a$ a function of $V_a$.  The linearization is justified since the control objective is to stabilize the system in a neighborhood of the vertical equilibrium.  
+
+For the remainder of the paper, we work towards proving stability of the system, first in the classical Lyapunov sense, and then using newer small-gain theorem results to also discuss stability in the delayed system as in \cite{LiberzonQuantDelay2006} and \cite{SanfeliceTeel2005}.  Recent results using small-gain theorems allow us to prove stability of systems with delay by analyzing the stability of a simpler system without delay.  The idea is to treat the error introduced by the delay as a disturbance input with bounded-gain, allowing us to talk about input-to-state stability.  Using this, we can find the maximum delay the system can tolerate.  Despite the linearizations of the system model, the small-gain techniques apply to nonlinear systems and can also be used to analyze stability in the more general system model.
+
+\section{System and Controller Models}
+
+Figure ~\ref{fig:systemModel} shows a high-level view of the entire control system.  We now discuss each block individually.  We are using hybrid input-output automata to describe the blocks, and we assume the reader is familiar with such notation, but if not, \cite{lynchSV2003} or \cite{MitraPhd2007} can serve as references to the notation.
+
+\begin{center}
+\begin{figure}[h!]
+	\begin{tikzpicture}[auto, node distance=2cm,>=latex']
+			\tikzstyle{block} = [draw, fill=blue!20, rectangle, 
+			    minimum height=3em, minimum width=6em]
+			\tikzstyle{sum} = [draw, fill=blue!20, circle, node distance=1cm]
+			\tikzstyle{input} = [coordinate]
+			\tikzstyle{output} = [coordinate]
+			\tikzstyle{pinstyle} = [pin edge={to-,thin,black}]
+			
+	    % We start by placing the blocks
+	    \node [input, name=topleft] {};
+	    \node [block, below of=topleft] (actuator) {Actuator};
+	    \node [input, name=botleft, below of=actuator] {};
+	    \node [block, right of=topleft] (plant) {Plant};
+			\node [block, right of=botleft] (controller) {Controller};
+			\node [input, name=center, below of=plant] {};
+			\node [block, right of=center] (sensor) {Sensor};
+			\node [input, name=topright, above of=sensor] {};
+			\node [input, name=botright, below of=sensor] {};
+	
+			\draw [->] (topleft) -- (plant);
+			\draw [-] (plant) -- (topright);
+			\draw [->] (topright) -- node {$x\left(t\right)$, $\theta\left(t\right)$} (sensor);
+			\draw [-] (sensor) -- node {$x\left(t-\tau\right)$, \\$\theta\left(t-\tau\right)$} (botright);
+			\draw [->] (botright) -- (controller);
+			\draw [-] (controller) -- (botleft);
+			\draw [->] (botleft) -- node {$u\left(t-\tau\right)$} (actuator);
+			\draw [-] (actuator) -- node {$u\left(t-\tau\right)$} (topleft);
+	
+	    % Once the nodes are placed, connecting them is easy. 
+	%    \draw [draw,->] (input) -- node {$r$} (sum);
+	%    \draw [->] (sum) -- node {$e$} (controller);
+	%    \draw [->] (system) -- node [name=y] {$y$}(output);
+	%    \draw [->] (y) |- (measurements);
+	%    \draw [->] (measurements) -| node[pos=0.99] {$-$} node [near end] {$y_m$} (sum);
+	\end{tikzpicture}
+	\caption{System Model}
+	\label{fig:systemModel}
+\end{figure}
+\end{center}
+
+\subsection{Plant Model}
+
+The plant model of the inverted pendulum is described in Figure ~\ref{fig:plant}, where the two input parameters to the automaton plant, $A:\Real^{4\times 4}$ and $B:\Real^{4\times 1}$, are defined as 
+\begin{equation}
+A=\left[ \begin{array}{cccc} 0 & 1 & 0 & 0 \\ 0 & -a_{22} & -a_{23} & a_{24} \\ 0 & 0 & 0 & 1 \\ 0 & a_{42} & a_{43} & -a_{44} \end{array} \right]
+\label{eq:systemMatrix}
+\end{equation}
+and
+\begin{equation}
+B=\left[ \begin{array}{c} 0 \\ b_{2} \\ 0 \\ -b_{4} \end{array} \right]
+\label{eq:inputMatrix}
+\end{equation} where $a_{22}=\frac{4\bar{B}}{D_l}$, $a_{23}=\frac{3mg}{D_l}$, $a_{24}=\frac{6B_{\theta}}{lD_l}$, $a_{42}=\frac{6\bar{B}}{lD_l}$, $a_{43}=\frac{6\bar{M}g}{lD_l}$, $a_{44}=\frac{12\bar{M}B_{\theta}}{ml^2D_l}$, 
+$b_2=\frac{4B_l}{D_l}$, and $b_4=\frac{6B_1}{lD_l}$, 
+for $D_l=4\bar{M}-3m$, 
+$\bar{B}=\frac{K_gB_m}{r^2}+\frac{K_g^2K_iK_b}{r^2R_a}$, 
+$B_l=\frac{K_gK_i}{rR_a}$,
+$\bar{M}=\frac{m+M+(K_g*J_m)}{r^2}$, and where  
+$g$ is gravity,
+$R_a$ is armature resistance,
+$r$ is driving wheel radius,
+$J_m$ is motor rotor inertia,
+$B_m$ is coefficient of viscous friction,
+$B_{\theta}$ is coefficient of viscous friction,
+$K_i$ is motor torque constant,
+$K_b$ is motor back-e.m.f. constant,
+$K_g$ is gear ratio,
+$M$ is cart mass, 
+$m$ is pendulum mass, and
+$l$ is pendulum length.
+
+The system is then described as 
+\begin{equation}
+\dot{X}=\left(A+BK_{\sigma}\right)X
+\label{eq:linearStateFeedbackDiffEq}
+\end{equation} where $K_{\sigma}$ is one of the safety, baseline, or experimental controller gains and the solution to this is 
+\begin{equation}
+X=e^{\left(A+BK_{\sigma}\right)t}X_{0}
+\label{eq:linearStateFeedbackSolution}
+\end{equation} where $X_0$ is an initial condition within the stabilizable region.
+
+\begin{figure}[h!]
+\centering
+  \hrule
+%  {\lstinputlisting[language=ioa,lastline=8]{Plant.hioa}}
+%  {\lstinputlisting[language=ioa,firstline=9]{Plant.hioa}}
+  {\lstinputlisting[language=ioa,firstline=1]{Plant.hioa}}
+  \hrule
+  \caption{Linearized Plant Model}
+  \label{fig:plant}
+\end{figure}
+
+\subsection{Sensor Model}
+
+The sensor model can be seen in Figure ~\ref{fig:sensor}, and is an analog-to-digital converter (ADC).  This is where the delay is being introduced to the system in the form of measurement delay, primarily due to filtering.  Between the sensor and the controller there exists a low-pass filter which will introduce a delay between one and two sampling periods ($T_s=20$ milliseconds) long.  There is also nondeterministic delay introduced due to the ADC and controller not being synchronized.  The ADC is utilizing a sample-and-hold, which must be finished before the controller reads the value, but the time difference between when the sample-and-hold finishes and the controller reads the value is unknown, but assumed to be less than one sampling period ($T_s$) long.
+
+\begin{figure}[h!]
+\centering
+  \hrule
+%  \two{.47}{.47}
+%  {\lstinputlisting[language=ioa,lastline=11]{Sensor.hioa}}
+%  {\lstinputlisting[language=ioa,firstline=12]{Sensor.hioa}}
+	{\lstinputlisting[language=ioa,firstline=1]{Sensor.hioa}}
+  \hrule
+  \caption{Sensor}
+  \label{fig:sensor}
+\end{figure}
+
+\subsection{Actuator Model}
+
+The actuator model serves little purpose at the present time, but is included for completeness as seen in Figure ~\ref{fig:actuator}, and may be used in the future to model the quantization error and delay introduced by this block.  The actuator is a digital-to-analog converter (DAC), followed by a higher power voltage source to drive the DC motor.
+
+\begin{figure}[h!]
+\centering
+  \hrule
+%  \two{.47}{.47}
+%  {\lstinputlisting[language=ioa,lastline=14]{Actuator.hioa}}
+%  {\lstinputlisting[language=ioa,firstline=15]{Actuator.hioa}}
+	{\lstinputlisting[language=ioa,firstline=1]{Actuator.hioa}}
+  \hrule
+  \caption{Actuator}
+  \label{fig:actuator}
+\end{figure}
+
+\subsection{Controller Model}
+
+The controller is implemented following the Simplex architecture of \cite{ShaACC1998}.  The Simplex architecture is built on the concept of analytic redundancy of \cite{Bodson1994}, in this case, that several controllers implement the same control objective with different performance.  There are three controllers in this architecture, a safety controller that can stabilize the system from the largest set of initial conditions but with poor performance, a baseline controller that has better performance than the safety controller but cannot stabilize from such a wide set of initial conditions, and an experimental controller that has the best performance but the smallest set of stabilizable initial conditions.  The usefulness of such an architecture could be in upgrades of real-time systems that cannot afford downtime even for maintenance, such as critical infrastructure.  In our case, the architecture is used to differentiate between the different sets of recoverable initial conditions and performance.  Each controller uses linear state feedback for stabilization, with the only difference being higher gains in the baseline and experimental controllers to stabilize faster, with the downside that they cannot recover from certain initial conditions that the safety controller can.
+
+Note that, as only $\theta$ and $x$ are measurable, $\dot{\theta}$ and $\dot{x}$ are constructed by the first-order approximations $\dot{\theta}(t)=\frac{[\theta(t)-\theta(t-mT_s)]}{mT_s}$ and $\dot{x}(t)=\frac{[x(t)-x(t-mT_s)]}{mT_s}$, where $m$ is an integer greater than one (chosen as $2$ by experimentation).  In the safety, baseline, and experimental controller automata, this first-order approximation is accomplished by storing a buffer of previous sampled values.  It is more logical to do this computation here than in the sensor automaton as this calculation is done in the controllers of the implemented system.
+
+\subsubsection{Discretization}
+
+As the system is implemented in embedded software, the system model needs to be discretized.  In continuous-time the system solution is of Equation ~\ref{eq:linearStateFeedbackSolution}, the discrete solution is of the form 
+\begin{equation}
+X\left(t_0\right)=FX\left(t_0-T_s\right)+Gu\left(t_0-T_s\right)
+\label{eq:discreteSolution}
+\end{equation}
+where
+\begin{equation}
+F=e^{AT_s}
+\label{eq:discreteLinearStateFeedbackSolutionF}
+\end{equation}
+and
+\begin{equation}
+G=\int^{T_s}_0 e^{A\tau}d\tau
+\label{discreteLinearStateFeedbackSolutionG}
+\end{equation}
+
+To get back to linear state feedback form, take the control as 
+\begin{equation}
+u\left(t_0\right)=KX\left(t_0-T_s\right)
+\label{discreteLinearStateFeedbackSolutionu}
+\end{equation}
+
+yielding the full form
+
+\begin{equation}
+X\left(t_0\right)=FX\left(t_0-T_s\right)+GBKX\left(t_0-2T_s\right)
+\label{eq:discreteLinearStateFeedbackSolution}
+\end{equation}
+
+This allows easy state projection of the form in Equation ~\ref{eq:discreteLinearStateFeedbackSolutionProjection}, where $n$ is the number of sampling periods to project forward.
+
+\begin{equation}
+  X\left(t_0+nT_s\right)=
+	\label{eq:discreteLinearStateFeedbackSolutionProjection}
+\end{equation}
+\begin{equation*}
+  FX\left(t_0+\left(n-1\right)T_s\right)+GBKX\left(t_0-\left(n-2\right)T_s\right) 
+\end{equation*}
+
+%\begin{eqnarray}
+%  \lefteqn{X\left(t_0+nT_s\right)= } \\
+%  & & FX\left(t_0+\left(n-1\right)T_s\right)+GBKX\left(t_0-\left(n-2\right)T_s\right) 
+%\label{eq:discreteLinearStateFeedbackSolutionProjection}
+%\end{eqnarray}
+
+This projection is done to reduce the error introduced from the various delays in the system, primarily the digital implementation delay (that we are measuring the present state at $t_0$ and controlling the next state at $t_0+T_s$) and the aforementioned filter delay.
+
+\subsubsection{Safety, Baseline, and Experimental Controllers}
+
+\begin{figure}[h!]
+\centering
+  \hrule
+%  \two{.47}{.47}
+%  {\lstinputlisting[language=ioa,lastline=14]{SafetyController.hioa}}
+%  {\lstinputlisting[language=ioa,firstline=15]{SafetyController.hioa}}
+  {\lstinputlisting[language=ioa,firstline=1]{SafetyController.hioa}}
+  \hrule
+  \caption{Safety Controller}
+  \label{fig:safetyController}
+\end{figure}
+
+The baseline and experimental controllers are of the exact same form as the safety controller in ~\ref{fig:safetyController}, except that they use different gain matrices, $K_{bc}$ for the baseline controller, and $K_{ec}$ for the experimental controller.  We take the gains as follows to maximize the stability region for the safety controller, and to improve the performance for the baseline and experimental controllers
+
+\begin{equation}
+K_{sc}=\left[\begin{array}{c}6.0\\ 20.0\\ 60.0\\ 16.0\end{array}\right]
+\end{equation}
+\begin{equation}
+K_{bc}=\left[\begin{array}{c}8.0\\ 32.0\\ 120.0\\ 12.0\end{array}\right]
+\end{equation}
+\begin{equation}
+K_{ec}=\left[\begin{array}{c}10.0\\ 36.0\\ 140.0\\ 14.0\end{array}\right]
+\end{equation}
+
+%\subsubsection{Baseline Controller}
+%
+%\begin{figure}[h!]
+%\centering
+%  \hrule
+%%  \two{.47}{.47}
+%  {\lstinputlisting[language=ioa,lastline=14]{BaselineController.hioa}}
+%  {\lstinputlisting[language=ioa,firstline=15]{BaselineController.hioa}}
+%  \hrule
+%  \caption{Baseline Controller}
+%  \label{fig:baselineController}
+%\end{figure}
+%
+%\subsubsection{Experimental Controller}
+%
+%\begin{figure}[!h]
+%\centering
+%  \hrule
+%%  \two{.47}{.47}
+%  {\lstinputlisting[language=ioa,lastline=14]{ExperimentalController.hioa}}
+%  {\lstinputlisting[language=ioa,firstline=15]{ExperimentalController.hioa}}
+%  \hrule
+%  \caption{Experimental Controller}
+%  \label{fig:experimentalController}
+%\end{figure}
+
+\subsubsection{Switching Controller}
+The switching controller description is to be written, and it should be noted that the automaton of the switching controller in Figure ~\ref{fig:switchingController} is not completely accurate at this time.
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=250pt]{stabRegionX}
+\caption{Stabilizable Region for $x$ and $\dot{x}$}\label{fig:stabRegionX}
+\end{figure}
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=250pt]{stabRegionTheta}
+\caption{Stabilizable Region for $\theta$ and $\dot{\theta}$}\label{fig:stabRegionTheta}
+\end{figure}
+
+\begin{figure}[h!]
+\centering
+  \hrule
+%  \two{.47}{.47}
+%  {\lstinputlisting[language=ioa,lastline=30]{SwitchingController.hioa}}
+%  {\lstinputlisting[language=ioa,firstline=31]{SwitchingController.hioa}}
+	{\lstinputlisting[language=ioa,firstline=1]{SwitchingController.hioa}}
+  \hrule
+  \caption{Switching Controller}
+  \label{fig:switchingController}
+\end{figure}
+
+\section{Stability Analysis}
+
+The stability analysis follows from classical Lyapunov stability (see, e.g. \cite{Chen1999} or \cite{Khalil2002}) and extends to the small-gain stability of systems with disturbances, such as in \cite{LiberzonQuantDelay2006}.
+
+\subsection{Lyapunov Analysis}
+
+From classical Lyapunov stability, we know that for linear time-invariant systems, if there exists some positive definite $P$ that solves the Lyapunov equation in Equation ~\ref{eq:lyapunovP} for some positive definite $Q$
+
+\begin{equation}
+PA+A^TP+Q=0
+\label{eq:lyapunovP}
+\end{equation}
+
+then the system is asymptotically stable and a function $V$ defined by Equation ~\ref{eq:lyapunovV} is a Lyapunov function.
+
+\begin{equation}
+V=X^TPX
+\label{eq:lyapunovV}
+\end{equation}
+
+For our system, we have the following $P$ matrices 
+\begin{equation}
+P_{sc}=\left[ \begin{array}{cccc} 8.494 & 32.758 & 3.785  & 11.300 \\ 32.758 & 217.957  & 16.617  & 75.446 \\ 3.785  & 16.617   & 5.319   & 5.785 \\ 11.300  & 75.446   & 5.785  & 26.406 \end{array} \right]
+\label{eq:lyapSafeP}
+\end{equation}
+\begin{equation}
+P_{bc}=\left[\begin{array}{cccc} 10.623 &  48.942 &    6.132 &   16.600 \\ 48.942 &  350.558 &   25.975 &  119.079 \\
+6.132 &   25.975 &   44.397 &    8.836 \\ 16.600 & 119.079 &   8.836 &   42.101\end{array}\right]
+\label{eq:lyapBaseP}
+\end{equation}
+\begin{equation}
+P_{ec}=\left[\begin{array}{cccc} 10.183 &   45.835 &    5.660 &   15.507 \\45.835 &  332.254 &   22.748 &  112.560 \\ 5.660 &   22.748 &   36.583 &    7.718 \\ 15.507 &  112.560 &    7.718 &   39.2890\end{array}\right]
+\label{eq:lyapExpP}
+\end{equation}
+and then the corresponding Lyapunov functions $V_{sc}=X^TP_{sc}X$, $V_{bc}=X^TP_{bc}X$, and $V_{ec}=X^TP_{ec}X$.  Figures ~\ref{fig:lyapSafe}, ~\ref{fig:lyapBase}, and ~\ref{fig:lyapExp} show the Lyapunov functions along the system trajectory from initial conditions of $X_{0}=\left[\begin{array}{cccc} 0.300 & -0.200 & 0.061 & -0.050 \end{array}\right]^T$.
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=250pt]{lyapSafe}
+\caption{Lyapunov Function for Safety Controller}\label{fig:lyapSafe}
+\end{figure}
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=250pt]{lyapBase}
+\caption{Lyapunov Function for Baseline Controller}\label{fig:lyapBase}
+\end{figure}
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=250pt]{lyapExp}
+\caption{Lyapunov Function for Experimental Controller}\label{fig:lyapExp}
+\end{figure}
+
+\subsection{Small-Gain Theorems}
+
+Small-gain theorems allow us to bound the error introduced by the delay to talk about a system without delay, and instead with a disturbance injection.  Writing the delayed control as 
+\begin{equation}
+u\left(t\right)=KX\left(t-\tau\right)=KX\left(t\right)+\theta\left(t\right)
+\end{equation} where $\theta\left(t\right)=KX\left(t-\tau\right)-KX\left(t\right)$ is the error from delay.
+
+Now writing the system model again with this delay error as a disturbance input we have 
+\begin{equation}
+\dot{X}\left(t\right)=\left(A+BK\right)X\left(t\right)+B\theta\left(t\right)
+\end{equation}
+
+The Lyapunov function time-derivative changes in the form of 
+\begin{equation}
+\dot{V}=-X^TQX+X^TPB\theta
+\end{equation} where $P$ and $Q$ are the same functions defined above in Equation ~\ref{eq:lyapunovP}.
+
+We then apply the conservative bound 
+\begin{equation}
+\dot{V}\leq-X^TQX+|X|\cdot|\theta|\cdot||PB||
+\end{equation}
+which can be computed as
+\begin{equation}
+\dot{V}\leq-\lambda_{min}\left(Q\right)|X|^2+|X|\cdot|\theta|\cdot||PB||
+\label{eq:smallGainConservativeBound}
+\end{equation} where $\lambda_{min}\left(Q\right)$ is the smallest eigenvalue of $Q$.
+\begin{equation}
+\dot{V}=-|x|\left(\lambda_{min}\left(Q\right)|x|-||PB||\cdot|\theta|\right)
+\end{equation}
+
+\begin{equation}
+|x|>\frac{||PB||}{\lambda_{min}\left(Q\right)}\cdot|\theta|
+\end{equation}
+
+Define $\rho\left(r\right)=cr$, and take 
+\begin{equation}
+c=\frac{||PB||}{\lambda_{min}\left(Q\right)}
+\end{equation}
+
+Writing $\theta$ now as 
+\begin{equation}
+\theta=-\int^{t}_{t-\tau}K\left(AX\left(s\right)+BKX\left(s-\tau\right)\right)ds
+\end{equation} we can now bound $\theta$ as 
+\begin{equation}
+|\theta|\leq\tau\left(||KA||+||KBK||\right)\cdot||X||_{\left[t-2\tau,t\right]}
+\end{equation}
+Defining a constant $d$ as this bound 
+\begin{equation}
+d=(||KA||+||KBK||)
+\end{equation} 
+
+The small-gain theorem states then, assume there exists some $\tau$ such that
+\begin{equation}
+\tau cd<1
+\end{equation}
+then we can define the maximum tolerable delay as 
+\begin{equation}
+\tau<\frac{1}{cd}
+\end{equation}
+
+Following this definition for $\tau$, we compute $\tau_{\sigma}$ for each of the controllers, yielding $\tau_{sc}=9$, $\tau_{bc}=12.3$, and $\tau_{ec}=18.6$ milliseconds of delay is tolerable for each of the respective controllers to still ensure stability.  Note that all of these tolerable delays are less than one control cycle period of $T_s=20$ milliseconds.  Also note that this result has not included state projection of the type defined in Equation ~\ref{eq:discreteLinearStateFeedbackSolutionProjection}, and used a rather conservative bound in Equation ~\ref{eq:smallGainConservativeBound}, which looking at the work of \cite{Fridman2008} could perhaps improve.
+
+\section{Results}
+Our analysis of the inverted pendulum system using the small-gain theorem indicates that the model-based state projection used in the controller is necessary for stability.  The maximum delay the `pure' system (without state projection) can tolerate is less than the sampling period.  Of interesting note is that the tolerable delay is directly related to the magnitude of the gains of the linear state feedback.  The experimental controller, with the highest gain, can tolerate the most delay, while the safety controller, with the smallest gain can tolerate the least.
+
+% An example of a floating figure using the graphicx package.
+% Note that \label must occur AFTER (or within) \caption.
+% For figures, \caption should occur after the \includegraphics.
+% Note that IEEEtran v1.7 and later has special internal code that
+% is designed to preserve the operation of \label within \caption
+% even when the captionsoff option is in effect. However, because
+% of issues like this, it may be the safest practice to put all your
+% \label just after \caption rather than within \caption{}.
+%
+% Reminder: the "draftcls" or "draftclsnofoot", not "draft", class
+% option should be used if it is desired that the figures are to be
+% displayed while in draft mode.
+%
+%\begin{figure}[!t]
+%\centering
+%\includegraphics[width=2.5in]{myfigure}
+% where an .eps filename suffix will be assumed under latex, 
+% and a .pdf suffix will be assumed for pdflatex; or what has been declared
+% via \DeclareGraphicsExtensions.
+%\caption{Simulation Results}
+%\label{fig_sim}
+%\end{figure}
+
+% Note that IEEE typically puts floats only at the top, even when this
+% results in a large percentage of a column being occupied by floats.
+
+
+% An example of a double column floating figure using two subfigures.
+% (The subfig.sty package must be loaded for this to work.)
+% The subfigure \label commands are set within each subfloat command, the
+% \label for the overall figure must come after \caption.
+% \hfil must be used as a separator to get equal spacing.
+% The subfigure.sty package works much the same way, except \subfigure is
+% used instead of \subfloat.
+%
+%\begin{figure*}[!t]
+%\centerline{\subfloat[Case I]\includegraphics[width=2.5in]{subfigcase1}%
+%\label{fig_first_case}}
+%\hfil
+%\subfloat[Case II]{\includegraphics[width=2.5in]{subfigcase2}%
+%\label{fig_second_case}}}
+%\caption{Simulation results}
+%\label{fig_sim}
+%\end{figure*}
+%
+% Note that often IEEE papers with subfigures do not employ subfigure
+% captions (using the optional argument to \subfloat), but instead will
+% reference/describe all of them (a), (b), etc., within the main caption.
+
+
+% An example of a floating table. Note that, for IEEE style tables, the 
+% \caption command should come BEFORE the table. Table text will default to
+% \footnotesize as IEEE normally uses this smaller font for tables.
+% The \label must come after \caption as always.
+%
+%\begin{table}[!t]
+%% increase table row spacing, adjust to taste
+%\renewcommand{\arraystretch}{1.3}
+% if using array.sty, it might be a good idea to tweak the value of
+% \extrarowheight as needed to properly center the text within the cells
+%\caption{An Example of a Table}
+%\label{table_example}
+%\centering
+%% Some packages, such as MDW tools, offer better commands for making tables
+%% than the plain LaTeX2e tabular which is used here.
+%\begin{tabular}{|c||c|}
+%\hline
+%One & Two\\
+%\hline
+%Three & Four\\
+%\hline
+%\end{tabular}
+%\end{table}
+
+
+% Note that IEEE does not put floats in the very first column - or typically
+% anywhere on the first page for that matter. Also, in-text middle ("here")
+% positioning is not used. Most IEEE journals/conferences use top floats
+% exclusively. Note that, LaTeX2e, unlike IEEE journals/conferences, places
+% footnotes above bottom floats. This can be corrected via the \fnbelowfloat
+% command of the stfloats package.
+
+
+\section{Future Work}
+There is some remaining work to complete for this case study to provide interesting results.  First, we will use small-gain theorems to find the maximum tolerable delay with state projection, and in addition, compare the subsequent stability regions by solving a linear-matrix inequality (LMI) problem that computes this region.  An offhand guess is that the new maximum tolerable delay will be roughly one sampling period plus the previously computed tolerable delay.  After that, we will look at the small-gain result in the system with minor nonlinearities that can be linearized, such as the $sin(\theta)$ term which for small $\theta$ can be linearized to $\theta$.  The last step is an investigation of the average-dwell time (ADT) of the switching between the safety, baseline, and experimental controllers to see if ADT relates to the small-gain delay and stability regions.
+
+As far as long-term future work, for the verification of the model to most closely match the real system, analyzing both the measurement and actuation errors from quantization and delay (from analog-to-digital conversion and digital-to-analog conversion, respectively) would provide a complete answer of the disturbances introduced by these non-ideal blocks.  There is also another avenue potentially to follow in the area of software verification through the co-stability concept.
+
+\section{Conclusion}
+This case study of the inverted pendulum with a controller following the Simplex architecture displays that recent results in small-gain theorems can be useful in practical systems.  Since the maximum tolerable delay for stability was less than the control period length, it was necessary to project the state forward to the next control cycle to guarantee stability.  As described in the future work section, there is more extension to do on this result for it to be truly interesting, which is what is to be completed before the final deadline.
+
+
+
+% conference papers do not normally have an appendix
+
+
+% use section* for acknowledgement
+%\section*{Acknowledgment}
+
+%The authors would like to thank...
+
+
+
+% trigger a \newpage just before the given reference
+% number - used to balance the columns on the last page
+% adjust value as needed - may need to be readjusted if
+% the document is modified later
+%\IEEEtriggeratref{8}
+% The "triggered" command can be changed if desired:
+%\IEEEtriggercmd{\enlargethispage{-5in}}
+
+% references section
+
+% can use a bibliography generated by BibTeX as a .bbl file
+% BibTeX documentation can be easily obtained at:
+% http://www.ctan.org/tex-archive/biblio/bibtex/contrib/doc/
+% The IEEEtran BibTeX style support page is at:
+% http://www.michaelshell.org/tex/ieeetran/bibtex/
+\bibliographystyle{IEEEtran}
+% argument is your BibTeX string definitions and bibliography database(s)
+\bibliography{IEEEabrv,conference}
+%
+% <OR> manually copy in the resultant .bbl file
+% set second argument of \begin to the number of references
+% (used to reserve space for the reference number labels box)
+%\begin{thebibliography}{1}
+
+%\bibitem{IEEEhowto:kopka}
+%H.~Kopka and P.~W. Daly, \emph{A Guide to \LaTeX}, 3rd~ed.\hskip 1em plus
+%  0.5em minus 0.4em\relax Harlow, England: Addison-Wesley, 1999.
+
+%\end{thebibliography}
+
+
+
+
+% that's all folks
+\end{document}
+
+
