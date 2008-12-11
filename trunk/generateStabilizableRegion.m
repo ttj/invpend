@@ -33,7 +33,7 @@ function [P, xbound1, xbound2] = generateStabilizableRegion(A, B, K, stateBound,
     %cd 'C:\Users\tjohnson\Documents\Research\inverted_pendulum\matlab\SDPT3-4.0-beta'
     %Installmex;
     %startup;
-    %cd old;
+    %cd(old);
 
     addpath(genpath('C:/Program Files (x86)/MATLAB/R2008a/toolbox/yalmip/solvers/yalmip2sdpa'));
 
@@ -98,8 +98,8 @@ function [P, xbound1, xbound2] = generateStabilizableRegion(A, B, K, stateBound,
     ib=1;
     bad=0;
     badPrev=0;
-    xStep=0.001;
-    xDotStep=0.001;
+    xStep=0.01;
+    xDotStep=0.01;
     for (x=xMin:xStep:xMax)
         for (xdot=xDotMin:xDotStep:xDotMax)
             xi=[x 0 xdot 0]';
@@ -134,8 +134,8 @@ function [P, xbound1, xbound2] = generateStabilizableRegion(A, B, K, stateBound,
     ib=1;
     bad=0;
     badPrev=0;
-    xStep=0.001;
-    xDotStep=0.001;
+    xStep=0.01;
+    xDotStep=0.01;
     for (x=thetaMin:xStep:thetaMax)
         for (xdot=-2.75:xDotStep:2.75)
             xi=[0 x 0 xdot]';
