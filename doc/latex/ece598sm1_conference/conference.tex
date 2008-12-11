@@ -497,13 +497,58 @@ Switched controllers are being used frequently for control of complex systems.  
 \section{Introduction and Preliminaries}
 % no \IEEEPARstart
 
-The physical system in Figure ~\ref{fig:pendulumSystem} consists of a DC-motor driven cart and a pendulum attached to the cart, with the control goal of keeping the angle $\theta$ of the pendulum at $0^{\circ}$ measured from the vertical.  There is an additional control goal of moving the cart to a set point $x_s$ along the $x$-axis.  This system is described by the nonlinear form 
+The physical system in Figure ~\ref{fig:pendulumSystem} consists of a DC-motor driven cart and a pendulum attached to the cart, with the control goal of keeping the angle $\theta$ of the pendulum at $0^{\circ}$ measured from the vertical.  There is an additional control goal of moving the cart to a set point $x_s$ along the $x$-axis.
+
+This system is described by the nonlinear form 
 \begin{equation}
 \dot{x}=f(x,u)
 \label{eq:nonlinearSystem}
 \end{equation}
 
+$\dot{X}=f\left(X,u\right)$
 
+Coordinates of Small Portion of Bar with Mass $dm$
+
+$x_{dm}=x+q\sin\left(\theta\right)\Rightarrow\dot{x}_{dm}=\dot{x}+q\cos\left(\theta\right)\dot{\theta}$\\$y_{dm}=q\cos\left(\theta\right)\Rightarrow\dot{y}_{dm}=-q\sin\left(\theta\right)\dot{\theta}$
+
+Kinetic Energy of Small Portion of Bar with Mass
+$dm$\\$K_{dm}=\frac{1}{2}dm\left(\dot{x}_{dm}^2+\dot{y}_{dm}^2\right)$ $=\frac{1}{2}\left(dm\right)\left(\dot{x}^2+2q\cos\left(\theta\right)\dot{x}\dot{\theta}+q^2\dot{\theta}^2\right)$
+Potential Energy of Small Portion of Bar with Mass $dm$\\$P_{dm}=\left(dm\right)g\cos\left(\theta\right)$
+
+Integrating over Bar Length $0$ to $l$
+
+$K=K_c+K_p=\frac{1}{2}\left(M+m\right)\dot{x}^2+\frac{1}{2}ml\cos\left(\theta\right)\dot{x}\dot{\theta}+\frac{1}{6}ml^2\dot{\theta}^2$
+
+$P=\frac{1}{2}mgl\cos\left(\theta\right)$
+
+Lagrangian $L=K-P$
+Euler-Lagrange Equations for Forces on System
+
+$\frac{d}{dt}\frac{\partial L}{\partial\dot{x}}-\frac{\partial L}{\partial x}=F-f_c$ and $\frac{d}{dt}\frac{\partial L}{\partial\dot{\theta}}-\frac{\partial L}{\partial \theta}=-f_p$
+
+Equations of Motion for Plant
+
+$\left(m+M\right)\ddot{x}+\frac{1}{2}ml\cos\left(\theta\right)\ddot{\theta}-\frac{1}{2}ml\sin\left(\theta\right)\dot{\theta}^2=F-f_c$
+
+$\frac{1}{2}ml\mathsf{\theta}\ddot{x}+\frac{1}{3}ml^2\ddot{\theta}-\frac{1}{2}mgl\sin\left(\theta\right)=-f_p$
+
+Full System Model (including Motor Dynamics)
+
+$\ddot{x}=\frac{1}{D}\left[\frac{1}{3}ml^2\left(B_lV_a-f_c-C_1\right)+\frac{1}{2}ml\cos\left(\theta\right)\left(f_p+C_2\right)\right]$
+
+$\ddot{\theta}=\frac{1}{D}\left[-\frac{1}{2}ml\cos\left(\theta\right)\left(B_lV_a-f_c-C_1\right)-\bar{M}\left(f_p+C_2\right)\right]$
+
+$D=\frac{1}{3}\bar{M}ml^2-\frac{1}{4}m^2l^2\cos^2\left(\theta\right)$
+
+$\bar{M}=\frac{m+M+(K_g*J_m)}{r^2}$
+
+$C_1=\bar{B}\dot{x}-\frac{1}{2}ml\sin\left(\theta\right)\dot{\theta}^2$
+
+$C_2=-\frac{1}{2}mgl\sin\left(\theta\right)$
+
+$\bar{B}=\frac{K_gB_m}{r^2}+\frac{K_g^2K_iK_b}{r^2R_a}$
+
+$B_l=\frac{K_gK_i}{rR_a}$
 
 
 However, we work with a linearized model of the form
@@ -536,16 +581,16 @@ However, we work with a linearized model of the form
 	\label{fig:pendulumSystem}
 \end{figure}
 \end{center}
-The linearization is justified after the system description.  There are four state variables, the cart position $x$, cart velocity $\dot{x}$, pendulum angle $\theta$, and pendulum velocity $\dot{\theta}$ (we will now denote $X$ as the state vector and $x$ as the position, seen together in Equation ~\ref{eq:stateMatrix}).  As the system has been implemented, it is subject to physical constraints.  The range of $x$ is between $\left[-0.7,0.7\right]$ meters, $\dot{x}$ is between $\left[-1.0,1.0\right]$ meters/second, $\theta$ is between $\left[-30,30\right]^{\circ}$, and $\dot{\theta}$ is unconstrained.
+The linearization is justified after the system description.  There are four state variables, the cart position $x$, cart velocity $\dot{x}$, pendulum angle $\theta$, and pendulum velocity $\dot{\theta}$ (we will now denote $X$ as the state vector and $x$ as the position, seen together in Equation ~\ref{eq:stateMatrix}).  As the system has been implemented, it is subject to physical constraints.  The range of $x$ is between $\left[-0.7,0.7\right]$ meters (and the set point [$x_s$] range is between $\left[-0.5,0.5\right]$ meters), $\dot{x}$ is between $\left[-1.0,1.0\right]$ meters/second, $\theta$ is between $\left[-30,30\right]^{\circ}$, and $\dot{\theta}$ is unconstrained.  Note that in the real implementation, to account for errors due to linearization and estimation (seen later), the constraints are made more conservative, so $x-x_s$ is between $\left[-0.2,0.2\right]$ meters and $\theta$ is between $\left[-15,15\right]^{\circ}$.
 
 \begin{equation}
 X=\left[ \begin{array}{c} x_1 \\ x_{2} \\ x_3 \\ x_{4} \end{array} \right]=\left[ \begin{array}{cccc} x-x_s \\ \dot{x} \\ \theta \\ \dot{\theta} \end{array} \right]
 \label{eq:stateMatrix}
 \end{equation}
 
-The system is stabilized by linear state feedback of the form $\dot{X}=\left(A+BK\right)X$.  The control input, $u$ is the armature voltage of the DC-motor ($V_a$) and is constrained between $\left[-4.96,4.96\right]$ volts.
+The system is stabilized by linear state feedback of the form $\dot{X}=\left(A+BK\right)X$.  The control input, $u$ is the armature voltage of the DC-motor ($V_a$) and is constrained between $\left[-4.96,4.96\right]$ volts.  Thus, due to this control constraint, it is necessary to look at the system in the form of $\dot{X}=AX+Bu$ at some points of the later analysis.
 
-The primary linearizations to note are that we ignore static friction and take the armature inductance ($L_a=18$ millihenries) to be $0$ henry hence reducing the order of the system by making the armature current state variable $I_a$ a function of $V_a$.  The linearization is justified since the control objective is to stabilize the system in a neighborhood of the vertical equilibrium.  
+The primary linearizations to note are that we ignore static friction (with respect to the cart wheels and ground, and with respect to the pendulum arm and joint) and take the armature inductance ($L_a=18$ millihenries) to be $0$ henry hence reducing the order of the system by making the armature current state variable $I_a$ a function of $V_a$.  Without this simplification, two control states would be necessary.  The linearization is justified since the control objective is to stabilize the system in a neighborhood of the vertical equilibrium, defined in this coordinate system as $\theta=0^{\circ}$.
 
 For the remainder of the paper, we work towards proving stability of the system, first in the classical Lyapunov sense, and then using newer small-gain theorem results to also discuss stability in the delayed system as in \cite{LiberzonQuantDelay2006} and \cite{SanfeliceTeel2005}.  Recent results using small-gain theorems allow us to prove stability of systems with delay by analyzing the stability of a simpler system without delay.  The idea is to treat the error introduced by the delay as a disturbance input with bounded-gain, allowing us to talk about input-to-state stability.  Using this, we can find the maximum delay the system can tolerate.  Despite the linearizations of the system model, the small-gain techniques apply to nonlinear systems and can also be used to analyze stability in the more general system model.
 
@@ -611,29 +656,27 @@ $b_2=\frac{4B_l}{D_l}$, and $b_4=\frac{6B_1}{lD_l}$,
 for $D_l=4\bar{M}-3m$, 
 $\bar{B}=\frac{K_gB_m}{r^2}+\frac{K_g^2K_iK_b}{r^2R_a}$, 
 $B_l=\frac{K_gK_i}{rR_a}$,
-$\bar{M}=\frac{m+M+(K_g*J_m)}{r^2}$, and where  
+$\bar{M}=\frac{m+M+(K_gJ_m)}{r^2}$, and where  
 $g$ is gravity,
-$R_a$ is armature resistance,
-$r$ is driving wheel radius,
-$J_m$ is motor rotor inertia,
-$B_m$ is coefficient of viscous friction,
-$B_{\theta}$ is coefficient of viscous friction,
-$K_i$ is motor torque constant,
-$K_b$ is motor back-e.m.f. constant,
-$K_g$ is gear ratio,
-$M$ is cart mass, 
-$m$ is pendulum mass, and
-$l$ is pendulum length.
-
-The system is then described as 
+$R_a$ is the armature resistance,
+$r$ is the driving wheel radius,
+$J_m$ is the motor rotor inertia,
+$B_m$ is the motor's coefficient of viscous friction,
+$B_{\theta}$ is the pendulum joint's coefficient of viscous friction,
+$K_i$ is the motor torque constant,
+$K_b$ is the motor back-e.m.f. constant,
+$K_g$ is the gear ratio,
+$M$ is the cart mass, 
+$m$ is the pendulum mass, and
+$l$ is the pendulum length.  After applying real values, the $A$ and $B$ matrices used are 
 \begin{equation}
-\dot{X}=\left(A+BK_{\sigma}\right)X
-\label{eq:linearStateFeedbackDiffEq}
-\end{equation} where $K_{\sigma}$ is one of the safety, baseline, or experimental controller gains and the solution to this is 
+A=\left[ \begin{array}{cccc} 0 & 1 & 0 & 0 \\ 0 & -10.95 & -2.75 & 0.0043 \\ 0 & 0 & 0 & 1 \\ 0 & 24.92 & 28.58 & -0.044 \end{array} \right]
+\label{eq:systemMatrixReal}
+\end{equation} and
 \begin{equation}
-X=e^{\left(A+BK_{\sigma}\right)t}X_{0}
-\label{eq:linearStateFeedbackSolution}
-\end{equation} where $X_0$ is an initial condition within the stabilizable region.
+B=\left[ \begin{array}{c} 0 \\ 1.94 \\ 0 \\ -4.44 \end{array} \right]
+\label{eq:inputMatrixReal}
+\end{equation}
 
 \begin{figure}[h!]
 \centering
@@ -648,7 +691,7 @@ X=e^{\left(A+BK_{\sigma}\right)t}X_{0}
 
 \subsection{Sensor Model}
 
-The sensor model can be seen in Figure ~\ref{fig:sensor}, and is an analog-to-digital converter (ADC).  This is where the delay is being introduced to the system in the form of measurement delay, primarily due to filtering.  Between the sensor and the controller there exists a low-pass filter which will introduce a delay between one and two sampling periods ($T_s=20$ milliseconds) long.  There is also nondeterministic delay introduced due to the ADC and controller not being synchronized.  The ADC is utilizing a sample-and-hold, which must be finished before the controller reads the value, but the time difference between when the sample-and-hold finishes and the controller reads the value is unknown, but assumed to be less than one sampling period ($T_s$) long.
+The sensor model can be seen in Figure ~\ref{fig:sensor}, and is an analog-to-digital converter (ADC).  This is where the delay is introduced to the system in the form of measurement delay, primarily due to filtering.  Between the sensor and the controller there exists a low-pass filter which will introduce a delay between one and two sampling periods ($T_s=20$ milliseconds) long.  There is also nondeterministic delay introduced due to the ADC and controller not being perfectly synchronized.  The ADC is utilizing a sample-and-hold, which must be finished before the controller reads the value, but the time difference between when the sample-and-hold finishes and the controller reads the value is unknown, but is assumed to be certainly less than one sampling period ($T_s$) long.  The filter delay will be decreased by model-based state projection described later.
 
 \begin{figure}[h!]
 \centering
@@ -663,8 +706,7 @@ The sensor model can be seen in Figure ~\ref{fig:sensor}, and is an analog-to-di
 \end{figure}
 
 \subsection{Actuator Model}
-
-The actuator model serves little purpose at the present time, but is included for completeness as seen in Figure ~\ref{fig:actuator}, and may be used in the future to model the quantization error and delay introduced by this block.  The actuator is a digital-to-analog converter (DAC), followed by a higher power voltage source to drive the DC motor.
+The actuator model serves little purpose at the present time, but is included for completeness as seen in Figure ~\ref{fig:actuator}, and may be used in the future to model the quantization error and delay introduced by this block.  The actuator is a digital-to-analog converter (DAC), followed by a higher power voltage source to drive the DC motor.  As a note, the delay introduced by the actuator is in general quite small, such as the switching time of toggling a power MOSFET, usually on the order of a few microseconds.  In the case of our control cycle period of $20$ milliseconds, this is negligible.
 
 \begin{figure}[h!]
 \centering
@@ -680,13 +722,21 @@ The actuator model serves little purpose at the present time, but is included fo
 
 \subsection{Controller Model}
 
-The controller is implemented following the Simplex architecture of \cite{ShaACC1998}.  The Simplex architecture is built on the concept of analytic redundancy of \cite{Bodson1994}, in this case, that several controllers implement the same control objective with different performance.  There are three controllers in this architecture, a safety controller that can stabilize the system from the largest set of initial conditions but with poor performance, a baseline controller that has better performance than the safety controller but cannot stabilize from such a wide set of initial conditions, and an experimental controller that has the best performance but the smallest set of stabilizable initial conditions.  The usefulness of such an architecture could be in upgrades of real-time systems that cannot afford downtime even for maintenance, such as critical infrastructure.  In our case, the architecture is used to differentiate between the different sets of recoverable initial conditions and performance.  Each controller uses linear state feedback for stabilization, with the only difference being higher gains in the baseline and experimental controllers to stabilize faster, with the downside that they cannot recover from certain initial conditions that the safety controller can.
+The controller is implemented following the Simplex architecture of \cite{ShaACC1998}.  The Simplex architecture is built on the concept of analytic redundancy of \cite{Bodson1994}, in this case, that several controllers implement the same control objective with different performance.  There are three controllers in this architecture, a safety controller that can stabilize the system from the largest set of initial conditions but with poor performance, a baseline controller that has better performance than the safety controller but cannot stabilize from such a wide set of initial conditions, and an experimental controller that has the best performance but the smallest set of stabilizable initial conditions.  The usefulness of such an architecture could be in upgrades of real-time systems that cannot afford downtime even for maintenance, such as critical infrastructure.  In our case, the architecture is used to differentiate between the different sets of recoverable initial conditions and performance.  Each controller uses linear state feedback for stabilization, with the only difference being higher gains in the baseline and experimental controllers to stabilize faster, with the downside that they cannot recover from certain initial conditions that the safety controller can.  Thus, the system is described as 
+\begin{equation}
+\dot{X}=\left(A+BK_{\sigma}\right)X
+\label{eq:linearStateFeedbackDiffEq}
+\end{equation} where $K_{\sigma}$ is one of the safety, baseline, or experimental controller gains and the solution to this is 
+\begin{equation}
+X=e^{\left(A+BK_{\sigma}\right)t}X_{0}
+\label{eq:linearStateFeedbackSolution}
+\end{equation} where $X_0$ is an initial condition within the stabilizable region.
 
 Note that, as only $\theta$ and $x$ are measurable, $\dot{\theta}$ and $\dot{x}$ are constructed by the first-order approximations $\dot{\theta}(t)=\frac{[\theta(t)-\theta(t-mT_s)]}{mT_s}$ and $\dot{x}(t)=\frac{[x(t)-x(t-mT_s)]}{mT_s}$, where $m$ is an integer greater than one (chosen as $2$ by experimentation).  In the safety, baseline, and experimental controller automata, this first-order approximation is accomplished by storing a buffer of previous sampled values.  It is more logical to do this computation here than in the sensor automaton as this calculation is done in the controllers of the implemented system.
 
 \subsubsection{Discretization}
 
-As the system is implemented in embedded software, the system model needs to be discretized.  In continuous-time the system solution is of Equation ~\ref{eq:linearStateFeedbackSolution}, the discrete solution is of the form 
+As the system is implemented in embedded software, the system model needs to be discretized.  In continuous-time the system solution is of Equation ~\ref{eq:linearStateFeedbackSolution}, while the discrete solution is of the form 
 \begin{equation}
 X\left(t_0\right)=FX\left(t_0-T_s\right)+Gu\left(t_0-T_s\right)
 \label{eq:discreteSolution}
@@ -733,6 +783,9 @@ This allows easy state projection of the form in Equation ~\ref{eq:discreteLinea
 
 This projection is done to reduce the error introduced from the various delays in the system, primarily the digital implementation delay (that we are measuring the present state at $t_0$ and controlling the next state at $t_0+T_s$) and the aforementioned filter delay.
 
+\subsubsection{Feasible and Stabilizable Regions}
+
+
 \subsubsection{Safety, Baseline, and Experimental Controllers}
 
 \begin{figure}[h!]
@@ -747,7 +800,7 @@ This projection is done to reduce the error introduced from the various delays i
   \label{fig:safetyController}
 \end{figure}
 
-The baseline and experimental controllers are of the exact same form as the safety controller in ~\ref{fig:safetyController}, except that they use different gain matrices, $K_{bc}$ for the baseline controller, and $K_{ec}$ for the experimental controller.  We take the gains as follows to maximize the stability region for the safety controller, and to improve the performance for the baseline and experimental controllers
+The safety, baseline, and experimental controllers are of the exact same form as the sigma controller in Figure ~\ref{fig:safetyController}, except to replace $\sigma\in\left[sc,bc,ec\right]$, noting that they use different gain matrices, $K_{sc}$ for the safety controller, $K_{bc}$ for the baseline controller, and $K_{ec}$ for the experimental controller.  We take the gains as follows to maximize the stability region for the safety controller, and to improve the performance for the baseline and experimental controllers.  In this form of control, increasing the gains will cause faster convergence with larger oscillations.  These increased oscillations for the baseline and experimental controllers could take the system outside of the largest stabilizable region, hence, their stabilizable regions must be subsets of the largest stabilizable region, each decreased by a factor to ensure that the largest oscillations do not take the system outside of the largest stabilizable region.
 
 \begin{equation}
 K_{sc}=\left[\begin{array}{c}6.0\\ 20.0\\ 60.0\\ 16.0\end{array}\right]
@@ -786,7 +839,7 @@ K_{ec}=\left[\begin{array}{c}10.0\\ 36.0\\ 140.0\\ 14.0\end{array}\right]
 %\end{figure}
 
 \subsubsection{Switching Controller}
-The switching controller description is to be written, and it should be noted that the automaton of the switching controller in Figure ~\ref{fig:switchingController} is not completely accurate at this time.
+The switching controller determines which of the analytically redundant controllers to use for a given control cycle, based primarily on which stabilizable region the current and future states (determined by model-based state projection) of the system are within.  The switching controller automaton can be seen in Figure ~\ref{fig:switchingController}.
 
 \begin{figure}[htp]
 \centering
@@ -814,7 +867,7 @@ The switching controller description is to be written, and it should be noted th
 
 \section{Stability Analysis}
 
-The stability analysis follows from classical Lyapunov stability (see, e.g. \cite{Chen1999} or \cite{Khalil2002}) and extends to the small-gain stability of systems with disturbances, such as in \cite{LiberzonQuantDelay2006}.
+The stability analysis follows from classical Lyapunov stability (see, e.g. \cite{Chen1999} or \cite{Khalil2002}), briefly introduces input-to-state stability (ISS) of \cite{TOCITE}, and extends to the small-gain stability of systems with disturbances, such as in \cite{LiberzonQuantDelay2006}.
 
 \subsection{Lyapunov Analysis}
 
@@ -929,7 +982,17 @@ then we can define the maximum tolerable delay as
 Following this definition for $\tau$, we compute $\tau_{\sigma}$ for each of the controllers, yielding $\tau_{sc}=9$, $\tau_{bc}=12.3$, and $\tau_{ec}=18.6$ milliseconds of delay is tolerable for each of the respective controllers to still ensure stability.  Note that all of these tolerable delays are less than one control cycle period of $T_s=20$ milliseconds.  Also note that this result has not included state projection of the type defined in Equation ~\ref{eq:discreteLinearStateFeedbackSolutionProjection}, and used a rather conservative bound in Equation ~\ref{eq:smallGainConservativeBound}, which looking at the work of \cite{Fridman2008} could perhaps improve.
 
 \section{Results}
-Our analysis of the inverted pendulum system using the small-gain theorem indicates that the model-based state projection used in the controller is necessary for stability.  The maximum delay the `pure' system (without state projection) can tolerate is less than the sampling period.  Of interesting note is that the tolerable delay is directly related to the magnitude of the gains of the linear state feedback.  The experimental controller, with the highest gain, can tolerate the most delay, while the safety controller, with the smallest gain can tolerate the least.
+Our analysis of the inverted pendulum system using the small-gain theorem indicates that the model-based state projection used in the controller is necessary for stability.  The maximum delay the `pure' system (without state projection) can tolerate is less than the sampling period.  Tolerable delay is inversely related to gain, that is, it is directly related to the size of the stabilizable region.  Given that the size of the stabilizable region is directly related to magnitude of the stability margin in EQUATIONX.  This makes intuitive sense, and shows that because the safety controller has the largest stabilizable region, it can thus tolerate the largest disturbances (or delays).
+
+1. State projection and small gains
+
+Perfect: fine
+Linearized velocity? use observer?
+
+There is some remaining work to complete for this case study to provide interesting results.  First, we will use small-gain theorems to find the maximum tolerable delay with state projection, and in addition, compare the subsequent stability regions by solving a linear-matrix inequality (LMI) problem that computes this region.  An offhand guess is that the new maximum tolerable delay will be roughly one sampling period plus the previously computed tolerable delay.
+
+The plot in Figure XXX shows the system stabilizing from an initial condition of XXX, utilizing switching significantly faster than what would most likely be seen in the real implementation (at every $T_s$).
+
 
 % An example of a floating figure using the graphicx package.
 % Note that \label must occur AFTER (or within) \caption.
@@ -1015,12 +1078,16 @@ Our analysis of the inverted pendulum system using the small-gain theorem indica
 
 
 \section{Future Work}
-There is some remaining work to complete for this case study to provide interesting results.  First, we will use small-gain theorems to find the maximum tolerable delay with state projection, and in addition, compare the subsequent stability regions by solving a linear-matrix inequality (LMI) problem that computes this region.  An offhand guess is that the new maximum tolerable delay will be roughly one sampling period plus the previously computed tolerable delay.  After that, we will look at the small-gain result in the system with minor nonlinearities that can be linearized, such as the $sin(\theta)$ term which for small $\theta$ can be linearized to $\theta$.  The last step is an investigation of the average-dwell time (ADT) of the switching between the safety, baseline, and experimental controllers to see if ADT relates to the small-gain delay and stability regions.
+This work began with the desire to prove stability of the Simplex architecture switching controller in this case study.  However, we have not quite yet proved this, although progress has been made.  We theorize that the tolerable delay of the entire system is the minimum tolerable delay across all controllers, so that $\tau_{\sigma}=\tau_{ec}$.
+
+We have begun looking at the small-gain result in the system with minor nonlinearities that can be linearized, such as the $sin(\theta)$ term which for small $\theta$ can be linearized to $\theta$.  MORE
+
+The last step is an investigation of the average-dwell time (ADT) of the switching between the safety, baseline, and experimental controllers to see if ADT relates to the small-gain delay and stability regions.
 
 As far as long-term future work, for the verification of the model to most closely match the real system, analyzing both the measurement and actuation errors from quantization and delay (from analog-to-digital conversion and digital-to-analog conversion, respectively) would provide a complete answer of the disturbances introduced by these non-ideal blocks.  There is also another avenue potentially to follow in the area of software verification through the co-stability concept.
 
 \section{Conclusion}
-This case study of the inverted pendulum with a controller following the Simplex architecture displays that recent results in small-gain theorems can be useful in practical systems.  Since the maximum tolerable delay for stability was less than the control period length, it was necessary to project the state forward to the next control cycle to guarantee stability.  As described in the future work section, there is more extension to do on this result for it to be truly interesting, which is what is to be completed before the final deadline.
+This case study of the inverted pendulum with a controller following the Simplex architecture displays that recent results in small-gain theorems can be useful in practical systems.  Since the maximum tolerable delay for stability was less than the control period length, it was necessary to project the state forward to the next control cycle to guarantee stability.
 
 
 
@@ -1028,10 +1095,8 @@ This case study of the inverted pendulum with a controller following the Simplex
 
 
 % use section* for acknowledgement
-%\section*{Acknowledgment}
-
-%The authors would like to thank...
-
+\section*{Acknowledgment}
+The author would like to thank Sayan Mitra for helpful commentary and feedback throughout the work, Qixin Wang for guidance in working with the real inverted pendulum system, Lui Sha for revealing details not seen in his earlier work, and Daniel Liberzon for providing a clear description of small-gain theorems.
 
 
 % trigger a \newpage just before the given reference
