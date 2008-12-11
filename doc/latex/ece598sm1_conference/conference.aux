@@ -20,33 +20,37 @@
 \newlabel{eq:linearSystem}{{2}{1}{Introduction and Preliminaries\relax }{equation.1.2}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Inverted Pendulum System}}{1}{figure.1}}
 \newlabel{fig:pendulumSystem}{{1}{1}{Inverted Pendulum System\relax }{figure.1}{}}
+\newlabel{eq:stateMatrix}{{3}{1}{Introduction and Preliminaries\relax }{equation.1.3}{}}
 \citation{LiberzonQuantDelay2006}
 \citation{SanfeliceTeel2005}
 \citation{lynchSV2003}
 \citation{MitraPhd2007}
-\newlabel{eq:stateMatrix}{{3}{2}{Introduction and Preliminaries\relax }{equation.1.3}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {II}System and Controller Models}{2}{section.2}}
 \@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces System Model}}{2}{figure.2}}
 \newlabel{fig:systemModel}{{2}{2}{System Model\relax }{figure.2}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {II-A}}Plant Model}{2}{subsection.2.1}}
 \newlabel{eq:systemMatrix}{{4}{2}{Plant Model\relax }{equation.2.4}{}}
 \newlabel{eq:inputMatrix}{{5}{2}{Plant Model\relax }{equation.2.5}{}}
+\newlabel{eq:systemMatrixReal}{{6}{2}{Plant Model\relax }{equation.2.6}{}}
+\newlabel{eq:inputMatrixReal}{{7}{2}{Plant Model\relax }{equation.2.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {II-B}}Sensor Model}{2}{subsection.2.2}}
 \citation{ShaACC1998}
 \citation{Bodson1994}
-\newlabel{eq:systemMatrixReal}{{6}{3}{Plant Model\relax }{equation.2.6}{}}
-\newlabel{eq:inputMatrixReal}{{7}{3}{Plant Model\relax }{equation.2.7}{}}
 \@writefile{lol}{\contentsline {lstlisting}{Plant.hioa}{3}{lstlisting.-1}}
 \@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Linearized Plant Model}}{3}{figure.3}}
 \newlabel{fig:plant}{{3}{3}{Linearized Plant Model\relax }{figure.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {II-B}}Sensor Model}{3}{subsection.2.2}}
 \@writefile{lol}{\contentsline {lstlisting}{Sensor.hioa}{3}{lstlisting.-2}}
 \@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Sensor}}{3}{figure.4}}
 \newlabel{fig:sensor}{{4}{3}{Sensor\relax }{figure.4}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {II-C}}Actuator Model}{3}{subsection.2.3}}
+\@writefile{lol}{\contentsline {lstlisting}{Actuator.hioa}{3}{lstlisting.-3}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Actuator}}{3}{figure.5}}
+\newlabel{fig:actuator}{{5}{3}{Actuator\relax }{figure.5}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {II-D}}Controller Model}{3}{subsection.2.4}}
-\@writefile{lol}{\contentsline {lstlisting}{Actuator.hioa}{4}{lstlisting.-3}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Actuator}}{4}{figure.5}}
-\newlabel{fig:actuator}{{5}{4}{Actuator\relax }{figure.5}{}}
+\citation{Boyd94}
+\citation{Vand98}
+\citation{Yalmip}
+\citation{Sdpt3}
 \newlabel{eq:linearStateFeedbackDiffEq}{{8}{4}{Controller Model\relax }{equation.2.8}{}}
 \newlabel{eq:linearStateFeedbackSolution}{{9}{4}{Controller Model\relax }{equation.2.9}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {\unhbox \voidb@x \hbox {II-D}1}Discretization}{4}{subsubsection.2.4.1}}
@@ -57,39 +61,40 @@
 \newlabel{eq:discreteLinearStateFeedbackSolution}{{14}{4}{Discretization\relax }{equation.2.14}{}}
 \newlabel{eq:discreteLinearStateFeedbackSolutionProjection}{{15}{4}{Discretization\relax }{equation.2.15}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {\unhbox \voidb@x \hbox {II-D}2}Feasible and Stabilizable Regions}{4}{subsubsection.2.4.2}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {\unhbox \voidb@x \hbox {II-D}3}Safety, Baseline, and Experimental Controllers}{4}{figure.6}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Stabilizable Region for $x$ and $\mathaccentV {dot}05F{x}$}}{4}{figure.6}}
+\newlabel{fig:stabRegionX}{{6}{4}{Stabilizable Region for $x$ and $\dot {x}$\relax }{figure.6}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Stabilizable Region for $\theta $ and $\mathaccentV {dot}05F{\theta }$}}{5}{figure.7}}
+\newlabel{fig:stabRegionTheta}{{7}{5}{Stabilizable Region for $\theta $ and $\dot {\theta }$\relax }{figure.7}{}}
+\@writefile{lol}{\contentsline {lstlisting}{SafetyController.hioa}{5}{lstlisting.-4}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Safety Controller}}{5}{figure.8}}
+\newlabel{fig:safetyController}{{8}{5}{Safety Controller\relax }{figure.8}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\unhbox \voidb@x \hbox {II-D}3}Safety, Baseline, and Experimental Controllers}{5}{figure.8}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\unhbox \voidb@x \hbox {II-D}4}Switching Controller}{5}{subsubsection.2.4.4}}
 \citation{Chen1999}
 \citation{Khalil2002}
-\citation{TOCITE}
 \citation{LiberzonQuantDelay2006}
-\@writefile{lol}{\contentsline {lstlisting}{SafetyController.hioa}{5}{lstlisting.-4}}
-\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Safety Controller}}{5}{figure.6}}
-\newlabel{fig:safetyController}{{6}{5}{Safety Controller\relax }{figure.6}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {\unhbox \voidb@x \hbox {II-D}4}Switching Controller}{5}{subsubsection.2.4.4}}
-\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Stabilizable Region for $x$ and $\mathaccentV {dot}05F{x}$}}{5}{figure.7}}
-\newlabel{fig:stabRegionX}{{7}{5}{Stabilizable Region for $x$ and $\dot {x}$\relax }{figure.7}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Stabilizable Region for $\theta $ and $\mathaccentV {dot}05F{\theta }$}}{5}{figure.8}}
-\newlabel{fig:stabRegionTheta}{{8}{5}{Stabilizable Region for $\theta $ and $\dot {\theta }$\relax }{figure.8}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {III}Stability Analysis}{5}{section.3}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {III-A}}Lyapunov Analysis}{5}{subsection.3.1}}
-\newlabel{eq:lyapunovP}{{19}{5}{Lyapunov Analysis\relax }{equation.3.19}{}}
 \@writefile{lol}{\contentsline {lstlisting}{SwitchingController.hioa}{6}{lstlisting.-5}}
 \@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Switching Controller}}{6}{figure.9}}
 \newlabel{fig:switchingController}{{9}{6}{Switching Controller\relax }{figure.9}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {III}Stability Analysis}{6}{section.3}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {III-A}}Lyapunov Analysis}{6}{subsection.3.1}}
+\newlabel{eq:lyapunovP}{{19}{6}{Lyapunov Analysis\relax }{equation.3.19}{}}
 \newlabel{eq:lyapunovV}{{20}{6}{Lyapunov Analysis\relax }{equation.3.20}{}}
 \newlabel{eq:lyapSafeP}{{21}{6}{Lyapunov Analysis\relax }{equation.3.21}{}}
 \newlabel{eq:lyapBaseP}{{22}{6}{Lyapunov Analysis\relax }{equation.3.22}{}}
 \newlabel{eq:lyapExpP}{{23}{6}{Lyapunov Analysis\relax }{equation.3.23}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Lyapunov Function for Safety Controller}}{6}{figure.10}}
-\newlabel{fig:lyapSafe}{{10}{6}{Lyapunov Function for Safety Controller\relax }{figure.10}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {III-B}}Small-Gain Theorems}{6}{subsection.3.2}}
 \citation{Fridman2008}
+\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Lyapunov Function for Safety Controller}}{7}{figure.10}}
+\newlabel{fig:lyapSafe}{{10}{7}{Lyapunov Function for Safety Controller\relax }{figure.10}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces Lyapunov Function for Baseline Controller}}{7}{figure.11}}
 \newlabel{fig:lyapBase}{{11}{7}{Lyapunov Function for Baseline Controller\relax }{figure.11}{}}
+\newlabel{eq:smallGainConservativeBound}{{28}{7}{Small-Gain Theorems\relax }{equation.3.28}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {12}{\ignorespaces Lyapunov Function for Experimental Controller}}{7}{figure.12}}
 \newlabel{fig:lyapExp}{{12}{7}{Lyapunov Function for Experimental Controller\relax }{figure.12}{}}
-\newlabel{eq:smallGainConservativeBound}{{28}{7}{Small-Gain Theorems\relax }{equation.3.28}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {IV}Results}{7}{section.4}}
+\citation{LiberzonSSC2003}
+\@writefile{toc}{\contentsline {section}{\numberline {IV}Results}{8}{section.4}}
+\@writefile{toc}{\contentsline {section}{\numberline {V}Future Work}{8}{section.5}}
 \bibstyle{IEEEtran}
 \bibdata{IEEEabrv,conference}
 \bibcite{ShaACC1998}{1}
@@ -99,9 +104,12 @@
 \bibcite{lynchSV2003}{5}
 \bibcite{MitraPhd2007}{6}
 \bibcite{Bodson1994}{7}
-\bibcite{Chen1999}{8}
-\bibcite{Khalil2002}{9}
-\bibcite{Fridman2008}{10}
-\@writefile{toc}{\contentsline {section}{\numberline {V}Future Work}{8}{section.5}}
-\@writefile{toc}{\contentsline {section}{\numberline {VI}Conclusion}{8}{section.6}}
-\@writefile{toc}{\contentsline {section}{References}{8}{section*.2}}
+\bibcite{Boyd94}{8}
+\bibcite{Vand98}{9}
+\bibcite{Yalmip}{10}
+\bibcite{Sdpt3}{11}
+\bibcite{Chen1999}{12}
+\bibcite{Khalil2002}{13}
+\bibcite{Fridman2008}{14}
+\@writefile{toc}{\contentsline {section}{\numberline {VI}Conclusion}{9}{section.6}}
+\@writefile{toc}{\contentsline {section}{References}{9}{section*.2}}

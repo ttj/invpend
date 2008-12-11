@@ -6,7 +6,7 @@
 \BOOKMARK [2][-]{subsection.2.4}{Controller Model}{section.2}
 \BOOKMARK [3][-]{subsubsection.2.4.1}{Discretization}{subsection.2.4}
 \BOOKMARK [3][-]{subsubsection.2.4.2}{Feasible and Stabilizable Regions}{subsection.2.4}
-\BOOKMARK [3][-]{figure.6}{Safety, Baseline, and Experimental Controllers}{subsection.2.4}
+\BOOKMARK [3][-]{figure.8}{Safety, Baseline, and Experimental Controllers}{subsection.2.4}
 \BOOKMARK [3][-]{subsubsection.2.4.4}{Switching Controller}{subsection.2.4}
 \BOOKMARK [1][-]{section.3}{Stability Analysis}{}
 \BOOKMARK [2][-]{subsection.3.1}{Lyapunov Analysis}{section.3}

@@ -505,52 +505,6 @@ This system is described by the nonlinear form
 \label{eq:nonlinearSystem}
 \end{equation}
 
-$\dot{X}=f\left(X,u\right)$
-
-Coordinates of Small Portion of Bar with Mass $dm$
-
-$x_{dm}=x+q\sin\left(\theta\right)\Rightarrow\dot{x}_{dm}=\dot{x}+q\cos\left(\theta\right)\dot{\theta}$\\$y_{dm}=q\cos\left(\theta\right)\Rightarrow\dot{y}_{dm}=-q\sin\left(\theta\right)\dot{\theta}$
-
-Kinetic Energy of Small Portion of Bar with Mass
-$dm$\\$K_{dm}=\frac{1}{2}dm\left(\dot{x}_{dm}^2+\dot{y}_{dm}^2\right)$ $=\frac{1}{2}\left(dm\right)\left(\dot{x}^2+2q\cos\left(\theta\right)\dot{x}\dot{\theta}+q^2\dot{\theta}^2\right)$
-Potential Energy of Small Portion of Bar with Mass $dm$\\$P_{dm}=\left(dm\right)g\cos\left(\theta\right)$
-
-Integrating over Bar Length $0$ to $l$
-
-$K=K_c+K_p=\frac{1}{2}\left(M+m\right)\dot{x}^2+\frac{1}{2}ml\cos\left(\theta\right)\dot{x}\dot{\theta}+\frac{1}{6}ml^2\dot{\theta}^2$
-
-$P=\frac{1}{2}mgl\cos\left(\theta\right)$
-
-Lagrangian $L=K-P$
-Euler-Lagrange Equations for Forces on System
-
-$\frac{d}{dt}\frac{\partial L}{\partial\dot{x}}-\frac{\partial L}{\partial x}=F-f_c$ and $\frac{d}{dt}\frac{\partial L}{\partial\dot{\theta}}-\frac{\partial L}{\partial \theta}=-f_p$
-
-Equations of Motion for Plant
-
-$\left(m+M\right)\ddot{x}+\frac{1}{2}ml\cos\left(\theta\right)\ddot{\theta}-\frac{1}{2}ml\sin\left(\theta\right)\dot{\theta}^2=F-f_c$
-
-$\frac{1}{2}ml\mathsf{\theta}\ddot{x}+\frac{1}{3}ml^2\ddot{\theta}-\frac{1}{2}mgl\sin\left(\theta\right)=-f_p$
-
-Full System Model (including Motor Dynamics)
-
-$\ddot{x}=\frac{1}{D}\left[\frac{1}{3}ml^2\left(B_lV_a-f_c-C_1\right)+\frac{1}{2}ml\cos\left(\theta\right)\left(f_p+C_2\right)\right]$
-
-$\ddot{\theta}=\frac{1}{D}\left[-\frac{1}{2}ml\cos\left(\theta\right)\left(B_lV_a-f_c-C_1\right)-\bar{M}\left(f_p+C_2\right)\right]$
-
-$D=\frac{1}{3}\bar{M}ml^2-\frac{1}{4}m^2l^2\cos^2\left(\theta\right)$
-
-$\bar{M}=\frac{m+M+(K_g*J_m)}{r^2}$
-
-$C_1=\bar{B}\dot{x}-\frac{1}{2}ml\sin\left(\theta\right)\dot{\theta}^2$
-
-$C_2=-\frac{1}{2}mgl\sin\left(\theta\right)$
-
-$\bar{B}=\frac{K_gB_m}{r^2}+\frac{K_g^2K_iK_b}{r^2R_a}$
-
-$B_l=\frac{K_gK_i}{rR_a}$
-
-
 However, we work with a linearized model of the form
 \begin{equation}
 \dot{x}=Ax+Bu
@@ -785,6 +739,22 @@ This projection is done to reduce the error introduced from the various delays i
 
 \subsubsection{Feasible and Stabilizable Regions}
 
+The feasible region is the region defined by the aforementioned state constraints, so looking at only the $X$ and $\dot{X}$ constraints would produce a rectangle.  While $\dot{\theta}$ is unconstrained, since $V_a$ is in fact constrained, a maximal value of $\dot{\theta}$ is generated.  The stabilizable region is the region within which a given controller can stabilize the system.  This region is determined by solving a linear matrix inequality (LMI) (see, e.g. \cite{Boyd94}) of the determinant maximization form proposed by Vandenberghe in \cite{Vand98}.  This paper utilizes the work of \cite{Yalmip} and \cite{Sdpt3} to solve the LMI and generate the stabilizable region for each controller.  The stabilizable region is inversely related to the magnitude of the gains, so larger gains produce a smaller stabilizable region.  Thus, as the safety controller's stabilizable region corresponds to the largest stabilizable region, all other controllers will have stabilizable regions that are subsets of the safety controller's region.  This makes intuitive sense, as larger gains will create larger oscillations in the solution, potentially causing the system to go outside of even the feasible region.
+
+The stabilizable regions for $x$ and $\dot{x}$ of each controller are seen in Figure ~\ref{fig:stabRegionX} and the regions for $\theta$ and $\dot{\theta}$ of each controller are in Figure ~\ref{fig:stabRegionTheta}.  The switching controller described later utilizes these regions to determine which gains to use.  Solving the LMI problem gives a matrix $P_{\sigma}$ for each controller, where checking $X^TP_{\sigma}X<1$ shows which stabilizable region (for $\sigma\in\left[sc,bc,ec\right]$) the states are within currently.
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=250pt]{stabRegionX}
+\caption{Stabilizable Region for $x$ and $\dot{x}$}\label{fig:stabRegionX}
+\end{figure}
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=250pt]{stabRegionTheta}
+\caption{Stabilizable Region for $\theta$ and $\dot{\theta}$}\label{fig:stabRegionTheta}
+\end{figure}
+
 
 \subsubsection{Safety, Baseline, and Experimental Controllers}
 
@@ -812,46 +782,11 @@ K_{bc}=\left[\begin{array}{c}8.0\\ 32.0\\ 120.0\\ 12.0\end{array}\right]
 K_{ec}=\left[\begin{array}{c}10.0\\ 36.0\\ 140.0\\ 14.0\end{array}\right]
 \end{equation}
 
-%\subsubsection{Baseline Controller}
-%
-%\begin{figure}[h!]
-%\centering
-%  \hrule
-%%  \two{.47}{.47}
-%  {\lstinputlisting[language=ioa,lastline=14]{BaselineController.hioa}}
-%  {\lstinputlisting[language=ioa,firstline=15]{BaselineController.hioa}}
-%  \hrule
-%  \caption{Baseline Controller}
-%  \label{fig:baselineController}
-%\end{figure}
-%
-%\subsubsection{Experimental Controller}
-%
-%\begin{figure}[!h]
-%\centering
-%  \hrule
-%%  \two{.47}{.47}
-%  {\lstinputlisting[language=ioa,lastline=14]{ExperimentalController.hioa}}
-%  {\lstinputlisting[language=ioa,firstline=15]{ExperimentalController.hioa}}
-%  \hrule
-%  \caption{Experimental Controller}
-%  \label{fig:experimentalController}
-%\end{figure}
 
 \subsubsection{Switching Controller}
-The switching controller determines which of the analytically redundant controllers to use for a given control cycle, based primarily on which stabilizable region the current and future states (determined by model-based state projection) of the system are within.  The switching controller automaton can be seen in Figure ~\ref{fig:switchingController}.
 
-\begin{figure}[htp]
-\centering
-\includegraphics[width=250pt]{stabRegionX}
-\caption{Stabilizable Region for $x$ and $\dot{x}$}\label{fig:stabRegionX}
-\end{figure}
-
-\begin{figure}[htp]
-\centering
-\includegraphics[width=250pt]{stabRegionTheta}
-\caption{Stabilizable Region for $\theta$ and $\dot{\theta}$}\label{fig:stabRegionTheta}
-\end{figure}
+The switching controller determines which of the analytically redundant controllers to use for a given control cycle, based primarily on which stabilizable region the current and future states (determined by model-based state projection) of the system are within.  If the state measurements show the system to be within only the safety controller's stabilizable region, then the safety controller gains will be used.  Similarly, if the state is in the experimental stabilizable region, and will remain there for the next control cycle, the switching controller will utilize the experimental gains.  The specific controller to be used must also be ready.  The switching controller automaton can be seen in Figure ~\ref{fig:switchingController}.
+After the switching controller receives the desired control value from one of the analytically redundant controllers, a corresponding ready flag is set.  Next, when the deadline is reached for the controller to output the new value to the motor, at $T_s$, the choice of controller is made.  While in general there is a matrix inequality to solve here, showing that $X^TPX<1$, it suffices to check that the control is within its constraints, as this model is linear, for an unconstrained control, it could stabilize the system from any initial condition in any amount of time.  Checking the matrix inequality could also be done easily (as one just has to check the norms of each state variable summed together are less than one), but this method removes unnecessary clutter from the automaton model.
 
 \begin{figure}[h!]
 \centering
@@ -867,7 +802,7 @@ The switching controller determines which of the analytically redundant controll
 
 \section{Stability Analysis}
 
-The stability analysis follows from classical Lyapunov stability (see, e.g. \cite{Chen1999} or \cite{Khalil2002}), briefly introduces input-to-state stability (ISS) of \cite{TOCITE}, and extends to the small-gain stability of systems with disturbances, such as in \cite{LiberzonQuantDelay2006}.
+The stability analysis follows from classical Lyapunov stability (see, e.g. \cite{Chen1999} or \cite{Khalil2002}), and extends to the small-gain stability of systems with disturbances, such as in \cite{LiberzonQuantDelay2006}.
 
 \subsection{Lyapunov Analysis}
 
@@ -876,10 +811,7 @@ From classical Lyapunov stability, we know that for linear time-invariant system
 \begin{equation}
 PA+A^TP+Q=0
 \label{eq:lyapunovP}
-\end{equation}
-
-then the system is asymptotically stable and a function $V$ defined by Equation ~\ref{eq:lyapunovV} is a Lyapunov function.
-
+\end{equation} then the system is asymptotically stable and a function $V$ defined by Equation ~\ref{eq:lyapunovV} is a Lyapunov function.
 \begin{equation}
 V=X^TPX
 \label{eq:lyapunovV}
@@ -1080,21 +1012,61 @@ The plot in Figure XXX shows the system stabilizing from an initial condition of
 \section{Future Work}
 This work began with the desire to prove stability of the Simplex architecture switching controller in this case study.  However, we have not quite yet proved this, although progress has been made.  We theorize that the tolerable delay of the entire system is the minimum tolerable delay across all controllers, so that $\tau_{\sigma}=\tau_{ec}$.
 
-We have begun looking at the small-gain result in the system with minor nonlinearities that can be linearized, such as the $sin(\theta)$ term which for small $\theta$ can be linearized to $\theta$.  MORE
+We have begun looking at the small-gain result in the system with minor nonlinearities that can be linearized, such as the $sin(\theta)$ term which for small $\theta$ can be linearized to $\theta$.  The derivation starts from the energy model of the system as follows.
 
-The last step is an investigation of the average-dwell time (ADT) of the switching between the safety, baseline, and experimental controllers to see if ADT relates to the small-gain delay and stability regions.
+$\dot{X}=f\left(X,u\right)$
+
+Coordinates of Small Portion of Bar with Mass $dm$
+
+$x_{dm}=x+q\sin\left(\theta\right)\Rightarrow\dot{x}_{dm}=\dot{x}+q\cos\left(\theta\right)\dot{\theta}$\\$y_{dm}=q\cos\left(\theta\right)\Rightarrow\dot{y}_{dm}=-q\sin\left(\theta\right)\dot{\theta}$
+
+Kinetic Energy of Small Portion of Bar with Mass
+$dm$\\$K_{dm}=\frac{1}{2}dm\left(\dot{x}_{dm}^2+\dot{y}_{dm}^2\right)$ $=\frac{1}{2}\left(dm\right)\left(\dot{x}^2+2q\cos\left(\theta\right)\dot{x}\dot{\theta}+q^2\dot{\theta}^2\right)$
+Potential Energy of Small Portion of Bar with Mass $dm$\\$P_{dm}=\left(dm\right)g\cos\left(\theta\right)$
+
+Integrating over Bar Length $0$ to $l$
+
+$K=K_c+K_p=\frac{1}{2}\left(M+m\right)\dot{x}^2+\frac{1}{2}ml\cos\left(\theta\right)\dot{x}\dot{\theta}+\frac{1}{6}ml^2\dot{\theta}^2$
+
+$P=\frac{1}{2}mgl\cos\left(\theta\right)$
+
+Lagrangian $L=K-P$
+Euler-Lagrange Equations for Forces on System
+
+$\frac{d}{dt}\frac{\partial L}{\partial\dot{x}}-\frac{\partial L}{\partial x}=F-f_c$ and $\frac{d}{dt}\frac{\partial L}{\partial\dot{\theta}}-\frac{\partial L}{\partial \theta}=-f_p$
+
+Equations of Motion for Plant
+
+$\left(m+M\right)\ddot{x}+\frac{1}{2}ml\cos\left(\theta\right)\ddot{\theta}-\frac{1}{2}ml\sin\left(\theta\right)\dot{\theta}^2=F-f_c$
+
+$\frac{1}{2}ml\mathsf{\theta}\ddot{x}+\frac{1}{3}ml^2\ddot{\theta}-\frac{1}{2}mgl\sin\left(\theta\right)=-f_p$
+
+Full System Model (including Motor Dynamics)
+
+$\ddot{x}=\frac{1}{D}\left[\frac{1}{3}ml^2\left(B_lV_a-f_c-C_1\right)+\frac{1}{2}ml\cos\left(\theta\right)\left(f_p+C_2\right)\right]$
+
+$\ddot{\theta}=\frac{1}{D}\left[-\frac{1}{2}ml\cos\left(\theta\right)\left(B_lV_a-f_c-C_1\right)-\bar{M}\left(f_p+C_2\right)\right]$
+
+$D=\frac{1}{3}\bar{M}ml^2-\frac{1}{4}m^2l^2\cos^2\left(\theta\right)$
+
+$\bar{M}=\frac{m+M+(K_g*J_m)}{r^2}$
+
+$C_1=\bar{B}\dot{x}-\frac{1}{2}ml\sin\left(\theta\right)\dot{\theta}^2$
+
+$C_2=-\frac{1}{2}mgl\sin\left(\theta\right)$
+
+$\bar{B}=\frac{K_gB_m}{r^2}+\frac{K_g^2K_iK_b}{r^2R_a}$
+
+$B_l=\frac{K_gK_i}{rR_a}$
+
+Working with the linear model though, there seem to be several areas to investigate in terms of common Lyapunov functions, multiple Lyapunov functions, and dwell-time, all seen in \cite{LiberzonSSC2003}.  So another step is an investigation of the average-dwell time (ADT) of the switching between the safety, baseline, and experimental controllers to see if ADT relates to the small-gain delay and stability regions.  Given the large length of time between switches, $T_s=20$ms, it may be possible to find a dwell-time less than this to prove overall stability.
 
 As far as long-term future work, for the verification of the model to most closely match the real system, analyzing both the measurement and actuation errors from quantization and delay (from analog-to-digital conversion and digital-to-analog conversion, respectively) would provide a complete answer of the disturbances introduced by these non-ideal blocks.  There is also another avenue potentially to follow in the area of software verification through the co-stability concept.
 
 \section{Conclusion}
-This case study of the inverted pendulum with a controller following the Simplex architecture displays that recent results in small-gain theorems can be useful in practical systems.  Since the maximum tolerable delay for stability was less than the control period length, it was necessary to project the state forward to the next control cycle to guarantee stability.
+This case study of the inverted pendulum with a controller following the Simplex architecture displays that recent results in small-gain theorems can be useful in practical systems.  Since the maximum tolerable delay for stability was less than the control period length, it was necessary to project the state forward to the next control cycle to guarantee stability.  Thus, this work has shown that the system is still stable even with small delays introduced by measurement, so a stronger stability result is valid for the system.
 
 
-
-% conference papers do not normally have an appendix
-
-
-% use section* for acknowledgement
 \section*{Acknowledgment}
 The author would like to thank Sayan Mitra for helpful commentary and feedback throughout the work, Qixin Wang for guidance in working with the real inverted pendulum system, Lui Sha for revealing details not seen in his earlier work, and Daniel Liberzon for providing a clear description of small-gain theorems.
 
@@ -1134,5 +1106,3 @@ The author would like to thank Sayan Mitra for helpful commentary and feedback t
 
 % that's all folks
 \end{document}
-
-

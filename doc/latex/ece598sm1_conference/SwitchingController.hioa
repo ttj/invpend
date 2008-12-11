@@ -1,47 +1,47 @@
-automaton $\auto{SwitchingController}(u_{min},u_{max},T_{switching},T_s:\Real)$
+automaton $\auto{SwitchingController}(u_{min},u_{max}, T_s:\Real)$
 	type
-		Mode = Enumeration [saf, bas, exp]
-		
+		Mode = Enumeration [sc, bc, ec]
+
 	signature 
-		input $\act{sample}(\theta^{\prime}, x^{\prime}:\Real)$
 		input $\act{safetyOutput}(u^{\prime}_{sc}:\Real)$ 
 		input $\act{baselineOutput}(u^{\prime}_{bc}:\Real)$ 
 		input $\act{expOutput}(u^{\prime}_{ec}:\Real)$ 
 		output $\act{switchingOutput}(u' :\Real)$
-		
+
 	variables
-		internal $\theta_{sw}: \Real:= 0$; $\dot{\theta}_{sw} :\Real := 0$;
-			$x_{sw}: \Real := 0$; $\dot{x}_{sw} :\Real := 0$;
-			$u_{sw} : \Real:=0$; $rt : Real := 0$;
-			$next\_cycle :\ioaAugR := T_{switching}$;
-			let $time\_left := next\_cycle - rt$;
-			$u_{sc} :\Real$; $u_{bc}: \Real$; $u_{ec} :\Real$;
-			$u_c : \Real:=0$; $ready_c:\Bool := false$; 
-			$mode : Mode  := saf$; $rt : Real := 0$; 
-		
-	transitions
-		input $\act{sample}(\theta^{\prime}, x^{\prime})$
-			eff $\theta_{sc} := \theta^{\prime}$; $x_c := x^{\prime}$;
-			$\dot{\theta}_{sc} := [\theta(t)-\theta(t-mT_s)]/(mT_s)$;
-			$\dot{x}_{sc} := [x(t)-x(t-mT_s)]/(mT_s)$;
-    
+		internal  $u_{sw} : \Real:=0$; $rt : Real := 0$;
+			 $next\_cycle :\ioaAugR := T_{s}$;
+			 let $time\_left := next\_cycle - rt$;
+			 $u_{sc} :\Real$; $u_{bc}: \Real$; $u_{ec} :\Real$;
+			 $ready_{sc}:\Bool := false$; $ready_{bc}:\Bool := false$; 
+			 $ready_{ec}:\Bool := false$; $mode : Mode  := sc$;
+
+	transitions    
     		input $\act{safetyOutput}(u^{\prime}_{sc})$
-    			eff  $u_{sc} = u^{\prime}_{sc}$;
-    			set ready?
+    			eff  $u_{sc} := u^{\prime}_{sc}$;
+    			$ready_{sc} := true$;
     			
     		input $\act{baselineOutput}(u^{\prime}_{bc})$
-    			eff  $u_{bc} = u^{\prime}_{bc}$;
-    			set ready?
+    			eff  $u_{bc} := u^{\prime}_{bc}$;
+    			$ready_{bc} := true$;
     			
     		input $\act{expOutput}(u^{\prime}_{ec})$
-    			eff  $u_{ec} = u^{\prime}_{ec}$;
-    			set ready?
+    			eff  $u_{ec} := u^{\prime}_{ec}$;
+    			$ready_{ec} := true$;
  	
-		output $\act{switchingOutput}(u')$  
-			pre $now_s = next\_cycle$  
-			eff $next\_cycle := next\_cycle + T_{safety}$;
-			unset all ready signals
-		
+		output $\act{switchingOutput}(u')$
+			pre $now_s = next\_cycle \wedge \left(ready_{sc} \vee ready_{bc} \vee ready_{ec}\right)$
+			eff $next\_cycle := next\_cycle + T_{s}$;
+			if $ready_{ec} \wedge (u_{ec} \in \left[u_{min},u_{max}\right])$
+				$u_{sw} := u_{ec}$;
+			else if $ready_{bc} \wedge (u_{bc} \in \left[u_{min},u_{max}\right])$
+				$u_{sw} := u_{bc}$;
+			else
+				$u_{sw} := u_{bc}$;
+			$ready_{sc} := false$;
+			$ready_{bc} := false$;
+			$ready_{ec} := false$;
+
 	trajectories
 		trajdef $\smodel{periodicControl}$
 			stop when $rt=next\_cycle$

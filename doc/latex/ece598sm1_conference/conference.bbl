@@ -58,6 +58,29 @@ M.~Bodson, J.~Lehoczky, R.~Rajkumar, L.~Sha, and J.~Stephan, \emph{Analytic
   redundancy for software fault-tolerance in hard real-time systems}.\hskip 1em
   plus 0.5em minus 0.4em\relax Kluwer Academic Publishers, 1994.
 
+\bibitem{Boyd94}
+S.~Boyd, L.~{El~{G}haoui}, E.~Feron, and V.~Balakrishnan, \emph{Linear Matrix
+  Inequalities in System and Control Theory}, ser. Studies in Applied
+  Mathematics.\hskip 1em plus 0.5em minus 0.4em\relax Philadelphia, PA: {SIAM},
+  Jun. 1994, vol.~15.
+
+\bibitem{Vand98}
+L.~Vandenberghe, S.~Boyd, and S.-P. Wu, ``Determinant maximization with linear
+  matrix inequality constraints,'' \emph{SIAM J. Matrix Anal. Appl.}, vol.~19,
+  no.~2, pp. 499--533, 1998.
+
+\bibitem{Yalmip}
+\BIBentryALTinterwordspacing
+J.~Löfberg, ``Yalmip : A toolbox for modeling and optimization in {MATLAB},''
+  in \emph{Proceedings of the CACSD Conference}, Taipei, Taiwan, 2004.
+  [Online]. Available: \url{http://control.ee.ethz.ch/~joloef/yalmip.php}
+\BIBentrySTDinterwordspacing
+
+\bibitem{Sdpt3}
+K.~C. Toh, M.~J. Todd, and R.~H. Tutuncu, ``Sdpt3 – a matlab software package
+  for semidefinite programming,'' \emph{Optimization Methods and Software},
+  vol.~11, pp. 545--581, 1999.
+
 \bibitem{Chen1999}
 C.~Chen, \emph{Linear System Theory and Design}, 3rd~ed.\hskip 1em plus 0.5em
   minus 0.4em\relax New York, NY: Oxford University Press, 1999.
@@ -70,5 +93,9 @@ H.~K. Khalil, \emph{Nonlinear Systems}, 3rd~ed.\hskip 1em plus 0.5em minus
 E.~Fridman, M.~Dambrine, and N.~Yeganefar, ``Input to state stability of
   systems with time-delay: A matrix inequalities approach,'' \emph{Automatica},
   vol.~44, no.~9, pp. 2364--2369, 2008.
+
+\bibitem{LiberzonSSC2003}
+D.~Liberzon, \emph{Switching in Systems and Control}.\hskip 1em plus 0.5em
+  minus 0.4em\relax Boston, MA: Birkhäuser, 2003.
 
 \end{thebibliography}
