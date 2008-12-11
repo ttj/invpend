@@ -102,7 +102,8 @@ b2=1.94; b4=4.44; %real matrix
 %x01=0.1; x02=0.15; x03=0.05; x04=0.05;
 %x01=0.05; x02=0.05; x03=-0.1; x04=-0.1; %edge of larger safety
 %x01=-0.15; x02=-0.21; x03=0.4; x04=1.25;
-x01=-0.19; x02=-0.2418; x03=0.3; x04=1.41;
+%x01=-0.19; x02=-0.2418; x03=0.3; x04=1.41; %extrema safety
+x01=-0.17; x02=-0.2581; x03=0.13; x04=1.17; %extrema experimental
 A=eval(As);
 Aw=eval(Asw);
 B=eval(Bs);
@@ -140,9 +141,8 @@ KEs=[KE1, KE2, KE3, KE4];
 
 %from lmi
 Plmi=[38.3367   26.2506    8.6703    4.7515; 26.2506   56.5561   15.2589    8.6971; 8.6703   15.2589    6.6481    3.2088; 4.7515    8.6971    3.2088    1.8244];
-Klmi=[7.2671   30.1022   11.7542    5.9111];
-KS=Klmi;
-KS=KE; %%%%%%%%%%%%%%%%%%%%%%%
+%Klmi=[7.2671   30.1022   11.7542    5.9111];
+%KS=Klmi;
 det(Plmi); %must be greater than 0 (shows P is positive definite)
 
 %Xdot=Abar*X
@@ -285,10 +285,10 @@ for t=0:tcyc:tmax-tcyc
     SuSattmp=checkExtrema(Sutmp, va_min, va_max); %u=kx: maybe some problem here since we're doing u=k*expm(A+Bk)*x0?
     Sxtmpi=Sxtmp;
     
-    if (Sxtmpi'*Plmi*Sxtmpi > 1) %out of safety region
-        'bad state:'
-        Sxtmpi
-    end;
+%     if (Sxtmpi'*Plmi*Sxtmpi > 1) %out of safety region
+%         'bad state:'
+%         Sxtmpi
+%     end;
     
     Bxtmpp=Bxtmp;
     Butmp=KB*Bxtmpp;
@@ -399,9 +399,14 @@ for t=0:tcyc:tmax-tcyc
     end;
 end;
 
-plotPendulum('Safety Controller System Trajectory', time_traj, St, SPt, SPdt, SDPt, SDPdt, SuSatt, Sut);
-%plotPendulum('Baseline Controller System Trajectory', time_traj, Bt, BPt, BPdt, SDPt, SDPdt, BuSatt, But);
-%plotPendulum('Experimental Controller System Trajectory', time_traj, Et, EPt, EPdt, SDPt, SDPdt, EuSatt, Eut);
+%stabilizable region
+[SPlmi,Sxbound1,Sxbound2]=generateStabilizableRegion(A, B, KS, 0, 0);
+[BPlmi,Bxbound1,Bxbound2]=generateStabilizableRegion(A, B, KB, 0, 0);
+[EPlmi,Exbound1,Exbound2]=generateStabilizableRegion(A, B, KE, 0, 0);
+
+plotPendulum('Safety Controller System Trajectory', time_traj, St, SPt, SPdt, SDPt, SDPdt, SuSatt, Sut, Sxbound1, Sxbound2);
+plotPendulum('Baseline Controller System Trajectory', time_traj, Bt, BPt, BPdt, SDPt, SDPdt, BuSatt, But, Bxbound1, Bxbound2);
+plotPendulum('Experimental Controller System Trajectory', time_traj, Et, EPt, EPdt, SDPt, SDPdt, EuSatt, Eut, Exbound1, Exbound2);
 %plotPendulum('Switching Proper (S->B->E) Controller System Trajectory', time_traj, Swt, SwRPt, SwRPdt, SDPt, SDPdt, SwRuSatt, SwRut);
 
 %Abar3sLyap=Abar3s.'*P+P*Abar3s+Q
@@ -431,3 +436,22 @@ plotPendulum('Safety Controller System Trajectory', time_traj, St, SPt, SPdt, SD
 %   -0.109311740890688
 
 
+figure;
+hold on;
+plot(Sxbound1(1:1,:),Sxbound1(3:3,:),'bo');
+plot(Bxbound1(1:1,:),Bxbound1(3:3,:),'g*');
+plot(Exbound1(1:1,:),Exbound1(3:3,:),'k+');
+title('Stabilizable Regions for x and xDot');
+legend('Safety', 'Baseline', 'Experimental');
+xlabel('x (m)');
+ylabel('xDot (m/s)');
+
+figure;
+hold on;
+plot(Sxbound2(2:2,:),Sxbound2(4:4,:),'bo');
+plot(Bxbound2(2:2,:),Bxbound2(4:4,:),'g*');
+plot(Exbound2(2:2,:),Exbound2(4:4,:),'k+');
+title('Stabilizable Regions for \theta and \theta Dot');
+legend('Safety', 'Baseline', 'Experimental');
+xlabel('\theta (rad)');
+ylabel('\theta Dot (rad/s)');
