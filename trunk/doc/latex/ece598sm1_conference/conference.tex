@@ -819,19 +819,22 @@ V=X^TPX
 
 For our system, we have the following $P$ matrices 
 \begin{equation}
-P_{sc}=\left[ \begin{array}{cccc} 8.494 & 32.758 & 3.785  & 11.300 \\ 32.758 & 217.957  & 16.617  & 75.446 \\ 3.785  & 16.617   & 5.319   & 5.785 \\ 11.300  & 75.446   & 5.785  & 26.406 \end{array} \right]
+P_{sc}=\left[ \begin{array}{cccc} 1.8030 & 2.3010 & 0.8447 & 0.3839 \\ 2.3010 &  10.0825 &   2.8171 &   1.4036 \\ 0.8447 &   2.8171 &   1.0109 &   0.4782 \\ 0.3839 &    1.4036 &   0.4782 &   0.2606 \end{array} \right]
+%8.494 & 32.758 & 3.785  & 11.300 \\ 32.758 & 217.957  & 16.617  & 75.446 \\ 3.785  & 16.617   & 5.319   & 5.785 \\ 11.300  & 75.446   & 5.785  & 26.406
 \label{eq:lyapSafeP}
 \end{equation}
 \begin{equation}
-P_{bc}=\left[\begin{array}{cccc} 10.623 &  48.942 &    6.132 &   16.600 \\ 48.942 &  350.558 &   25.975 &  119.079 \\
-6.132 &   25.975 &   44.397 &    8.836 \\ 16.600 & 119.079 &   8.836 &   42.101\end{array}\right]
+P_{bc}=\left[\begin{array}{cccc} 2.6836 &   2.7166 &   1.1849 &   0.5533 \\ 2.7166  & 10.0974 &   3.0287 &   1.4297 \\ 1.1849   & 3.0287 &   1.1695 &   0.5365 \\ 0.5533   & 1.4297 &   0.5365 &   0.2645\end{array}\right]
+%10.623 &  48.942 &    6.132 &   16.600 \\ 48.942 &  350.558 &   25.975 &  119.079 \\
+%6.132 &   25.975 &   44.397 &    8.836 \\ 16.600 & 119.079 &   8.836 &   42.101
 \label{eq:lyapBaseP}
 \end{equation}
 \begin{equation}
-P_{ec}=\left[\begin{array}{cccc} 10.183 &   45.835 &    5.660 &   15.507 \\45.835 &  332.254 &   22.748 &  112.560 \\ 5.660 &   22.748 &   36.583 &    7.718 \\ 15.507 &  112.560 &    7.718 &   39.2890\end{array}\right]
+P_{ec}=\left[\begin{array}{cccc} 1.6987 &   1.8877 &   0.7664 &   0.3461 \\ 1.8877 &   8.8812 &   2.5537 &   1.1747\\ 0.7664 &   2.5537 &   0.9601 &   0.4318\\ 0.3461 &   1.1747 &   0.4318 &   0.2050\end{array}\right]
+%10.183 &   45.835 &    5.660 &   15.507 \\45.835 &  332.254 &   22.748 &  112.560 \\ 5.660 &   22.748 &   36.583 &    7.718 \\ 15.507 &  112.560 &    7.718 &   39.2890
 \label{eq:lyapExpP}
 \end{equation}
-and then the corresponding Lyapunov functions $V_{sc}=X^TP_{sc}X$, $V_{bc}=X^TP_{bc}X$, and $V_{ec}=X^TP_{ec}X$.  Figures ~\ref{fig:lyapSafe}, ~\ref{fig:lyapBase}, and ~\ref{fig:lyapExp} show the Lyapunov functions along the system trajectory from initial conditions of $X_{0}=\left[\begin{array}{cccc} 0.300 & -0.200 & 0.061 & -0.050 \end{array}\right]^T$.
+and then the corresponding Lyapunov functions $V_{sc}=X^TP_{sc}X$, $V_{bc}=X^TP_{bc}X$, and $V_{ec}=X^TP_{ec}X$.  Figures ~\ref{fig:lyapSafe}, ~\ref{fig:lyapBase}, and ~\ref{fig:lyapExp} show the Lyapunov functions along the system trajectory from initial conditions of $X_{0}=\left[\begin{array}{cccc} -0.170 & 0.130 & -0.258 & 1.170 \end{array}\right]^T$.
 
 \begin{figure}[htp]
 \centering
@@ -911,19 +914,34 @@ then we can define the maximum tolerable delay as
 \tau<\frac{1}{cd}
 \end{equation}
 
-Following this definition for $\tau$, we compute $\tau_{\sigma}$ for each of the controllers, yielding $\tau_{sc}=9$, $\tau_{bc}=12.3$, and $\tau_{ec}=18.6$ milliseconds of delay is tolerable for each of the respective controllers to still ensure stability.  Note that all of these tolerable delays are less than one control cycle period of $T_s=20$ milliseconds.  Also note that this result has not included state projection of the type defined in Equation ~\ref{eq:discreteLinearStateFeedbackSolutionProjection}, and used a rather conservative bound in Equation ~\ref{eq:smallGainConservativeBound}, which looking at the work of \cite{Fridman2008} could perhaps improve.
+Following this definition for $\tau$, we compute $\tau_{\sigma}$ for each of the controllers, yielding $\tau_{sc}=2.03$, $\tau_{bc}=0.995$, and $\tau_{ec}=0.684$ milliseconds of delay is tolerable for each of the respective controllers to still ensure stability.  Note that all of these tolerable delays are less than one control cycle period of $T_s=20$ milliseconds.  This result used a rather conservative bound in Equation ~\ref{eq:smallGainConservativeBound}, which looking at the work of \cite{Fridman2008} could perhaps improve.  This result has not included state projection of the type defined in Equation ~\ref{eq:discreteLinearStateFeedbackSolutionProjection}, which is described next.
 
 \section{Results}
-Our analysis of the inverted pendulum system using the small-gain theorem indicates that the model-based state projection used in the controller is necessary for stability.  The maximum delay the `pure' system (without state projection) can tolerate is less than the sampling period.  Tolerable delay is inversely related to gain, that is, it is directly related to the size of the stabilizable region.  Given that the size of the stabilizable region is directly related to magnitude of the stability margin in EQUATIONX.  This makes intuitive sense, and shows that because the safety controller has the largest stabilizable region, it can thus tolerate the largest disturbances (or delays).
+Our analysis of the inverted pendulum system using the small-gain theorem indicates that the model-based state projection used in the controller is necessary for stability.  The maximum delay the 'pure' system (without state projection) can tolerate is less than the sampling period.  Tolerable delay is inversely related to gain, that is, it is directly related to the size of the stabilizable region.  Given that the size of the stabilizable region is directly related to magnitude of the stability margin.  This makes intuitive sense, and shows that because the safety controller has the largest stabilizable region, it can thus tolerate the largest disturbances, in this case, a disturbance caused by a delay.
 
-1. State projection and small gains
 
-Perfect: fine
-Linearized velocity? use observer?
+To remove the delay caused by filtering and digital implementation, one must employ model-based state projection.  If all measurements were perfect, this projection would remove all effects of the measurement errors.  Of course however they are not, especially when considering the approximations for $\dot{x}$ and $\dot{\theta}$ which could potentially have large error.  There are some obvious solutions from classical control theory to solve these problems.  One could easily use an observer and reform the system to remove much of this linearization error, so instead of approximating the derivative, it is in effect actually taken.  Similarly, more advanced estimators could be employed, of note is the Kalman filter used to remove the effects of measurement noise.  If then considering the nonlinear case, one could utilize the extended Kalman filter, as the $\sin\left(\theta\right)$ terms are differentiable.  Assuming optimal filtering of this form, with state projection, the system can tolerate $nT_s+\tau_{\sigma}$ delay, where $n$ is the number of sampling cycle periods to project forward.
 
-There is some remaining work to complete for this case study to provide interesting results.  First, we will use small-gain theorems to find the maximum tolerable delay with state projection, and in addition, compare the subsequent stability regions by solving a linear-matrix inequality (LMI) problem that computes this region.  An offhand guess is that the new maximum tolerable delay will be roughly one sampling period plus the previously computed tolerable delay.
 
-The plot in Figure XXX shows the system stabilizing from an initial condition of XXX, utilizing switching significantly faster than what would most likely be seen in the real implementation (at every $T_s$).
+A large amount of work for this analysis was spent looking at system trajectories, so the Figures ~\ref{fig:trajSwitchX} and ~\ref{fig:trajSwitchTheta} show the system stabilizing from an initial condition of $X_{0}=\left[\begin{array}{cccc} -0.170 & 0.130 & -0.258 & 1.170 \end{array}\right]^T$, which lies on the bounds of the experimental controller's stabilizable region, and utilizing switching significantly faster than what would most likely be seen in the real implementation (at every $T_s$).  Finally, Figure ~\ref{fig:lyapSwitchReal} shows the Lyapunov function and its derivative along this trajectory.
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=250pt]{trajSwitchX}
+\caption{Trajectory of $x$, $\dot{x}$ Switching Every $T_s$}\label{fig:trajSwitchX}
+\end{figure}
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=250pt]{trajSwitchTheta}
+\caption{Trajectory $\theta$, $\dot{\theta}$ Switching Every $T_s$}\label{fig:trajSwitchTheta}
+\end{figure}
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=250pt]{lyapSwitchReal}
+\caption{Lyapunov Function for Switching Every $T_s$}\label{fig:lyapSwitchReal}
+\end{figure}
 
 
 % An example of a floating figure using the graphicx package.
@@ -1012,60 +1030,34 @@ The plot in Figure XXX shows the system stabilizing from an initial condition of
 \section{Future Work}
 This work began with the desire to prove stability of the Simplex architecture switching controller in this case study.  However, we have not quite yet proved this, although progress has been made.  We theorize that the tolerable delay of the entire system is the minimum tolerable delay across all controllers, so that $\tau_{\sigma}=\tau_{ec}$.
 
-We have begun looking at the small-gain result in the system with minor nonlinearities that can be linearized, such as the $sin(\theta)$ term which for small $\theta$ can be linearized to $\theta$.  The derivation starts from the energy model of the system as follows.
+We have begun looking at the small-gain result in the system with minor nonlinearities that can be linearized, such as the $sin(\theta)$ term which for small $\theta$ can be linearized to $\theta$.  Some derivation in this direction is as follows.  Consider the nonlinear model,
 
-$\dot{X}=f\left(X,u\right)$
+\begin{equation}
+\dot{X}=f\left(X,u\right)
+\end{equation} We can then describe the equations of motion for the plant as 
 
-Coordinates of Small Portion of Bar with Mass $dm$
+\begin{equation}
+\left(m+M\right)\ddot{x}+\frac{1}{2}ml\cos\left(\theta\right)\ddot{\theta}-\frac{1}{2}ml\sin\left(\theta\right)\dot{\theta}^2=F-f_c
+\end{equation}
 
-$x_{dm}=x+q\sin\left(\theta\right)\Rightarrow\dot{x}_{dm}=\dot{x}+q\cos\left(\theta\right)\dot{\theta}$\\$y_{dm}=q\cos\left(\theta\right)\Rightarrow\dot{y}_{dm}=-q\sin\left(\theta\right)\dot{\theta}$
+\begin{equation}
+\frac{1}{2}ml\mathsf{\theta}\ddot{x}+\frac{1}{3}ml^2\ddot{\theta}-\frac{1}{2}mgl\sin\left(\theta\right)=-f_p
+\end{equation} Skimming over the details of the motor model, we can achieve the entire system model including motor dynamics
 
-Kinetic Energy of Small Portion of Bar with Mass
-$dm$\\$K_{dm}=\frac{1}{2}dm\left(\dot{x}_{dm}^2+\dot{y}_{dm}^2\right)$ $=\frac{1}{2}\left(dm\right)\left(\dot{x}^2+2q\cos\left(\theta\right)\dot{x}\dot{\theta}+q^2\dot{\theta}^2\right)$
-Potential Energy of Small Portion of Bar with Mass $dm$\\$P_{dm}=\left(dm\right)g\cos\left(\theta\right)$
+\begin{equation}
+\ddot{x}=\frac{1}{D}\left[\frac{1}{3}ml^2\left(B_lV_a-f_c-C_1\right)+\frac{1}{2}ml\cos\theta\left(f_p+C_2\right)\right]
+\end{equation}
 
-Integrating over Bar Length $0$ to $l$
+\begin{equation}
+\ddot{\theta}=\frac{1}{D}\left[-\frac{1}{2}ml\cos\theta\left(B_lV_a-f_c-C_1\right)-\bar{M}\left(f_p+C_2\right)\right]
+\end{equation} where $D=\frac{1}{3}\bar{M}ml^2-\frac{1}{4}m^2l^2\cos^2\left(\theta\right)$, $\bar{M}=\frac{m+M+(K_gJ_m)}{r^2}$, $C_1=\bar{B}\dot{x}-\frac{1}{2}ml\sin\left(\theta\right)\dot{\theta}^2$, $C_2=-\frac{1}{2}mgl\sin\left(\theta\right)$, $\bar{B}=\frac{K_gB_m}{r^2}+\frac{K_g^2K_iK_b}{r^2R_a}$, and $B_l=\frac{K_gK_i}{rR_a}$.  The immediate next step is to derive a Lyapunov function for this system, and when considering the earlier form of $V=X^TPX$, one could interchange the bounds on the $\theta$ states with $a\cos\left(\theta\right)$ where $a$ is some constant (since now we are considering $\sin\left(\theta\right)$).  After checking that this $P$ is positive definite and satisfies $A^TP+PA=-Q$, we could then proceed with our analysis as before.
 
-$K=K_c+K_p=\frac{1}{2}\left(M+m\right)\dot{x}^2+\frac{1}{2}ml\cos\left(\theta\right)\dot{x}\dot{\theta}+\frac{1}{6}ml^2\dot{\theta}^2$
-
-$P=\frac{1}{2}mgl\cos\left(\theta\right)$
-
-Lagrangian $L=K-P$
-Euler-Lagrange Equations for Forces on System
-
-$\frac{d}{dt}\frac{\partial L}{\partial\dot{x}}-\frac{\partial L}{\partial x}=F-f_c$ and $\frac{d}{dt}\frac{\partial L}{\partial\dot{\theta}}-\frac{\partial L}{\partial \theta}=-f_p$
-
-Equations of Motion for Plant
-
-$\left(m+M\right)\ddot{x}+\frac{1}{2}ml\cos\left(\theta\right)\ddot{\theta}-\frac{1}{2}ml\sin\left(\theta\right)\dot{\theta}^2=F-f_c$
-
-$\frac{1}{2}ml\mathsf{\theta}\ddot{x}+\frac{1}{3}ml^2\ddot{\theta}-\frac{1}{2}mgl\sin\left(\theta\right)=-f_p$
-
-Full System Model (including Motor Dynamics)
-
-$\ddot{x}=\frac{1}{D}\left[\frac{1}{3}ml^2\left(B_lV_a-f_c-C_1\right)+\frac{1}{2}ml\cos\left(\theta\right)\left(f_p+C_2\right)\right]$
-
-$\ddot{\theta}=\frac{1}{D}\left[-\frac{1}{2}ml\cos\left(\theta\right)\left(B_lV_a-f_c-C_1\right)-\bar{M}\left(f_p+C_2\right)\right]$
-
-$D=\frac{1}{3}\bar{M}ml^2-\frac{1}{4}m^2l^2\cos^2\left(\theta\right)$
-
-$\bar{M}=\frac{m+M+(K_g*J_m)}{r^2}$
-
-$C_1=\bar{B}\dot{x}-\frac{1}{2}ml\sin\left(\theta\right)\dot{\theta}^2$
-
-$C_2=-\frac{1}{2}mgl\sin\left(\theta\right)$
-
-$\bar{B}=\frac{K_gB_m}{r^2}+\frac{K_g^2K_iK_b}{r^2R_a}$
-
-$B_l=\frac{K_gK_i}{rR_a}$
-
-Working with the linear model though, there seem to be several areas to investigate in terms of common Lyapunov functions, multiple Lyapunov functions, and dwell-time, all seen in \cite{LiberzonSSC2003}.  So another step is an investigation of the average-dwell time (ADT) of the switching between the safety, baseline, and experimental controllers to see if ADT relates to the small-gain delay and stability regions.  Given the large length of time between switches, $T_s=20$ms, it may be possible to find a dwell-time less than this to prove overall stability.
+With either the nonlinear or linearized models, there seem to be several areas to investigate in terms of common Lyapunov functions, multiple Lyapunov functions, and dwell-time, all seen in \cite{LiberzonSSC2003}.  So another step is an investigation of the average-dwell time (ADT) of the switching between the safety, baseline, and experimental controllers to see if ADT relates to the small-gain delay and stability regions.  Given the large length of time between switches, $T_s=20$ms, it may be possible to find a dwell-time less than this to prove overall stability.
 
 As far as long-term future work, for the verification of the model to most closely match the real system, analyzing both the measurement and actuation errors from quantization and delay (from analog-to-digital conversion and digital-to-analog conversion, respectively) would provide a complete answer of the disturbances introduced by these non-ideal blocks.  There is also another avenue potentially to follow in the area of software verification through the co-stability concept.
 
 \section{Conclusion}
-This case study of the inverted pendulum with a controller following the Simplex architecture displays that recent results in small-gain theorems can be useful in practical systems.  Since the maximum tolerable delay for stability was less than the control period length, it was necessary to project the state forward to the next control cycle to guarantee stability.  Thus, this work has shown that the system is still stable even with small delays introduced by measurement, so a stronger stability result is valid for the system.
-
+This case study of the inverted pendulum with a controller following the Simplex architecture displays that recent results in small-gain theorems can be useful in practical systems.  Since the maximum tolerable delay found for stability was less than the control period length, it was necessary to project the state forward to the next control cycle to guarantee stability.  Thus, this work has shown that the system is still stable even with small delays introduced by measurement, so a stronger stability result was found for this system.
 
 \section*{Acknowledgment}
 The author would like to thank Sayan Mitra for helpful commentary and feedback throughout the work, Qixin Wang for guidance in working with the real inverted pendulum system, Lui Sha for revealing details not seen in his earlier work, and Daniel Liberzon for providing a clear description of small-gain theorems.

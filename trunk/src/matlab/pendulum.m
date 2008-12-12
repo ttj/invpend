@@ -104,6 +104,7 @@ b2=1.94; b4=4.44; %real matrix
 %x01=-0.15; x02=-0.21; x03=0.4; x04=1.25;
 %x01=-0.19; x02=-0.2418; x03=0.3; x04=1.41; %extrema safety
 x01=-0.17; x02=-0.2581; x03=0.13; x04=1.17; %extrema experimental
+
 A=eval(As);
 Aw=eval(Asw);
 B=eval(Bs);
@@ -259,6 +260,8 @@ Sxtmppp=[0 0 0 0]';
 St(1:4,1)=X0;
 Bt(1:4,1)=X0;
 Et(1:4,1)=X0;
+Swt(1:4,1)=X0;
+
 
 for t=0:tcyc:tmax-tcyc
     i=round(t/tcyc)+1;
@@ -266,95 +269,79 @@ for t=0:tcyc:tmax-tcyc
     Sxtmpppp=Sxtmppp;
     Sxtmppp=Sxtmpp;
     Sxtmpp=Sxtmp;
-    if (i>1)
-        SxtmppAprx=[Sxtmpp(1) Sxtmpp(2) ((Sxtmpp(1)-Sxtmpppp(1))/(2*Ts)) ((Sxtmpp(2)-Sxtmpppp(2))/(2*Ts))]';
-    else
-        SxtmppAprx=Sxtmp; %just assume perfect for starting case (otherwise could use other, but it will cause a step input to system)
-    end;
-    Sutmp=KS*SxtmppAprx;
+%    if (i>1)
+%        SxtmppAprx=[Sxtmpp(1) Sxtmpp(2) ((Sxtmpp(1)-Sxtmpppp(1))/(2*Ts)) ((Sxtmpp(2)-Sxtmpppp(2))/(2*Ts))]';
+%    else
+%        SxtmppAprx=Sxtmp; %just assume perfect for starting case (otherwise could use other, but it will cause a step input to system)
+%    end;
+    SxtmppAprx=Sxtmpp;
+    
     if (i>1)
         Sutmp=KS*Sxtmpp;
-    %    Sxtmp=expm(A*t)*Sxtmp + expm(A*t)*B*Sutmp;
-    %    Sxtmp=(expm(Abar3*(t))*Sxtmpp); %need to use previous for I.C. (don't update for inside divisions!)
-    %    Sxtmp=(A^(t/tcyc))*Sxtmpp + B*Sutmp; %need to use previous for I.C. (don't update for inside divisions!)
+        SuSattmp=checkExtrema(Sutmp, va_min, va_max);
         Sxtmp=F*Sxtmpp + G*B*SuSattmp;
     else
-        Sutmp=0;
+        SuSattmp=0;
         Sxtmp=X0;
     end;
-    SuSattmp=checkExtrema(Sutmp, va_min, va_max); %u=kx: maybe some problem here since we're doing u=k*expm(A+Bk)*x0?
     Sxtmpi=Sxtmp;
-    
-%     if (Sxtmpi'*Plmi*Sxtmpi > 1) %out of safety region
-%         'bad state:'
-%         Sxtmpi
-%     end;
-    
+
     Bxtmpp=Bxtmp;
-    Butmp=KB*Bxtmpp;
-    BuSattmp=checkExtrema(Butmp, va_min, va_max); %u=kx: maybe some problem here since we're doing u=k*expm(A+Bk)*x0?
-    Bxtmp=F*Bxtmpp + G*B*BuSattmp; %need to use previous for I.C. (don't update for inside divisions!)
+    if (i>1)
+        Butmp=KB*Bxtmpp;
+        BuSattmp=checkExtrema(Butmp, va_min, va_max); %u=kx: maybe some problem here since we're doing u=k*expm(A+Bk)*x0?
+        Bxtmp=F*Bxtmpp + G*B*BuSattmp;
+    else
+        BuSattmp=0;
+        Bxtmp=X0;
+    end;
     Bxtmpi=Bxtmp;
-    
+
     Extmpp=Extmp;
-    Eutmp=KE*Extmpp;
-    EuSattmp=checkExtrema(Eutmp, va_min, va_max); %u=kx: maybe some problem here since we're doing u=k*expm(A+Bk)*x0?
-    Extmp=F*Extmpp + G*B*EuSattmp; %need to use previous for I.C. (don't update for inside divisions!)
+    if (i>1)
+        Eutmp=KE*Extmpp;
+        EuSattmp=checkExtrema(Eutmp, va_min, va_max); %u=kx: maybe some problem here since we're doing u=k*expm(A+Bk)*x0?
+        Extmp=F*Extmpp + G*B*EuSattmp; %need to use previous for I.C. (don't update for inside divisions!)
+    else
+        EuSattmp=0;
+        Extmp=X0;
+    end;
     Extmpi=Extmp;
     
     SwRxtmpp=SwRxtmp;
     %Switch between Safety -> Baseline -> Experimental -> Safety properly
-    if (mod(i-1,3)==1)
-%        SwRxtmp=(expm(Abar3*t)*SwRxtmpp);
-%        SwRutmp=checkExtrema(KS*SwRxtmp, va_min, va_max);
-        SwRuSattmp=KS*SwRxtmpp;
-        SwRutmp=checkExtrema(SwRuSattmp, va_min, va_max);
-        SwRxtmp=F*SwRxtmpp + G*B*SwRuSattmp;
-    elseif (mod(i-1,3)==2)
-%        SwRxtmp=(expm(Abar2*t)*SwRxtmpp);
-%        SwRutmp=checkExtrema(KB*SwRxtmp, va_min, va_max);
-        SwRuSattmp=KB*SwRxtmpp;
-        SwRutmp=checkExtrema(SwRuSattmp, va_min, va_max);
-        SwRxtmp=F*SwRxtmpp + G*B*SwRuSattmp;
+    if (i>1)
+        if (mod(i-1,3)==1)
+            SwRuSattmp=KS*SwRxtmpp;
+            SwRutmp=checkExtrema(SwRuSattmp, va_min, va_max);
+            SwRxtmp=F*SwRxtmpp + G*B*SwRuSattmp;
+        elseif (mod(i-1,3)==2)
+            SwRuSattmp=KB*SwRxtmpp;
+            SwRutmp=checkExtrema(SwRuSattmp, va_min, va_max);
+            SwRxtmp=F*SwRxtmpp + G*B*SwRuSattmp;
+        else
+            SwRuSattmp=KE*SwRxtmpp;
+            SwRutmp=checkExtrema(SwRuSattmp, va_min, va_max);
+            SwRxtmp=F*SwRxtmpp + G*B*SwRuSattmp;
+        end;
     else
-%        SwRxtmp=(expm(Abar1*t)*SwRxtmpp);
-%        SwRutmp=checkExtrema(KE*SwRxtmp, va_min, va_max);
-        SwRuSattmp=KE*SwRxtmpp;
-        SwRutmp=checkExtrema(SwRuSattmp, va_min, va_max);
-        SwRxtmp=F*SwRxtmpp + G*B*SwRuSattmp;
+        SwRuSattmp=0;
+        SwRxtmp=X0;
     end;
     SwRxtmpi=SwRxtmp;
     
     for j=(i-1)*tdiv+2 : 1 : tdiv+(i-1)*tdiv+1
         tt=j*(tcyc/tdiv);
-%        Sxtmpi=A*Sxtmpi + B*Sutmp;
-%        Sxtmp=(expm(Abar3*tt)*X0);
-%        Sxtmpi=real((F+G*B*KS)^(tt))*Sxtmp;
-%        Sxtmpi=(F+G*B*KS)*Sxtmpi;
 
         Sxtmpi=Ft*Sxtmpi+Gt*B*SuSattmp;
-
-%        Sxtmpi=(expm(Abar3*tt)*Sxtmp); %need to use previous for I.C. (don't update for inside divisions!)
-%        Sxtmpi=(A^(tt))*Sxtmpi + B*Sutmp;
-%        Sxtmpi=F*Sxtmpi + G*B*SuSattmp;
-%        Sxtmpi=Sxtmp;
         St(1:4,j)=Sxtmpi;
         Sut(j)=Sutmp;     %u
         SuSatt(j)=SuSattmp;
-        %SPt(j)=Sxtmpi.'*PF*Sxtmpi; %V=x'Px
-        %SDPdt(j)=(Sxtmpi.'*F.'*PF*Sxtmpi) + (Sxtmpi.'*PF*F*Sxtmpi); %Vdot=x'A'Px+x'PAx
         SPt(j)=Sxtmpi.'*P3*Sxtmpi; %V=x'Px
         SPdt(j)=(Sxtmpi.'*Abar3.'*P3*Sxtmpi) + (Sxtmpi.'*P3*Abar3*Sxtmpi); %Vdot=x'A'Px+x'PAx
-%        if (j==1)
-%            SPdt(j)=0;
-%        else
-%            SPdt(j)=(SPt(j)-SPt(j-1))/(tcyc/tdiv);
-%        end;
         SDPt(j)=Sxtmpi.'*PD3*Sxtmpi; %Vd=x'Px
         SDPdt(j)=(Sxtmpi.'*Abar3.'*PD3*Sxtmpi) + (Sxtmpi.'*PD3*Abar3*Sxtmpi); %Vdot=x'A'Px+x'PAx
         
-        %Sxtmp=(expm(Abar2*tt)*X0);
-%        Bxtmpi=(expm(Abar2*tt)*Bxtmpi); %need to use previous for I.C. (don't update for inside divisions!)
         Bxtmpi=Ft*Bxtmpi+Gt*B*BuSattmp;
         Bt(1:4,j)=Bxtmpi;
         But(j)=Butmp;     %u
@@ -364,9 +351,6 @@ for t=0:tcyc:tmax-tcyc
         BDPt(j)=Bxtmpi.'*PD2*Bxtmpi; %Vd=x'Px
         BDPdt(j)=(Bxtmpi.'*Abar2.'*PD2*Bxtmpi) + (Bxtmpi.'*PD2*Abar2*Bxtmpi); %Vdot=x'A'Px+x'PAx
 
-        %Extmp=(expm(Abar1*tt)*X0);
-%        Extmpi=(expm(Abar1*tt)*Extmpi); %need to use previous for I.C. (don't update for inside divisions!)
-%        Extmpi=(F+G*B*KE)*Extmpp;
         Extmpi=Ft*Extmpi+Gt*B*EuSattmp;
         Et(1:4,j)=Extmpi;
         Eut(j)=Eutmp;     %u
@@ -378,18 +362,12 @@ for t=0:tcyc:tmax-tcyc
 
         SwRxtmpi=Ft*SwRxtmpi+Gt*B*SwRuSattmp;
         if (mod(i-1,3)==1)
-%            SwRxtmpi=(expm(Abar3*tt)*SwRxtmpi);
-%            SwRxtmpi=(F+G*B*KS)*SwRxtmpp;
             SwRPt(j) =SwRxtmpi.'*P3*SwRxtmpi; %V=x'Px
             SwRPdt(j)=(SwRxtmpi.'*Abar3.'*P3*SwRxtmpi) + (SwRxtmpi.'*P3*Abar3*SwRxtmpi); %Vdot=x'A'Px+x'PAx
         elseif (mod(i-1,3)==2)
-%            SwRxtmpi=(expm(Abar2*tt)*SwRxtmpi);
-%            SwRxtmpi=(F+G*B*KB)*SwRxtmpp;
             SwRPt(j) =SwRxtmpi.'*P2*SwRxtmpi; %V=x'Px
             SwRPdt(j)=(SwRxtmpi.'*Abar2.'*P2*SwRxtmpi) + (SwRxtmpi.'*P2*Abar2*SwRxtmpi); %Vdot=x'A'Px+x'PAx
         else
-%            SwRxtmpi=(expm(Abar1*tt)*SwRxtmpi);
-%            SwRxtmpi=(F+G*B*KE)*SwRxtmpp;
             SwRPt(j) =SwRxtmpi.'*P1*SwRxtmpi; %V=x'Px
             SwRPdt(j)=(SwRxtmpi.'*Abar1.'*P1*SwRxtmpi) + (SwRxtmpi.'*P1*Abar1*SwRxtmpi); %Vdot=x'A'Px+x'PAx
         end;
@@ -419,37 +397,10 @@ Bxbound2=Bxb2;
 Exbound1=Exb1;
 Exbound2=Exb2;
 
-
 plotPendulum('Safety Controller System Trajectory', time_traj, St, SPt, SPdt, SDPt, SDPdt, SuSatt, Sut, Sxbound1, Sxbound2);
 plotPendulum('Baseline Controller System Trajectory', time_traj, Bt, BPt, BPdt, SDPt, SDPdt, BuSatt, But, Bxbound1, Bxbound2);
 plotPendulum('Experimental Controller System Trajectory', time_traj, Et, EPt, EPdt, SDPt, SDPdt, EuSatt, Eut, Exbound1, Exbound2);
-%plotPendulum('Switching Proper (S->B->E) Controller System Trajectory', time_traj, Swt, SwRPt, SwRPdt, SDPt, SDPdt, SwRuSatt, SwRut);
-
-%Abar3sLyap=Abar3s.'*P+P*Abar3s+Q
-%Abar3try=A+B*KSs
-%Abar3sLyap=Abar3try.'*P+P*Abar3try+Q
-
-%sol=solve(strcat(char(Abar3sLyap(1,1)),'=0'),strcat(char(Abar3sLyap(1,2)),'=0'),strcat(char(Abar3sLyap(1,3)),'=0'),strcat(char(Abar3sLyap(1,4)),'=0'),strcat(char(Abar3sLyap(2,1)),'=0'),strcat(char(Abar3sLyap(2,2)),'=0'),strcat(char(Abar3sLyap(2,3)),'=0'),strcat(char(Abar3sLyap(2,4)),'=0'),strcat(char(Abar3sLyap(3,1)),'=0'),strcat(char(Abar3sLyap(3,2)),'=0'),strcat(char(Abar3sLyap(3,3)),'=0'),strcat(char(Abar3sLyap(3,4)),'=0'),strcat(char(Abar3sLyap(4,1)),'=0'),strcat(char(Abar3sLyap(4,2)),'=0'),strcat(char(Abar3sLyap(4,3)),'=0'),strcat(char(Abar3sLyap(4,4)),'=0'), 'p11', 'p12', 'p13', 'p14', 'p22', 'p23', 'p24', 'p33', 'p34', 'p44')
-%sol=solve(Abar3sLyap(1,1),Abar3sLyap(1,2),Abar3sLyap(1,3),Abar3sLyap(1,4),Abar3sLyap(2,1),Abar3sLyap(2,2),Abar3sLyap(2,3),Abar3sLyap(2,4),Abar3sLyap(3,1),Abar3sLyap(3,2),Abar3sLyap(3,3),Abar3sLyap(3,4),Abar3sLyap(4,1),Abar3sLyap(4,2),Abar3sLyap(4,3),Abar3sLyap(4,4))
-
-
-
-%stabilized by switching but not others?
-% A =
-% 
-%                    0   1.000000000000000                   0                   0
-%                    0  -0.100000000000000  -0.010000000000000   0.010000000000000
-%                    0                   0                   0   1.000000000000000
-%                    0   0.010000000000000   0.500000000000000  -0.100000000000000
-% 
-% B
-% 
-% B =
-% 
-%                    0
-%    0.072874493927126
-%                    0
-%   -0.109311740890688
+plotPendulum('Switching Proper (S->B->E) Controller System Trajectory', time_traj, Swt, SwRPt, SwRPdt, SDPt, SDPdt, SwRuSatt, SwRut, Sxbound1, Sxbound2);
 
 
 figure;
