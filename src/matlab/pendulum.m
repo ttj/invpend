@@ -103,7 +103,7 @@ b2=1.94; b4=4.44; %real matrix
 %x01=0.05; x02=0.05; x03=-0.1; x04=-0.1; %edge of larger safety
 %x01=-0.15; x02=-0.21; x03=0.4; x04=1.25;
 %x01=-0.19; x02=-0.2418; x03=0.3; x04=1.41; %extrema safety
-x01=-0.17; x02=-0.2581; x03=0.13; x04=1.17; %extrema experimental
+x01=-1; x02=-0.2581; x03=0.13; x04=1.17; %extrema experimental
 
 A=eval(As);
 Aw=eval(Asw);
@@ -147,14 +147,14 @@ Plmi=[38.3367   26.2506    8.6703    4.7515; 26.2506   56.5561   15.2589    8.69
 det(Plmi); %must be greater than 0 (shows P is positive definite)
 
 %Xdot=Abar*X
-Abar3=A+B*KS;
-Abar3s=As+Bs*KSs;
-Abar2=A+B*KB;
-Abar1=A+B*KE;
+AbarS=A+B*KS;
+AbarSs=As+Bs*KSs;
+AbarB=A+B*KB;
+AbarE=A+B*KE;
 
-det(Abar3'*Plmi+Plmi*Abar3); %must be less than 0 (shows positive negative, and shows lyapunov derivative is negative always)
-det(Abar2'*Plmi+Plmi*Abar2); %must be less than 0 (shows positive negative, and shows lyapunov derivative is negative always)
-det(Abar1'*Plmi+Plmi*Abar1); %must be less than 0 (shows positive negative, and shows lyapunov derivative is negative always)
+det(AbarS'*Plmi+Plmi*AbarS); %must be less than 0 (shows positive negative, and shows lyapunov derivative is negative always)
+det(AbarB'*Plmi+Plmi*AbarB); %must be less than 0 (shows positive negative, and shows lyapunov derivative is negative always)
+det(AbarE'*Plmi+Plmi*AbarE); %must be less than 0 (shows positive negative, and shows lyapunov derivative is negative always)
 
 C=[0 1 0 1];
 sysS=ss(A,B*KS,C,0);
@@ -178,19 +178,19 @@ sysdE=ss(A,B*KE,C,0,Tc);
 %legend('Safety', 'Baseline', 'Experimental');
 
 %syms t;
-%Abarexpm=expm(Abar3*t);
+%Abarexpm=expm(AbarS*t);
 
-eigAbar3=eig(Abar3)
-eigAbar2=eig(Abar2)
-eigAbar1=eig(Abar1)
+eigAbarS=eig(AbarS)
+eigAbarB=eig(AbarB)
+eigAbarE=eig(AbarE)
 
 %Lyapunov and Discrete Lyapunov Equations for each System
-P3=lyap(Abar3',Q)
-PD3=dlyap(Abar3',Q)
-P2=lyap(Abar2',Q)
-PD2=dlyap(Abar2',Q)
-P1=lyap(Abar1',Q)
-PD1=dlyap(Abar1',Q)
+P3=lyap(AbarS',Q)
+PD3=dlyap(AbarS',Q)
+P2=lyap(AbarB',Q)
+PD2=dlyap(AbarB',Q)
+P1=lyap(AbarE',Q)
+PD1=dlyap(AbarE',Q)
 
 SPtBad=0;
 SPdtBad=0;
@@ -261,7 +261,6 @@ St(1:4,1)=X0;
 Bt(1:4,1)=X0;
 Et(1:4,1)=X0;
 Swt(1:4,1)=X0;
-
 
 for t=0:tcyc:tmax-tcyc
     i=round(t/tcyc)+1;
@@ -338,38 +337,38 @@ for t=0:tcyc:tmax-tcyc
         Sut(j)=Sutmp;     %u
         SuSatt(j)=SuSattmp;
         SPt(j)=Sxtmpi.'*P3*Sxtmpi; %V=x'Px
-        SPdt(j)=(Sxtmpi.'*Abar3.'*P3*Sxtmpi) + (Sxtmpi.'*P3*Abar3*Sxtmpi); %Vdot=x'A'Px+x'PAx
+        SPdt(j)=(Sxtmpi.'*AbarS.'*P3*Sxtmpi) + (Sxtmpi.'*P3*AbarS*Sxtmpi); %Vdot=x'A'Px+x'PAx
         SDPt(j)=Sxtmpi.'*PD3*Sxtmpi; %Vd=x'Px
-        SDPdt(j)=(Sxtmpi.'*Abar3.'*PD3*Sxtmpi) + (Sxtmpi.'*PD3*Abar3*Sxtmpi); %Vdot=x'A'Px+x'PAx
+        SDPdt(j)=(Sxtmpi.'*AbarS.'*PD3*Sxtmpi) + (Sxtmpi.'*PD3*AbarS*Sxtmpi); %Vdot=x'A'Px+x'PAx
         
         Bxtmpi=Ft*Bxtmpi+Gt*B*BuSattmp;
         Bt(1:4,j)=Bxtmpi;
         But(j)=Butmp;     %u
         BuSatt(j)=BuSattmp;
         BPt(j)=Bxtmpi.'*P2*Bxtmpi; %V=x'Px
-        BPdt(j)=(Bxtmpi.'*Abar2.'*P2*Bxtmpi) + (Bxtmpi.'*P2*Abar2*Bxtmpi); %Vdot=x'A'Px+x'PAx
+        BPdt(j)=(Bxtmpi.'*AbarB.'*P2*Bxtmpi) + (Bxtmpi.'*P2*AbarB*Bxtmpi); %Vdot=x'A'Px+x'PAx
         BDPt(j)=Bxtmpi.'*PD2*Bxtmpi; %Vd=x'Px
-        BDPdt(j)=(Bxtmpi.'*Abar2.'*PD2*Bxtmpi) + (Bxtmpi.'*PD2*Abar2*Bxtmpi); %Vdot=x'A'Px+x'PAx
+        BDPdt(j)=(Bxtmpi.'*AbarB.'*PD2*Bxtmpi) + (Bxtmpi.'*PD2*AbarB*Bxtmpi); %Vdot=x'A'Px+x'PAx
 
         Extmpi=Ft*Extmpi+Gt*B*EuSattmp;
         Et(1:4,j)=Extmpi;
         Eut(j)=Eutmp;     %u
         EuSatt(j)=EuSattmp;
         EPt(j)=Extmpi.'*P1*Extmpi; %V=x'Px
-        EPdt(j)=(Extmpi.'*Abar1.'*P1*Extmpi) + (Extmpi.'*P1*Abar1*Extmpi); %Vdot=x'A'Px+x'PAx
+        EPdt(j)=(Extmpi.'*AbarE.'*P1*Extmpi) + (Extmpi.'*P1*AbarE*Extmpi); %Vdot=x'A'Px+x'PAx
         EDPt(j)=Extmpi.'*PD1*Extmpi; %Vd=x'Px
-        EDPdt(j)=(Extmpi.'*Abar1.'*PD1*Extmpi) + (Extmpi.'*PD1*Abar1*Extmpi); %Vdot=x'A'Px+x'PAx
+        EDPdt(j)=(Extmpi.'*AbarE.'*PD1*Extmpi) + (Extmpi.'*PD1*AbarE*Extmpi); %Vdot=x'A'Px+x'PAx
 
         SwRxtmpi=Ft*SwRxtmpi+Gt*B*SwRuSattmp;
         if (mod(i-1,3)==1)
             SwRPt(j) =SwRxtmpi.'*P3*SwRxtmpi; %V=x'Px
-            SwRPdt(j)=(SwRxtmpi.'*Abar3.'*P3*SwRxtmpi) + (SwRxtmpi.'*P3*Abar3*SwRxtmpi); %Vdot=x'A'Px+x'PAx
+            SwRPdt(j)=(SwRxtmpi.'*AbarS.'*P3*SwRxtmpi) + (SwRxtmpi.'*P3*AbarS*SwRxtmpi); %Vdot=x'A'Px+x'PAx
         elseif (mod(i-1,3)==2)
             SwRPt(j) =SwRxtmpi.'*P2*SwRxtmpi; %V=x'Px
-            SwRPdt(j)=(SwRxtmpi.'*Abar2.'*P2*SwRxtmpi) + (SwRxtmpi.'*P2*Abar2*SwRxtmpi); %Vdot=x'A'Px+x'PAx
+            SwRPdt(j)=(SwRxtmpi.'*AbarB.'*P2*SwRxtmpi) + (SwRxtmpi.'*P2*AbarB*SwRxtmpi); %Vdot=x'A'Px+x'PAx
         else
             SwRPt(j) =SwRxtmpi.'*P1*SwRxtmpi; %V=x'Px
-            SwRPdt(j)=(SwRxtmpi.'*Abar1.'*P1*SwRxtmpi) + (SwRxtmpi.'*P1*Abar1*SwRxtmpi); %Vdot=x'A'Px+x'PAx
+            SwRPdt(j)=(SwRxtmpi.'*AbarE.'*P1*SwRxtmpi) + (SwRxtmpi.'*P1*AbarE*SwRxtmpi); %Vdot=x'A'Px+x'PAx
         end;
         Swt(1:4,j)=SwRxtmpi;
         SwRut(j)=SwRutmp;    %u
