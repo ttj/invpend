@@ -1,0 +1,27 @@
+automaton $\auto{ExperimentalController}(K_{ec} :\Real^{4\times1}, T_s, T_{exp}:\Real, m:\ioaInt)$
+	signature 
+		input $\act{sample}(\theta^{\prime}, x^{\prime}:\Real)$
+		output $\act{expOutput}(u^{\prime}_{ec} :\Real)$
+		
+	variables
+		internal $\theta_{ec}: \Real:= 0$; $\dot{\theta}_{ec} :\Real := 0$;
+			$x_{ec}: \Real := 0$; $\dot{x}_{ec} :\Real := 0$;
+			$u_{ec} : \Real:=0$; $rt : Real := 0$;
+			$next\_cycle :\ioaAugR := T_{exp}$;
+			let $time\_left := next\_cycle - rt$;
+		
+	transitions
+		input $\act{sample}(\theta^{\prime}, x^{\prime})$
+			eff $\theta_{ec} := \theta^{\prime}$; $x_c := x^{\prime}$;
+			$\dot{\theta}_{ec} := [\theta(t)-\theta(t-mT_s)]/(mT_s)$;
+			$\dot{x}_{ec} := [x(t)-x(t-mT_s)]/(mT_s)$;
+			$u^{\prime}_{ec} := K_{ec1}*x_{ec}+K_{ec2}*\dot{x}_{ec}+K_{ec3}*\theta_{ec}+K_{ec4}*\dot{\theta}_{ec}$;
+ 	
+		output $\act{expOutput}(u^{\prime}_{ec})$ 
+			pre $rt=next\_cycle \wedge u^{\prime}_{ec}=u_{ec}$
+			eff $next\_cycle := next\_cycle + T_{exp}$;
+		
+	trajectories
+		trajdef $\smodel{periodicControl}$
+			stop when $rt=next\_cycle$
+			evolve $d(rt) = 1$;

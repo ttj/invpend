@@ -1,0 +1,22 @@
+	automaton $\auto{Sensor}(T_s:\Real)$ where $T_s > 0$
+	signature
+		output $\act{sample}(\theta^{\prime}, x^{\prime}:\Real)$ 
+	
+	variables
+		input	$\theta:\Real$; $x:\Real$;
+		internal $\theta_s:\Real$; $x_s:\Real$;
+			$now_s :\Real := 0$; 
+			$next\_sample :\ioaAugR := T_s$;
+			let $time\_left := next\_sample - now_s$
+
+	transitions
+		output $\act{sample}(\theta^{\prime},x^{\prime})$
+			pre  $now_s = next\_sample$  
+					/\ $\theta^{\prime} = \theta_s$ 
+					/\ $x^{\prime} = x_s$;
+			eff  $next\_sample := next\_sample + T_s$;
+
+	trajectories
+		trajdef $\smodel{periodicSample}$
+			stop when $now_s = next\_sample$
+			evolve  $d(now_s) = 1$; $\theta_s = \theta$; $x_s = x$;

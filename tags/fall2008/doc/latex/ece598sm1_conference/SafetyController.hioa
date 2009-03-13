@@ -1,0 +1,31 @@
+automaton $\auto{SigmaController}(K_{\sigma}:\Real^{4\times1}, T_s:\Real, m:\ioaInt)$
+	signature 
+		input $\act{sample}(\theta^{\prime}, x^{\prime}:\Real)$
+		output $\act{sigmaOutput}(u^{\prime}_{\sigma} :\Real)$
+		
+	variables
+		internal $\theta_{\sigma}: \Real:= 0$; $\dot{\theta}_{\sigma} :\Real := 0$;
+			$x_{\sigma}: \Real := 0$; $\dot{x}_{\sigma} :\Real := 0$;
+			$u_{\sigma} : \Real:=0$; $rt : \Real := 0$;
+			$next\_cycle :\ioaAugR := T_{s}$;
+			buffer: $\tcon{Seq}[prevTheta:\Real, prevX:\Real] := \{\}$;
+			let $time\_left := next\_cycle - rt$;
+			let $length := length(\mathit{buffer})$
+
+	transitions
+		input $\act{sample}(\theta^{\prime}, x^{\prime})$
+		eff buffer $:=$ buffer $\vdash [\theta_{\sigma}, x_{\sigma}]$
+			$\theta_{\sigma} := \theta^{\prime}$; $x_{\sigma} := x^{\prime}$;
+			
+		output $\act{sigmaOutput}(u^{\prime}_{\sigma})$ 
+			pre $rt=next\_cycle \wedge u^{\prime}_{\sigma}=u_{\sigma}$
+			eff $next\_cycle := next\_cycle + T_{s}$;
+				$\dot{\theta}_{\sigma} := [\theta_{\sigma}-head(tail($buffer$)).prevTheta]/(mT_s)$;
+				$\dot{x}_{\sigma} := [x_{\sigma}-head(tail($buffer$)).prevX]/(mT_s)$;
+				$u^{\prime}_{\sigma} := K_{\sigma1}*x_{\sigma}+K_{\sigma2}*\dot{x}_{\sigma}+K_{\sigma3}*\theta_{\sigma}+K_{\sigma4}*\dot{\theta}_{\sigma}$;
+				buffer $:= tail($buffer$)$;
+		
+	trajectories
+		trajdef $\smodel{periodicSample}$
+			stop when $rt=next\_cycle$
+			evolve $d(rt) = 1$;
