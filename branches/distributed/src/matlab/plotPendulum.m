@@ -1,7 +1,5 @@
 %Inverted Pendulum
 %
-%Fall 2008
-%
 %Taylor Johnson
 %johnso99@nospam-illinois.edu
 %University of Illinois at Urbana-Champaign
