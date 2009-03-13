@@ -1,0 +1,14 @@
+automaton $\auto{Plant}(A:\Real^{4\times 4}, B:\Real^{4\times 1})$ 
+variables
+	input $u:\Real$; 
+	output $\theta:\Real$; $x:\Real$;
+	internal $\theta_h:\Real := 0$; $\dot{\theta}_h:\Real := 0$;
+		 $x_h:\Real := 0 $; $\dot{x}_h:\Real := 0$;
+
+trajectories
+	trajdef $\smodel{plantDynamics}$
+		evolve	$d(x_h) = \dot{x}_h$;
+			$d(\dot{x}_h) = -a_{22}\dot{x}_h-a_{23}\theta_h+a_{24}\dot{\theta}_h+b_2u$;
+			$d(\theta_h) = \dot{\theta}_h$;
+			$d(\dot{\theta}_h) = a_{42}\dot{x}_h+a_{43}\theta_h-a_{34}\dot{\theta}_h-b_4u$;
+			$\theta = \theta_h$; $x = x_h$;

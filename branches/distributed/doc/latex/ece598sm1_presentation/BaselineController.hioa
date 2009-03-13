@@ -1,0 +1,28 @@
+automaton $\auto{BaselineController}(K_{bc} :\Real^{4\times1}, T_s, T_{baseline}:\Real, 
+m:\ioaInt)$
+	signature 
+		input $\act{sample}(\theta^{\prime}, x^{\prime}:\Real)$
+		output $\act{baselineOutput}(u^{\prime}_{bc} :\Real)$
+		
+	variables
+		internal $\theta_{bc}: \Real:= 0$; $\dot{\theta}_{bc} :\Real := 0$;
+			$x_{bc}: \Real := 0$; $\dot{x}_{bc} :\Real := 0$;
+			$u_{bc} : \Real:=0$; $rt : Real := 0$;
+			$next\_cycle :\ioaAugR := T_{baseline}$;
+			let $time\_left := next\_cycle - rt$;
+		
+	transitions
+		input $\act{sample}(\theta^{\prime}, x^{\prime})$
+			eff $\theta_{bc} := \theta^{\prime}$; $x_c := x^{\prime}$;
+			$\dot{\theta}_{bc} := [\theta(t)-\theta(t-mT_s)]/(mT_s)$;
+			$\dot{x}_{bc} := [x(t)-x(t-mT_s)]/(mT_s)$;
+			$u^{\prime}_{bc} := K_{bc1}*x_{bc}+K_{bc2}*\dot{x}_{bc}+K_{bc3}*\theta_{bc}+K_{bc4}*\dot{\theta}_{bc}$;
+ 	
+		output $\act{baselineOutput}(u^{\prime}_{bc})$ 
+			pre $rt=next\_cycle \wedge u^{\prime}_{bc}=u_{bc}$
+			eff $next\_cycle := next\_cycle + T_{baseline}$;
+		
+	trajectories
+		trajdef $\smodel{periodicControl}$
+			stop when $rt=next\_cycle$
+			evolve $d(rt) = 1$;

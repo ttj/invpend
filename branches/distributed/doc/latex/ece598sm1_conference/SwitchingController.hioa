@@ -1,0 +1,48 @@
+automaton $\auto{SwitchingController}(u_{min},u_{max}, T_s:\Real)$
+	type
+		Mode = Enumeration [sc, bc, ec]
+
+	signature 
+		input $\act{safetyOutput}(u^{\prime}_{sc}:\Real)$ 
+		input $\act{baselineOutput}(u^{\prime}_{bc}:\Real)$ 
+		input $\act{expOutput}(u^{\prime}_{ec}:\Real)$ 
+		output $\act{switchingOutput}(u' :\Real)$
+
+	variables
+		internal  $u_{sw} : \Real:=0$; $rt : Real := 0$;
+			 $next\_cycle :\ioaAugR := T_{s}$;
+			 let $time\_left := next\_cycle - rt$;
+			 $u_{sc} :\Real$; $u_{bc}: \Real$; $u_{ec} :\Real$;
+			 $ready_{sc}:\Bool := false$; $ready_{bc}:\Bool := false$; 
+			 $ready_{ec}:\Bool := false$; $mode : Mode  := sc$;
+
+	transitions    
+    		input $\act{safetyOutput}(u^{\prime}_{sc})$
+    			eff  $u_{sc} := u^{\prime}_{sc}$;
+    			$ready_{sc} := true$;
+    			
+    		input $\act{baselineOutput}(u^{\prime}_{bc})$
+    			eff  $u_{bc} := u^{\prime}_{bc}$;
+    			$ready_{bc} := true$;
+    			
+    		input $\act{expOutput}(u^{\prime}_{ec})$
+    			eff  $u_{ec} := u^{\prime}_{ec}$;
+    			$ready_{ec} := true$;
+ 	
+		output $\act{switchingOutput}(u')$
+			pre $now_s = next\_cycle \wedge \left(ready_{sc} \vee ready_{bc} \vee ready_{ec}\right)$
+			eff $next\_cycle := next\_cycle + T_{s}$;
+			if $ready_{ec} \wedge (u_{ec} \in \left[u_{min},u_{max}\right])$
+				$u_{sw} := u_{ec}$;
+			else if $ready_{bc} \wedge (u_{bc} \in \left[u_{min},u_{max}\right])$
+				$u_{sw} := u_{bc}$;
+			else
+				$u_{sw} := u_{bc}$;
+			$ready_{sc} := false$;
+			$ready_{bc} := false$;
+			$ready_{ec} := false$;
+
+	trajectories
+		trajdef $\smodel{periodicControl}$
+			stop when $rt=next\_cycle$
+			evolve $d(rt) = 1$;

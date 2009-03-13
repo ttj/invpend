@@ -1,0 +1,18 @@
+automaton $\auto{Actuator}(T_a:\Real)$ where $T_a > 0$
+	signature
+		input $\act{controllerOutput}(u^{\prime}:\Real)$
+		
+	variables
+		output $u:\Real$;
+		internal $u_a:\Discrete \ \Real := 0$; 
+			$ready_a: \Bool := \false$;
+			$now_a :\Real := 0$;
+	
+	transitions
+		input $\act{switchingOutput}(u')$
+			eff $u_a=u'$;
+				$ready_a := true$;
+	
+	trajectories
+		trajdef $\smodel{hold}$ 
+ 			evolve  $d(now_a) = 1$; $u = u_a$;
