@@ -16,11 +16,15 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d)
     %initial positions \in gaussian with var=2500
     %initial velocities \in [-2, -1]^2 box
     
+    c1=0.1;
+    c2=1;
+    
     epsilon = 0.1;
     a=5;
     b=5;
     ha=0.2;
     hb=0.9;
+    delta=0;
     
     Ts=0.01;
     Tc=0.01;
@@ -58,18 +62,27 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d)
 
     tcyc=Tc;
     tdiv=5; %minimum is 1 (1 division per control cycle, same as only looking at control cycle)
-    tmax=0.5;
+    tmax=10;
     time_ctrl=[0:tcyc:tmax]';      %vector of control cycle times
     time_traj=[0:tcyc/tdiv:tmax]'; %vector of trajectories
-    u_steps=(tmax-tcyc)/tcyc+1;     %number of control update steps
+    u_steps=((tmax-tcyc)/tcyc)+1;     %number of control update steps
     steps=tmax/(tcyc/tdiv); %total numbers of trajectory steps
     updates=10; %number of times to update the plots
+    
+    %qd=[];
+    %for i=1:1:m
+    %    qd=cat(2,qd,[r-0.25:r-0.25:(r-0.25)*N]');
+    %end
+    %pd=ones(N, m).*0.25;
+    qd=100:100:100*m;
+    pd=1:1:1*m;
+    qr=qd;
+    pr=pd;
     
     %system evolution
     for t=0:tcyc:tmax-tcyc
         t_i=round(t/tcyc)+1;
-        
-        if mod(t_i-1, u_steps / updates) == 0
+        if t_i==0 || mod(t_i+1, u_steps / updates) == 0
             %we will call the below plotting loop every some odd iterations of the
             %system evolution to see how it's doing
             if m == 2 || m == 3
@@ -89,7 +102,7 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d)
             %      multi-dimensional object without consistent number of elements
             %TODO: move to function
             for i=1:size(q,1)
-                neighbors_i = neighborsSpatial(i, q(i,:), q, r, d); %exclude self here if desired q_js: cat(1,q(1:i,:),q(i+1:size(q,1),:))
+                neighbors_i = neighborsSpatialLattice(i, q(i,:), q, r, d, delta); %exclude self here if desired q_js: cat(1,q(1:i,:),q(i+1:size(q,1),:))
                 %spatial_neighbors(:,:,i) = neighbors_i;
 
                 %TODO: speed this up by removing the for loop and doing
@@ -108,8 +121,8 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d)
         
         %compute control (based on state vector, possibly delayed, etc)
         %TODO: add proper control, random probably isn't effective ;-)
-        u = (vel_max + (vel_min - vel_max).*rand(N, m))./10;
-        %u = zeros(N, 1);
+        %u = (vel_max + (vel_min - vel_max).*rand(N, m));
+        u = zeros(N, m);
         
         %u_i = u_i^\alpha + u_i^\gamma
         %n_ij = ((q_j - q_i ) / (sqrt(1 + epsilon * norm(q_j - q_i, 2))^2));
@@ -134,26 +147,57 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d)
         
         for i=1:N
             js = neighborsSpatial(i, q(i,:), q, r, d);
-            for j=1:size(js,1)
-                %TODO: verify equations and all functions
-                u(i) = phi_a(sig_norm ( q(j,:) - q(i,:), epsilon ), r_sig, d_sig, ha, a, b) * ((norm(q(j,:) - q(i,:),2) ) / (sqrt(1 + epsilon * norm(q(j,:) - q(i,:), 2))^2));
-                u(i) = u(i) + rho_h( sig_norm ( q(j,:) - q(i,:), epsilon ) / r_sig, ha) * norm((p(j,:) - p(i,:)),2);
-                %TODO: add goal term (u_gamma)
+            if size(js,1) > -1
+                for j=1:size(js,1)
+                    %TODO: verify equations and all functions
+                    u(i,:) = u(i,:) + phi_a(sig_norm ( q(j,:) - q(i,:), epsilon ), r_sig, d_sig, ha, a, b) * (((q(j,:) - q(i,:)) ) / (sqrt(1 + epsilon * ((norm(q(j,:) - q(i,:), 2))^2))));
+                    u(i,:) = u(i,:) + (a_ij(q(i,:), q(j,:), r_sig, ha, epsilon) * ((p(j,:) - p(i,:))));
+                end
+            else
+                %no neighbors yet: have to compute something
+                %TODO: fix, not right (always 0 obviously)
+                u(i,:) = u(i,:) + phi_a(sig_norm ( q(i,:) - q(i,:), epsilon ), r_sig, d_sig, ha, a, b) * (((q(i,:) - q(i,:)) ) / (sqrt(1 + epsilon * norm(q(i,:) - q(i,:), 2))^2));
+                u(i,:) = u(i,:) + (a_ij(q(i,:), q(i,:), r_sig, ha, epsilon) * ((p(i,:) - p(i,:))));
             end
+            
+            %add gamma goal term
+            u(i,:) = u(i,:) - c1*(q(i,:) - qr) - c2*(p(i,:) - pr);
         end
 
-        for t_j=(t_i-1)*tdiv+2 : 1 : tdiv+(t_i-1)*tdiv+1
+        for t_j=(t_i-1)*tdiv+1 : 1 : tdiv+(t_i-1)*tdiv+1
             tt=t_j*(tcyc/tdiv);
             
             %run system evolution
-            %use matrix exp?
             
+            %state space form
             %q'=p;     => [q'; p']=[0 1; 0 0]*[q; p] + [0;1]*[u]
             %p'=u;
-            %TODO: this is currently wrong, but it does result in some
-            %notion of stability (convolution integral?)
-            q=exp(p*tt).*q;
-            p=exp(p*tt).*u;
+            
+            %solution is:
+            %  expm(A*(t-t0))*x0+int(expm(A*(t-t0))*B*u,tau,t0,t)
+            %for
+            %  syms q p q0 p0 tau t t0
+            %  x = [q;p]
+            %  x0 = [q0; p0]
+            %  A = [0 1; 0 0]
+            %  B = [0; 1]
+            %which expands to
+            %  [x]=[q;= [q0 + p0*(t - t0) + u*(t - t0)^2;
+            %       p]   p0 + u*(t - t0)]
+            
+            %TODO: verify correctness of this as a solution
+            q=q + p.*(tcyc/tdiv) + u.*((tcyc/tdiv)^2);
+            p=p + u.*(tcyc/tdiv);
+            
+            %gamma agent
+            qr=qr + pr.*(tcyc/tdiv) + fr(qr, pr).*((tcyc/tdiv)^2);
+            pr=pr + fr(qr, pr).*(tcyc/tdiv);
         end
+
+        %u %show controls
     end
+
+    %average position and velocity for moving reference frame
+    qc=Ave(q)
+    pc=Ave(p)
 end
