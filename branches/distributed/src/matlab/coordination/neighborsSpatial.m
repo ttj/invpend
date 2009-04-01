@@ -20,7 +20,7 @@ function [Ni] = neighborsSpatial(i, q_i, q_js, r, d)
     %iterate over all vertices (all rows in A)
     for j=1:size(q_js,1)
         x=norm(q_js(j,:) - q_i,2);
-        if (x < r && j ~= i)
+        if ((x < r) && (j ~= i))
             %add to group
             idx = idx + 1;
             Ni(idx) = j;
