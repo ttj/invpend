@@ -21,8 +21,10 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
     %initial positions \in gaussian with var=2500
     %initial velocities \in [-2, -1]^2 box
     
-    c1=1.75;
-    c2=0.5;
+    %c1=1.75;
+    %c2=25;
+    c1=0.05;
+    c2=0.01;
     
     epsilon = 0.1;
     a=5;
@@ -40,7 +42,7 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
     fc=1/Tc;
 
     kappa = r / d;
-    
+
     vel_min = -2;
     vel_max = -1;
 
@@ -79,46 +81,79 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
     %initial control value
     %u = (vel_max + (vel_min - vel_max).*rand(N, m));
     u = zeros(N, m);
+    uGradient = zeros(N, m);
+    uConsensus = zeros(N, m);
+    uGamma = zeros(N, m);
 
     %generate an equally spaced (by d) rectangular grid goal
     %TODO: generalize for m-dimensional (use cat and m-th root of N [need m loops?])
-    for i=1:ceil(sqrt(N))
-        for j=1:ceil(sqrt(N))
-            qd((i-1)*ceil(sqrt(N))+j,:) = [((i-1)*d) ((j-1)*d)] + [coord_max coord_max];
+    if m == 1
+        for i=1:N
+            qd(i,:) = ((i-1)*d) + coord_max;
         end
+        scatter(qd(:,1),zeros(N,1),[1:N]');
+    elseif m == 2
+        for i=1:ceil(sqrt(N))
+            for j=1:ceil(sqrt(N))
+                qd((i-1)*ceil(sqrt(N))+j,:) = [((i-1)*d) ((j-1)*d)] + [coord_max coord_max];
+            end
+        end
+        scatter(qd(:,1),qd(:,2));
+    elseif m == 3
+        for i=1:ceil(N^(1/3))
+            for j=1:ceil(N^(1/3))
+                for k=1:ceil(N^(1/3))
+                    qd((i-1)*ceil(N^(2/3))+(j-1)*ceil(N^(1/3))+k,:) = [((i-1)*d) ((j-1)*d) ((k-1)*d)] + [coord_max coord_max coord_max];
+                end
+            end
+        end
+        scatter(qd(:,1),qd(:,2),qd(:,3));
     end
     qd=qd(1:N,:); %shrink to maximum N
-    scatter(qd(:,1),qd(:,2));
+    %qd=qd.*5;
+    qd=ones(N,m).*coord_max*5;
+    %pd=zeros(N,m);
     
     qr=qd;
     pr=pd;
     
     %start at goal
-    %q=qd;
-    %p=pd;
+    q=qd;
+    p=pd;
     
+    de = deviationEnergy(q,r,d,delta)
+    %pne = proximityNetEdges(q,r,d)
     subplotRows=1;%ceil(sqrt(updates));
     subplotCols=1;%floor(sqrt(updates));
     subplotCount=1;
 
     u_history = zeros([round(u_steps), N, m]);
+    uGradient_history = zeros([round(u_steps), N, m]);
+    uConsensus_history = zeros([round(u_steps), N, m]);
+    uGamma_history = zeros([round(u_steps), N, m]);
     q_history = zeros([round(steps), N, m]);
     p_history = zeros([round(steps), N, m]);
     qr_history = zeros([round(steps), N, m]);
     pr_history = zeros([round(steps), N, m]);
+    de_history = zeros([round(steps), N, m]);
     
     %system evolution
     for t=0:tcyc:tmax-tcyc
         t_i=round(t/tcyc)+1;
-        if t_i==0 || mod(t_i+1, u_steps / updates) == 0
+        if t_i==1 || mod(t_i+1, u_steps / updates) == 0
             %we will call the below plotting loop every some odd iterations of the
             %system evolution to see how it's doing
-            if m == 2 || m == 3
+            if m == 1 || m == 2 || m == 3
                 figure;
                 hold on;
             end
 
-            if m == 2
+            if m == 1
+                subplot(subplotRows,subplotCols,subplotCount), scatter(q(:,1),zeros(N,1));
+                subplot(subplotRows,subplotCols,subplotCount), scatter(qd(:,1)+pd(:,1).*t,zeros(N,1),'r');
+                scatter(qd(:,1)+pd(:,1).*t,zeros(N,1),r,'g');
+                scatter(qd(:,1)+pd(:,1).*t,zeros(N,1),d,'k');
+            elseif m == 2
                 subplot(subplotRows,subplotCols,subplotCount), scatter(q(:,1),q(:,2));
                 subplot(subplotRows,subplotCols,subplotCount), scatter(qd(:,1)+pd(:,1).*t,qd(:,2)+pd(:,2).*t,'r');
                 %out=[[qd(:,1) (qd(:,1)+pd(:,1))] [qd(:,2) (qd(:,2)+pd(:,2))]];
@@ -136,7 +171,7 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
             %      What will that data structure look like?  Rather complicated
             %      multi-dimensional object without consistent number of elements
             %TODO: move to function
-            for i=1:size(q,1)
+            for i=1:N
                 neighbors_i = neighborsSpatialLattice(i, q(i,:), q, r, d, delta); %exclude self here if desired q_js: cat(1,q(1:i,:),q(i+1:size(q,1),:))
                 %spatial_neighbors(:,:,i) = neighbors_i;
 
@@ -148,7 +183,9 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
                     %    continue;
                     %end
                     
-                    if m == 2
+                    if m == 1
+                        plot([q(i,1) q(neighbors_i(j,1),1)], [0 0]);
+                    elseif m == 2
                         plot([q(i,1) q(neighbors_i(j,1),1)], [q(i,2) q(neighbors_i(j,1),2)]);
                     elseif m == 3
                         plot3([q(i,1) q(neighbors_i(j,1),1)], [q(i,2) q(neighbors_i(j,1),2)], [q(i,3) q(neighbors_i(j,1),3)]);
@@ -179,18 +216,27 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
         
         %store all controls over time
         u_history(t_i,:,:) = u(:,:);
+        uGradient_history(t_i,:,:) = uGradient(:,:);
+        uConsensus_history(t_i,:,:) = uConsensus(:,:);
+        uGamma_history(t_i,:,:) = uGamma(:,:);
         
         %reinitialze all controls (not dependent upon past control value)
         u = zeros(N, m);
+        uGradient = zeros(N, m);
+        uConsensus = zeros(N, m);
+        uGamma = zeros(N, m);
         
         %compute control (based on state vector, possibly delayed, etc)
         for i=1:N
             js = neighborsSpatial(i, q(i,:), q, r, d);
+            %js = neighborsSpatialLattice(i, q(i,:), q, r, d, delta);
 %            if size(js,1) > -1
                 for j=1:size(js,1)
                     %TODO: verify equations and all functions
-                    u(i,:) = u(i,:) + phi_a(sig_norm ( q(j,:) - q(i,:), epsilon ), r_sig, d_sig, ha, a, b) * (((q(j,:) - q(i,:)) ) / (sqrt(1 + epsilon * ((norm(q(j,:) - q(i,:), 2))^2))));
-                    u(i,:) = u(i,:) + (a_ij(q(i,:), q(j,:), r_sig, ha, epsilon) * ((p(j,:) - p(i,:))));
+                    %u(i,:) = u(i,:) + phi_a(sig_norm ( q(j,:) - q(i,:), epsilon ), r_sig, d_sig, ha, a, b) * (((q(j,:) - q(i,:)) ) / (sqrt(1 + epsilon * ((norm(q(j,:) - q(i,:), 2))^2))));
+                    %u(i,:) = u(i,:) + (a_ij(q(i,:), q(j,:), r_sig, ha, epsilon) * ((p(j,:) - p(i,:))));
+                    uGradient(i,:) = uGradient(i,:) + phi_a(sig_norm ( q(j,:) - q(i,:), epsilon ), r_sig, d_sig, ha, a, b) * (((q(j,:) - q(i,:)) ) / (sqrt(1 + epsilon * ((norm(q(j,:) - q(i,:), 2))^2))));
+                    uConsensus(i,:) = uConsensus(i,:) + (a_ij(q(i,:), q(j,:), r_sig, ha, epsilon) * ((p(j,:) - p(i,:))));
                 end
 %             else
 %                 %no neighbors yet: have to compute something
@@ -200,8 +246,13 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
 %             end
             
             %add gamma goal term
-            u(i,:) = u(i,:) - c1*(q(i,:) - qr(i,:)) - c2*(p(i,:) - pr(i,:));
+            %u(i,:) = u(i,:) - c1*(q(i,:) - qr(i,:)) - c2*(p(i,:) - pr(i,:));
+            uGamma(i,:) = -c1*(q(i,:) - qr(i,:)) - c2*(p(i,:) - pr(i,:));
         end
+        
+        %sum all forces
+        %uGamma(:,:) = zeros(N,m)
+        u(:,:) = uGradient(:,:) + uConsensus(:,:) + uGamma(:,:);
 
         for t_j=(t_i-1)*tdiv+1 : 1 : tdiv+(t_i-1)*tdiv+1
             tt=t_j*(tcyc/tdiv);
@@ -229,12 +280,14 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
             p_history(t_j,:,:) = p(:,:);
             qr_history(t_j,:,:) = qr(:,:);
             pr_history(t_j,:,:) = pr(:,:);
+            de_history(t_j,:,:) = de(:,:);
             
             %TODO: verify correctness of this as a solution
             %      in general, can we use this solution if the control
-            %      is nonlinear?
-            q=q + p.*(tcyc/tdiv) + u.*((tcyc/tdiv)^2);
-            p=p + u.*(tcyc/tdiv);
+            %      is nonlinear but numerical?
+            q = q + p.*(tcyc/tdiv) + u.*((tcyc/tdiv)^2);
+            p = p + u.*(tcyc/tdiv);
+            de = deviationEnergy(q,r,d,delta);
             
             %gamma agent
             qr=qr + pr.*(tcyc/tdiv) + fr(qr, pr).*((tcyc/tdiv)^2);
@@ -249,19 +302,37 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
         for i=1:N
             figure;
             hold on;
-            plot(time_ctrl,u_history(:,i,1),'b');
-            plot(time_ctrl,u_history(:,i,2),'r');
-            plot(time_ctrl,sqrt(u_history(:,i,1).^2 + u_history(:,i,2).^2),'g');
-            figure;
-            hold on;
-            plot(time_traj,q_history(:,i,1) - qd(i,1),'b');
-            plot(time_traj,q_history(:,i,2) - qd(i,1),'r');
-            plot(time_traj,p_history(:,i,1) - pd(i,1),'g');
-            plot(time_traj,p_history(:,i,2) - pd(i,1),'c');
+            
+            if m == 1
+                plot(time_ctrl,u_history(:,i,1),'b--');
+                plot(time_ctrl,uGradient_history(:,i,1),'r--');
+                plot(time_ctrl,uConsensus_history(:,i,1),'k--');
+                plot(time_ctrl,uGamma_history(:,i,1),'g--');
+                %plot(time_traj,q_history(:,i,1) - qd(i,1),'c-.');
+                %plot(time_traj,p_history(:,i,1) - pd(i,1),'m-.');
+                plot(time_traj,de_history(:,i,1),'c');
+                %legend('u', 'uGradient', 'uConsensus', 'uGamma', 'q-qd', 'p-pd');
+                legend('u', 'uGradient', 'uConsensus', 'uGamma', 'de');
+            elseif m == 2
+                plot(time_ctrl,u_history(:,i,1),'b--');
+                plot(time_ctrl,u_history(:,i,2),'c--');
+                plot(time_ctrl,sqrt(u_history(:,i,1).^2 + u_history(:,i,2).^2),'g');
+                plot(time_traj,q_history(:,i,1) - qd(i,1),'r:');
+                plot(time_traj,q_history(:,i,2) - qd(i,1),'m:');
+                plot(time_traj,p_history(:,i,1) - pd(i,1),'k:');
+                plot(time_traj,p_history(:,i,2) - pd(i,1),'b:');
+            elseif m == 3
+                %use only norms here
+            end
         end
     end
 
     %average position and velocity for moving reference frame
+    q
+    p
+    qd
+    pd
+    de
     qc=Ave(q)
     pc=Ave(p)
 end
