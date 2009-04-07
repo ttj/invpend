@@ -111,7 +111,7 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
     end
     qd=qd(1:N,:); %shrink to maximum N
     %qd=qd.*5;
-    %qd=ones(N,m).*coord_max*5;
+    qd=ones(N,m).*coord_max*5;
     %pd=zeros(N,m);
     
     qr=qd;
