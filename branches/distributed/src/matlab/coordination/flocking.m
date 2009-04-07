@@ -23,8 +23,8 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
     
     %c1=1.75;
     %c2=25;
-    c1=0.05;
-    c2=0.01;
+    c1=0.25;
+    c2=0.1;
     
     epsilon = 0.1;
     a=5;
@@ -76,7 +76,7 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
 
     %goals for gamma control term
     qd=zeros(N, m);         %preallocate
-    pd=ones(N, m).*(d/10);
+    pd=ones(N, m);
     
     %initial control value
     %u = (vel_max + (vel_min - vel_max).*rand(N, m));
@@ -111,15 +111,15 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
     end
     qd=qd(1:N,:); %shrink to maximum N
     %qd=qd.*5;
-    qd=ones(N,m).*coord_max*5;
+    %qd=ones(N,m).*coord_max*5;
     %pd=zeros(N,m);
     
     qr=qd;
     pr=pd;
     
     %start at goal
-    q=qd;
-    p=pd;
+    %q=qd;
+    %p=pd;
     
     de = deviationEnergy(q,r,d,delta)
     %pne = proximityNetEdges(q,r,d)
@@ -184,11 +184,11 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
                     %end
                     
                     if m == 1
-                        plot([q(i,1) q(neighbors_i(j,1),1)], [0 0]);
+                        plot([q(i,1) q(neighbors_i(j),1)], [0 0]);
                     elseif m == 2
-                        plot([q(i,1) q(neighbors_i(j,1),1)], [q(i,2) q(neighbors_i(j,1),2)]);
+                        plot([q(i,1) q(neighbors_i(j),1)], [q(i,2) q(neighbors_i(j),2)]);
                     elseif m == 3
-                        plot3([q(i,1) q(neighbors_i(j,1),1)], [q(i,2) q(neighbors_i(j,1),2)], [q(i,3) q(neighbors_i(j,1),3)]);
+                        plot3([q(i,1) q(neighbors_i(j),1)], [q(i,2) q(neighbors_i(j),2)], [q(i,3) q(neighbors_i(j),3)]);
                     end
                 end
             end
@@ -234,9 +234,9 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
                 for j=1:size(js,1)
                     %TODO: verify equations and all functions
                     %u(i,:) = u(i,:) + phi_a(sig_norm ( q(j,:) - q(i,:), epsilon ), r_sig, d_sig, ha, a, b) * (((q(j,:) - q(i,:)) ) / (sqrt(1 + epsilon * ((norm(q(j,:) - q(i,:), 2))^2))));
-                    %u(i,:) = u(i,:) + (a_ij(q(i,:), q(j,:), r_sig, ha, epsilon) * ((p(j,:) - p(i,:))));
-                    uGradient(i,:) = uGradient(i,:) + phi_a(sig_norm ( q(j,:) - q(i,:), epsilon ), r_sig, d_sig, ha, a, b) * (((q(j,:) - q(i,:)) ) / (sqrt(1 + epsilon * ((norm(q(j,:) - q(i,:), 2))^2))));
-                    uConsensus(i,:) = uConsensus(i,:) + (a_ij(q(i,:), q(j,:), r_sig, ha, epsilon) * ((p(j,:) - p(i,:))));
+                    %u(i,:) = u(i,:) + (a_ij(q(i,:), q(j,:), r_sig, ha,epsilon) * ((p(j,:) - p(i,:))));
+                    uGradient(i,:) = uGradient(i,:) + phi_a(sig_norm ( q(js(j),:) - q(i,:), epsilon ), r_sig, d_sig, ha, a, b) * n_ij(q(i,:), q(js(j),:), epsilon);
+                    uConsensus(i,:) = uConsensus(i,:) + (a_ij(q(i,:), q(js(j),:), r_sig, ha, epsilon) * ((p(js(j),:) - p(i,:))));
                 end
 %             else
 %                 %no neighbors yet: have to compute something
@@ -310,9 +310,10 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
                 plot(time_ctrl,uGamma_history(:,i,1),'g--');
                 %plot(time_traj,q_history(:,i,1) - qd(i,1),'c-.');
                 %plot(time_traj,p_history(:,i,1) - pd(i,1),'m-.');
-                plot(time_traj,de_history(:,i,1),'c');
+                %plot(time_traj,de_history(:,i,1),'c');
                 %legend('u', 'uGradient', 'uConsensus', 'uGamma', 'q-qd', 'p-pd');
-                legend('u', 'uGradient', 'uConsensus', 'uGamma', 'de');
+                %legend('u', 'uGradient', 'uConsensus', 'uGamma', 'de');
+                legend('u', 'uGradient', 'uConsensus', 'uGamma');
             elseif m == 2
                 plot(time_ctrl,u_history(:,i,1),'b--');
                 plot(time_ctrl,u_history(:,i,2),'c--');
