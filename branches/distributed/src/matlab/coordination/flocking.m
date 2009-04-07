@@ -1,4 +1,5 @@
 function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, updates, plotControls)
+    %close all;
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 %       tdiv:       minimum is 1 (1 division per control cycle, same as 
@@ -31,7 +32,7 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
     b=5;
     ha=0.2;
     hb=0.9;
-    delta=d/10;
+    delta=d/5;
 
     r_sig = sig_norm(r, epsilon);
     d_sig = sig_norm(d, epsilon);
@@ -43,8 +44,8 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
 
     kappa = r / d;
 
-    vel_min = -2;
-    vel_max = -1;
+    vel_min = 10;
+    vel_max = 0;
 
     %generate velocity matrix
     p = vel_max + (vel_min - vel_max).*rand(N, m);
@@ -308,22 +309,30 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
                 plot(time_ctrl,uGradient_history(:,i,1),'r--');
                 plot(time_ctrl,uConsensus_history(:,i,1),'k--');
                 plot(time_ctrl,uGamma_history(:,i,1),'g--');
-                %plot(time_traj,q_history(:,i,1) - qd(i,1),'c-.');
-                %plot(time_traj,p_history(:,i,1) - pd(i,1),'m-.');
+                plot(time_traj,q_history(:,i,1) - qr_history(i,1),'c-.');
+                plot(time_traj,p_history(:,i,1) - pr_history(i,1),'m-.');
                 %plot(time_traj,de_history(:,i,1),'c');
-                %legend('u', 'uGradient', 'uConsensus', 'uGamma', 'q-qd', 'p-pd');
+                legend('u', 'uGradient', 'uConsensus', 'uGamma', 'q-qr', 'p-pr');
                 %legend('u', 'uGradient', 'uConsensus', 'uGamma', 'de');
-                legend('u', 'uGradient', 'uConsensus', 'uGamma');
             elseif m == 2
-                plot(time_ctrl,u_history(:,i,1),'b--');
-                plot(time_ctrl,u_history(:,i,2),'c--');
-                plot(time_ctrl,sqrt(u_history(:,i,1).^2 + u_history(:,i,2).^2),'g');
-                plot(time_traj,q_history(:,i,1) - qd(i,1),'r:');
-                plot(time_traj,q_history(:,i,2) - qd(i,1),'m:');
-                plot(time_traj,p_history(:,i,1) - pd(i,1),'k:');
-                plot(time_traj,p_history(:,i,2) - pd(i,1),'b:');
+                %plot(time_ctrl,u_history(:,i,1),'b--');
+                %plot(time_ctrl,u_history(:,i,2),'c--');
+                plot(time_ctrl,sqrt(u_history(:,i,1).^2 + u_history(:,i,2).^2),'b--');
+                plot(time_ctrl,sqrt(uGradient_history(:,i,1).^2 + uGradient_history(:,i,2).^2),'r--');
+                plot(time_ctrl,sqrt(uConsensus_history(:,i,1).^2 + uConsensus_history(:,i,2).^2),'k--');
+                plot(time_ctrl,sqrt(uGamma_history(:,i,1).^2 + uGamma_history(:,i,2).^2),'g--');
+                %plot(time_traj,q_history(:,i,1) - qd(i,1),'r:');
+                %plot(time_traj,q_history(:,i,2) - qd(i,1),'m:');
+                %plot(time_traj,p_history(:,i,1) - pd(i,1),'k:');
+                %plot(time_traj,p_history(:,i,2) - pd(i,1),'b:');
+                legend('u', 'uGradient', 'uConsensus', 'uGamma');
             elseif m == 3
-                %use only norms here
+                %use only norms here or we'll get too busy
+                plot(time_ctrl,sqrt(u_history(:,i,1).^2 + u_history(:,i,2).^2 + u_history(:,i,3).^2),'b--');
+                plot(time_ctrl,sqrt(uGradient_history(:,i,1).^2 + uGradient_history(:,i,2).^2 + uGradient_history(:,i,3).^2),'r--');
+                plot(time_ctrl,sqrt(uConsensus_history(:,i,1).^2 + uConsensus_history(:,i,2).^2 + uConsensus_history(:,i,3).^2),'k--');
+                plot(time_ctrl,sqrt(uGamma_history(:,i,1).^2 + uGamma_history(:,i,2).^2 + uGamma_history(:,i,3).^2),'g--');
+                legend('u', 'uGradient', 'uConsensus', 'uGamma');
             end
         end
     end
@@ -346,6 +355,17 @@ end
 
 %3: obstacles
 
+%crash failure: not moving, just obstacle
+
+%stuck at failure: moving and growing in size: nodes know where it is and
+%how fast it is going
+
+%    => what is periodicity with which a node has to be able to update its
+%       neighbors in order to be able to do mitigation in time
+
+%   what if neighbor fails at max acc? can never go over it: how to handle
+%   this?  when to overtake node and when to just follow it?
+
 %4: failure with stuck value, starting in lattice
 
 %5: one node slowly updating, everyone else ignores eventually and treats
@@ -356,3 +376,45 @@ end
 %iterated systems
 
 %mani chandy's paper was like this going towards message passing systems
+
+
+
+
+%when have we reached the goal?
+%node is said to reach a goal if it's \alpha-lattice has reached the goal
+%  may have to fine tune this definition
+
+
+
+%1.a obstacles
+%first: one obstacle
+
+%1.b delayed updates?
+
+%detection of failures: assume taking care of (node knows when it is going
+%   over obstacle)
+%avoidance: mitigation of failures
+
+%2 piecewise psi function with 3-segments: 
+
+
+%3 safety (minimum gap) and liveness/progress (convergence to goal): we do
+%want to prove this
+
+
+%4 work with their convergence (hard) and prove safety from there?
+%problems arising from their synchronous assumptions?
+
+%5 simplify everything and prove safety (easy) and convergence (hard)
+
+
+%their algorithm may work for our model, but our model is inherently
+%different
+
+%how to define our energy function? tuple of distance-to-goal and deviation
+%energy from \alpha-lattice?
+
+%need velocity in goal term? oscillations? do oscillations provide a
+%problem?
+
+%relax condition such that nodes reach goal, maybe in formation, maybe not
