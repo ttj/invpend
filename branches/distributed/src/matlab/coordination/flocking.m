@@ -44,8 +44,11 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
 
     kappa = r / d;
 
-    vel_min = 10;
-    vel_max = -10;
+    vel_min = -10;
+    vel_max = 10;
+    
+    delay_min = - (Tc / 4);
+    delay_max = (Tc / 4);
 
     %generate velocity matrix
     p = vel_max + (vel_min - vel_max).*rand(N, m);
@@ -112,7 +115,8 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
     end
     qd=qd(1:N,:); %shrink to maximum N
     %qd=qd.*5;
-    qd=ones(N,m).*coord_max*100;
+    %qd=ones(N,m).*coord_max*5;
+    qd=zeros(N,m);
     pd=zeros(N,m);
     
     qr=qd;
@@ -138,8 +142,21 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
     pr_history = zeros([round(steps), N, m]);
     de_history = zeros([round(steps), N, m]);
     
-    %uPeriod = (1:N)'.*0.005
-    uPeriod = ones(N,1)*Tc;
+    %uPeriod = (1:N)'.*0.01
+    uPeriod = ones(N,1)*Tc
+    %uPeriod = [Tc Tc*2 Tc Tc*2 Tc Tc*2 Tc Tc*2 Tc]'
+    uPeriod(1) = Tc*5;
+
+    %uOffset = delay_max + (delay_min - delay_max).*rand(N, 1)
+    tadd = tcyc / tdiv;
+    uOffset = zeros(N,1);
+    for i=1:N
+        to=round(rand(1,1)*tdiv)
+        for j=1:to
+            uOffset(i) = uOffset(i) + tadd;
+        end
+    end    
+    uOffset
     
     %system evolution
     for t=0:tcyc:tmax-tcyc
@@ -205,10 +222,8 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
             
             %compute control (based on state vector, possibly delayed, etc)
             for i=1:N
-                %tt
-                %t
-                %uPeriod(i)
-                if (mod(tt, uPeriod(i)) == 0)
+                if (mod(tt, (uPeriod(i) + uOffset(i))) == 0)
+                    %tt
                     %u_i = u_i^\alpha + u_i^\gamma
                     %n_ij = ((q_j - q_i ) / (sqrt(1 + epsilon * norm(q_j - q_i, 2))^2));
 
@@ -311,7 +326,7 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
     out = u_history;
 
     %plot controls over time
-    if plotControls == 1
+    if plotControls >= 1
         for i=1:N
             figure;
             hold on;
@@ -338,6 +353,18 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
                 %plot(time_traj,p_history(:,i,1) - pd(i,1),'k:');
                 %plot(time_traj,p_history(:,i,2) - pd(i,1),'b:');
                 legend('u', 'uGradient', 'uConsensus', 'uGamma');
+                
+                if plotControls == 2
+                    figure;
+                    hold on;
+                    plot3(time_ctrl,u_history(:,i,1),u_history(:,i,2),'b--');
+                    plot3(time_ctrl,uGradient_history(:,i,1),uGradient_history(:,i,2),'r--');
+                    plot3(time_ctrl,uConsensus_history(:,i,1),uConsensus_history(:,i,2),'k--');
+                    plot3(time_ctrl,uGamma_history(:,i,1),uGamma_history(:,i,2),'g--');
+                    plot3(time_traj,q_history(:,i,1) - qd(i,1),q_history(:,i,2) - qd(i,2),'r:');
+                    plot3(time_traj,p_history(:,i,1),p_history(:,i,2),'k:');
+                    legend('u', 'uGradient', 'uConsensus', 'uGamma', 'q - qd', 'p');
+                end
             elseif m == 3
                 %use only norms here or we'll get too busy
                 plot(time_ctrl,sqrt(u_history(:,i,1).^2 + u_history(:,i,2).^2 + u_history(:,i,3).^2),'b--');
