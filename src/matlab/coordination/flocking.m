@@ -45,7 +45,7 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
     kappa = r / d;
 
     vel_min = 10;
-    vel_max = 0;
+    vel_max = -10;
 
     %generate velocity matrix
     p = vel_max + (vel_min - vel_max).*rand(N, m);
@@ -112,8 +112,8 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
     end
     qd=qd(1:N,:); %shrink to maximum N
     %qd=qd.*5;
-    qd=ones(N,m).*coord_max*5;
-    %pd=zeros(N,m);
+    qd=ones(N,m).*coord_max*100;
+    pd=zeros(N,m);
     
     qr=qd;
     pr=pd;
@@ -137,6 +137,9 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
     qr_history = zeros([round(steps), N, m]);
     pr_history = zeros([round(steps), N, m]);
     de_history = zeros([round(steps), N, m]);
+    
+    %uPeriod = (1:N)'.*0.005
+    uPeriod = ones(N,1)*Tc;
     
     %system evolution
     for t=0:tcyc:tmax-tcyc
@@ -196,67 +199,76 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
 
             %spatial_neighbors
         end
-        
-        %u_i = u_i^\alpha + u_i^\gamma
-        %n_ij = ((q_j - q_i ) / (sqrt(1 + epsilon * norm(q_j - q_i, 2))^2));
-        
-        %rho_h(z) = 1                                    if z \in [0,h)
-        %           1/2 * (1 + cos(pi * (z - h)/1 -h))   if z \in [h,1]
-        %           0                                    else
-        %for h \in (0,1)
-        
-        %a_ij(q) = rho_h( sig_norm ( q_j - q_i ) / r_sig )
-        %and a_ii(q) = 0 for all i, q
-        %a_ij(q) \in [0, 1]
-        % take h =1 (doesn't this violate set definition?
-        
-        %sig_norm(z) = (1 / epsilon) * (sqrt(1 + epsilon * (norm(z,2))^2)-1)
-        
-        %u_i = sumNghbs(\phi_a(sig_norm(q_j-q_i)) * n_ij) + 
-        %      sumNghbs(a_ij(q) * (p_j - p_i))
-        
-        %store all controls over time
-        u_history(t_i,:,:) = u(:,:);
-        uGradient_history(t_i,:,:) = uGradient(:,:);
-        uConsensus_history(t_i,:,:) = uConsensus(:,:);
-        uGamma_history(t_i,:,:) = uGamma(:,:);
-        
-        %reinitialze all controls (not dependent upon past control value)
-        u = zeros(N, m);
-        uGradient = zeros(N, m);
-        uConsensus = zeros(N, m);
-        uGamma = zeros(N, m);
-        
-        %compute control (based on state vector, possibly delayed, etc)
-        for i=1:N
-            js = neighborsSpatial(i, q(i,:), q, r, d);
-            %js = neighborsSpatialLattice(i, q(i,:), q, r, d, delta);
-%            if size(js,1) > -1
-                for j=1:size(js,1)
-                    %TODO: verify equations and all functions
-                    %u(i,:) = u(i,:) + phi_a(sig_norm ( q(j,:) - q(i,:), epsilon ), r_sig, d_sig, ha, a, b) * (((q(j,:) - q(i,:)) ) / (sqrt(1 + epsilon * ((norm(q(j,:) - q(i,:), 2))^2))));
-                    %u(i,:) = u(i,:) + (a_ij(q(i,:), q(j,:), r_sig, ha,epsilon) * ((p(j,:) - p(i,:))));
-                    uGradient(i,:) = uGradient(i,:) + phi_a(sig_norm ( q(js(j),:) - q(i,:), epsilon ), r_sig, d_sig, ha, a, b) * n_ij(q(i,:), q(js(j),:), epsilon);
-                    uConsensus(i,:) = uConsensus(i,:) + (a_ij(q(i,:), q(js(j),:), r_sig, ha, epsilon) * ((p(js(j),:) - p(i,:))));
-                end
-%             else
-%                 %no neighbors yet: have to compute something
-%                 %TODO: fix, not right (always 0 obviously)
-%                 u(i,:) = u(i,:) + phi_a(sig_norm ( q(i,:) - q(i,:), epsilon ), r_sig, d_sig, ha, a, b) * (((q(i,:) - q(i,:)) ) / (sqrt(1 + epsilon * norm(q(i,:) - q(i,:), 2))^2));
-%                 u(i,:) = u(i,:) + (a_ij(q(i,:), q(i,:), r_sig, ha, epsilon) * ((p(i,:) - p(i,:))));
-%             end
-            
-            %add gamma goal term
-            %u(i,:) = u(i,:) - c1*(q(i,:) - qr(i,:)) - c2*(p(i,:) - pr(i,:));
-            uGamma(i,:) = -c1*(q(i,:) - qr(i,:)) - c2*(p(i,:) - pr(i,:));
-        end
-        
-        %sum all forces
-        %uGamma(:,:) = zeros(N,m)
-        u(:,:) = uGradient(:,:) + uConsensus(:,:) + uGamma(:,:);
 
         for t_j=(t_i-1)*tdiv+1 : 1 : tdiv+(t_i-1)*tdiv+1
             tt=t_j*(tcyc/tdiv);
+            
+            %compute control (based on state vector, possibly delayed, etc)
+            for i=1:N
+                %tt
+                %t
+                %uPeriod(i)
+                if (mod(tt, uPeriod(i)) == 0)
+                    %u_i = u_i^\alpha + u_i^\gamma
+                    %n_ij = ((q_j - q_i ) / (sqrt(1 + epsilon * norm(q_j - q_i, 2))^2));
+
+                    %rho_h(z) = 1                                    if z \in [0,h)
+                    %           1/2 * (1 + cos(pi * (z - h)/1 -h))   if z \in [h,1]
+                    %           0                                    else
+                    %for h \in (0,1)
+
+                    %a_ij(q) = rho_h( sig_norm ( q_j - q_i ) / r_sig )
+                    %and a_ii(q) = 0 for all i, q
+                    %a_ij(q) \in [0, 1]
+                    % take h =1 (doesn't this violate set definition?
+
+                    %sig_norm(z) = (1 / epsilon) * (sqrt(1 + epsilon * (norm(z,2))^2)-1)
+
+                    %u_i = sumNghbs(\phi_a(sig_norm(q_j-q_i)) * n_ij) + 
+                    %      sumNghbs(a_ij(q) * (p_j - p_i))
+
+                    %store all controls over time
+                    u_history(t_i,:,:) = u(:,:);
+                    uGradient_history(t_i,:,:) = uGradient(:,:);
+                    uConsensus_history(t_i,:,:) = uConsensus(:,:);
+                    uGamma_history(t_i,:,:) = uGamma(:,:);
+
+                    %reinitialze all controls (not dependent upon past control value)
+                    %u = zeros(N, m);
+                    %uGradient = zeros(N, m);
+                    %uConsensus = zeros(N, m);
+                    %uGamma = zeros(N, m);
+                    u(i,:) = zeros(1,m);
+                    uGradient(i,:) = zeros(1,m);
+                    uConsensus(i,:) = zeros(1,m);
+                    uGamma(i,:) = zeros(1,m);
+
+                    js = neighborsSpatial(i, q(i,:), q, r, d);
+                    %js = neighborsSpatialLattice(i, q(i,:), q, r, d, delta);
+        %            if size(js,1) > -1
+                        for j=1:size(js,1)
+                            %TODO: verify equations and all functions
+                            %u(i,:) = u(i,:) + phi_a(sig_norm ( q(j,:) - q(i,:), epsilon ), r_sig, d_sig, ha, a, b) * (((q(j,:) - q(i,:)) ) / (sqrt(1 + epsilon * ((norm(q(j,:) - q(i,:), 2))^2))));
+                            %u(i,:) = u(i,:) + (a_ij(q(i,:), q(j,:), r_sig, ha,epsilon) * ((p(j,:) - p(i,:))));
+                            uGradient(i,:) = uGradient(i,:) + phi_a(sig_norm ( q(js(j),:) - q(i,:), epsilon ), r_sig, d_sig, ha, a, b) * n_ij(q(i,:), q(js(j),:), epsilon);
+                            uConsensus(i,:) = uConsensus(i,:) + (a_ij(q(i,:), q(js(j),:), r_sig, ha, epsilon) * ((p(js(j),:) - p(i,:))));
+                        end
+        %             else
+        %                 %no neighbors yet: have to compute something
+        %                 %TODO: fix, not right (always 0 obviously)
+        %                 u(i,:) = u(i,:) + phi_a(sig_norm ( q(i,:) - q(i,:), epsilon ), r_sig, d_sig, ha, a, b) * (((q(i,:) - q(i,:)) ) / (sqrt(1 + epsilon * norm(q(i,:) - q(i,:), 2))^2));
+        %                 u(i,:) = u(i,:) + (a_ij(q(i,:), q(i,:), r_sig, ha, epsilon) * ((p(i,:) - p(i,:))));
+        %             end
+
+                    %add gamma goal term
+                    %u(i,:) = u(i,:) - c1*(q(i,:) - qr(i,:)) - c2*(p(i,:) - pr(i,:));
+                    uGamma(i,:) = -c1*(q(i,:) - qr(i,:)) - c2*(p(i,:) - pr(i,:));
+
+                    %sum all forces
+                    %uGamma(:,:) = zeros(N,m)
+                    u(i,:) = uGradient(i,:) + uConsensus(i,:) + uGamma(i,:);
+                end
+            end
             
             %run system evolution
             
