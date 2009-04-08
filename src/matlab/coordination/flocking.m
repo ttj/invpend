@@ -155,7 +155,7 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
         for j=1:to
             uOffset(i) = uOffset(i) + tadd;
         end
-    end    
+    end
     uOffset
     
     %system evolution
