@@ -1,4 +1,4 @@
-function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, updates, plotControls)
+function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, updates, plotControls, tswitch)
     %close all;
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
@@ -24,8 +24,10 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
     
     %c1=1.75;
     %c2=25;
-    c1=0.25;
-    c2=0.1;
+    c1gamma=0.25;
+    c2gamma=0.1;
+    c1beta=0.25;
+    c2beta=0.1;
     
     epsilon = 0.1;
     a=5;
@@ -33,7 +35,12 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
     ha=0.2;
     hb=0.9;
     delta=d/5;
+    
+    uMax = 10;
+    uMin = -10;
 
+    dprime = 0.6 * d;
+    rprime = 1.2 * dprime;
     r_sig = sig_norm(r, epsilon);
     d_sig = sig_norm(d, epsilon);
     
@@ -126,6 +133,16 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
     %q=qd;
     %p=pd;
     
+    %obstacles: k obstacles with radius Rk, centered at yk
+    Ms = [150 150; 30 100; 25 25]; %from paper, last row is radius, first rows are x,y,z,... positions
+    %Ms = [100 110 120 130 150 160; 20 60 40 -20 40 0; 10 4 2 5 5 3]
+    R_k = Ms(size(Ms,1),:);
+    for i=1:size(Ms,2)
+        for j=1:size(Ms,1)-1
+            y_k(i,j) = Ms(j,i);
+        end
+    end
+    
     de = deviationEnergy(q,r,d,delta)
     %pne = proximityNetEdges(q,r,d)
     subplotRows=1;%ceil(sqrt(updates));
@@ -157,10 +174,29 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
         end
     end
     uOffset
-    
+switches = 0;
     %system evolution
     for t=0:tcyc:tmax-tcyc
         t_i=round(t/tcyc)+1;
+        
+        if t > tswitch && switches == 0
+            %set a new goal
+            qd = qd.^2 + ones(N, m)*100;
+            pd = pd.^2 + ones(N, m)*10;
+            qr = qd
+            pr = pd
+            switches = switches + 1;
+        end
+        
+        if t > (tswitch*3) && switches == 1
+            %set a new goal
+            qd = qd*2 + ones(N, m)*10;
+            pd = pd*2 + ones(N, m);
+            qr = qd
+            pr = pd
+            switches = switches + 1;
+        end
+        
         if t_i==1 || mod(t_i+1, u_steps / updates) == 0
             %we will call the below plotting loop every some odd iterations of the
             %system evolution to see how it's doing
@@ -171,19 +207,19 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
 
             if m == 1
                 subplot(subplotRows,subplotCols,subplotCount), scatter(q(:,1),zeros(N,1));
-                subplot(subplotRows,subplotCols,subplotCount), scatter(qd(:,1)+pd(:,1).*t,zeros(N,1),'r');
-                scatter(qd(:,1)+pd(:,1).*t,zeros(N,1),r,'g');
-                scatter(qd(:,1)+pd(:,1).*t,zeros(N,1),d,'k');
+                subplot(subplotRows,subplotCols,subplotCount), scatter(qr(:,1),zeros(N,1),'r');
+                scatter(qr(:,1),zeros(N,1),r,'g');
+                scatter(qr(:,1),zeros(N,1),d,'k');
             elseif m == 2
                 subplot(subplotRows,subplotCols,subplotCount), scatter(q(:,1),q(:,2));
-                subplot(subplotRows,subplotCols,subplotCount), scatter(qd(:,1)+pd(:,1).*t,qd(:,2)+pd(:,2).*t,'r');
+                subplot(subplotRows,subplotCols,subplotCount), scatter(qr(:,1),qr(:,2),'r');
                 %out=[[qd(:,1) (qd(:,1)+pd(:,1))] [qd(:,2) (qd(:,2)+pd(:,2))]];
                 %subplot(subplotRows,subplotCols,subplotCount), plot([qd(:,1) (qd(:,1)+pd(:,1))],[qd(:,2) (qd(:,2)+pd(:,2))],'g')
                 %subplot(subplotRows,subplotCols,subplotCount), plot([qd(:,1) (qd(:,1)+pd(:,1))],[qd(:,2) (qd(:,2)+pd(:,2))],'g')
                 %subplotCount = subplotCount + 1;
             elseif m == 3
                 subplot(subplotRows,subplotCols,subplotCount), scatter3(q(:,1),q(:,2),q(:,3));
-                subplot(subplotRows,subplotCols,subplotCount), scatter3(qd(:,1),qd(:,2),qd(:,3),'r');
+                subplot(subplotRows,subplotCols,subplotCount), scatter3(qr(:,1),qr(:,2),qr(:,3),'r');
                 %subplotCount = subplotCount + 1;
             end
 
@@ -256,17 +292,27 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
                     u(i,:) = zeros(1,m);
                     uGradient(i,:) = zeros(1,m);
                     uConsensus(i,:) = zeros(1,m);
+                    uBetaGradient(i,:) = zeros(1,m);
+                    uBetaConsensus(i,:) = zeros(1,m);
                     uGamma(i,:) = zeros(1,m);
 
                     js = neighborsSpatial(i, q(i,:), q, r, d);
+                    betas = neighborsSpatial(i, q(i,:), q, rprime, dprime);
                     %js = neighborsSpatialLattice(i, q(i,:), q, r, d, delta);
         %            if size(js,1) > -1
                         for j=1:size(js,1)
                             %TODO: verify equations and all functions
                             %u(i,:) = u(i,:) + phi_a(sig_norm ( q(j,:) - q(i,:), epsilon ), r_sig, d_sig, ha, a, b) * (((q(j,:) - q(i,:)) ) / (sqrt(1 + epsilon * ((norm(q(j,:) - q(i,:), 2))^2))));
                             %u(i,:) = u(i,:) + (a_ij(q(i,:), q(j,:), r_sig, ha,epsilon) * ((p(j,:) - p(i,:))));
+                            %old: uGradient(i,:) = uGradient(i,:) + phi_a(sig_norm ( q(js(j),:) - q(i,:), epsilon ), r_sig, d_sig, ha, a, b) * n_ij(q(i,:), q(js(j),:), epsilon);
+                            %old: uConsensus(i,:) = uConsensus(i,:) + (a_ij(q(i,:), q(js(j),:), r_sig, ha, epsilon) * ((p(js(j),:) - p(i,:))));
                             uGradient(i,:) = uGradient(i,:) + phi_a(sig_norm ( q(js(j),:) - q(i,:), epsilon ), r_sig, d_sig, ha, a, b) * n_ij(q(i,:), q(js(j),:), epsilon);
                             uConsensus(i,:) = uConsensus(i,:) + (a_ij(q(i,:), q(js(j),:), r_sig, ha, epsilon) * ((p(js(j),:) - p(i,:))));
+                        end
+                        
+                        for j=1:size(betas,1)
+                            uBetaGradient(i,:) = uBetaGradient(i,:) + phi_a(sig_norm ( q(betas(j),:) - q(i,:), epsilon ), rprime, dprime, ha, a, b) * n_ij(q(i,:), q(betas(j),:), epsilon);
+                            uBetaConsensus(i,:) = uBetaConsensus(i,:) + (a_ij(q(i,:), q(betas(j),:), rprime, ha, epsilon) * ((p(betas(j),:) - p(i,:))));
                         end
         %             else
         %                 %no neighbors yet: have to compute something
@@ -277,11 +323,23 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
 
                     %add gamma goal term
                     %u(i,:) = u(i,:) - c1*(q(i,:) - qr(i,:)) - c2*(p(i,:) - pr(i,:));
-                    uGamma(i,:) = -c1*(q(i,:) - qr(i,:)) - c2*(p(i,:) - pr(i,:));
+                    %old: uGamma(i,:) = -c1*(q(i,:) - qr(i,:)) - c2*(p(i,:) - pr(i,:));
+
+                    %uGamma(i,:) = -c1gamma*sigma_1((q(i,:) - qr(i,:))) - c2gamma*(p(i,:) - pr(i,:));
+                    uGamma(i,:) = -c1gamma*((q(i,:) - qr(i,:))) - c2gamma*(p(i,:) - pr(i,:));
 
                     %sum all forces
                     %uGamma(:,:) = zeros(N,m)
-                    u(i,:) = uGradient(i,:) + uConsensus(i,:) + uGamma(i,:);
+                    u(i,:) = uGradient(i,:) + uConsensus(i,:) + uGamma(i,:) + c1beta*uBetaGradient(i,:) + c2beta*uBetaConsensus(i,:);
+                    
+                    %saturate the controls
+                    for k=1:m
+                        if u(i,k) > uMax
+                            u(i,k) = uMax;
+                        elseif u(i,k) < uMin
+                            u(i,k) = uMin;
+                        end
+                    end
                 end
             end
             
@@ -320,6 +378,13 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
             %gamma agent
             qr=qr + pr.*(tcyc/tdiv) + fr(qr, pr).*((tcyc/tdiv)^2);
             pr=pr + fr(qr, pr).*(tcyc/tdiv);
+            
+            %beta agent
+            %mu = R_k / norm(q_i - y_k, 2);
+            %a_k = (q_i - y_k) / norm(q_i - y_k, 2);
+            %P = I - a_k * a_k';
+            %qhat_ik = mu * q_i + (1 - mu) * y_k;
+            %phat_ik  = mu * P * p_i;
         end
     end
     
@@ -457,3 +522,49 @@ end
 %problem?
 
 %relax condition such that nodes reach goal, maybe in formation, maybe not
+
+
+
+
+
+
+
+
+%split rejoin setup
+%q0: [-40, 80]^2
+%p0: [0, 0]
+%group objective, static gamma agent: 
+%qd=[200,30]'
+%pd=[5,0]'
+%c1alpha < c1gamma < c1beta
+%c2nu = 2 * sqrt(c1nu)  (for all beta, gamma, alpha constants)
+%
+%obstacles:
+
+%Ms = [100 110 120 130 150 160; 20 60 40 -20 40 0; 10 4 2 5 5 3]
+
+%squeezing manaeuver:
+%n=150
+%q0: [0, 120]^2
+%p0: [0, 0]^2
+%group objective: static gamma agent
+%qd=[230, 60]'
+%pd=[6, 0]'
+%c1alpha < c1gamma < c1beta
+%c2nu = 2 * sqrt(c1nu) (for all beta, gamma, alpha constants)
+
+%obstacles:
+%Ms = [150 150; 30 100; 25 25]
+
+
+%Ms is defined as:
+%The set of l spherical obstacles is specified as the
+%(m + 1) by l matrix Ms where each column of Ms is the
+%vector col(y_k, R_k) \in R^(m+1)
+
+%radius Rk center at yk
+%mu = R_k \ norm(q_i - y_k, 2)
+%a_k = (q_i - y_k) \ norm(q_i - y_k, 2)
+%P = I - a_k * a_k'
+%qhat_ik = mu * q_i + (1 - mu) * y_k
+%phat_ik  = mu * P * p_i
