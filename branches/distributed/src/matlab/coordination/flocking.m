@@ -36,16 +36,20 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
     hb=0.9;
     delta=d/5;
     
+    aS = 1;
+    bS = 10;
+    
     uMax = 10;
     uMin = -10;
+    v_max = 50;
 
     dprime = 0.6 * d;
     rprime = 1.2 * dprime;
     r_sig = sig_norm(r, epsilon);
     d_sig = sig_norm(d, epsilon);
     
-    Ts=0.01;
-    Tc=0.01;
+    Ts=0.001;
+    Tc=0.001;
     fs=1/Ts;
     fc=1/Tc;
 
@@ -54,28 +58,33 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
     vel_min = -10;
     vel_max = 10;
     
+    a_max = 10;
+    
     delay_min = - (Tc / 4);
     delay_max = (Tc / 4);
 
     %generate velocity matrix
-    p = vel_max + (vel_min - vel_max).*rand(N, m);
+    %p = vel_max + (vel_min - vel_max).*rand(N, m);
+    p = ones(N, m); %start from 1 velocity
     
     %generate state matrix randomly such that no nodes are already
     %neighbors
     q=zeros(N, m);
-    for i=1:1:N
-        q(i,:) = coord_max + (coord_min - coord_max).*rand(1, m);
-        
-        for j=1:1:i %only need to go up to i's already initialized
-            if i ~= j
-                %ensure no vertices start as neighbors, that is 
-                %(norm(q_i,q_j,2) < r) != true
-                while size(neighborsSpatial(i, q(i,:), q, r, d),1) > 0
-                    q(i,:) = coord_max + (coord_min - coord_max).*rand(1, m);
-                end
-            end
-        end
-    end
+%     for i=1:1:N
+%         q(i,:) = coord_max + (coord_min - coord_max).*rand(1, m);
+%         
+%         for j=1:1:i %only need to go up to i's already initialized
+%             if i ~= j
+%                 %ensure no vertices start as neighbors, that is 
+%                 %(norm(q_i,q_j,2) < r) != true
+%                 while size(neighborsSpatial(i, q(i,:), q, r, d),1) > 0
+%                     q(i,:) = coord_max + (coord_min - coord_max).*rand(1, m);
+%                 end
+%             end
+%         end
+%     end
+    
+    q=[0:5:5*(N-1)]'
 
     spatial_neighbors = zeros(N, N, N);
 
@@ -87,7 +96,8 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
 
     %goals for gamma control term
     qd=zeros(N, m);         %preallocate
-    pd=ones(N, m);
+    %pd=ones(N, m);
+    pd=zeros(N, m);
     
     %initial control value
     %u = (vel_max + (vel_min - vel_max).*rand(N, m));
@@ -95,6 +105,7 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
     uGradient = zeros(N, m);
     uConsensus = zeros(N, m);
     uGamma = zeros(N, m);
+    uNew = zeros(N, m);
 
     %generate an equally spaced (by d) rectangular grid goal
     %TODO: generalize for m-dimensional (use cat and m-th root of N [need m loops?])
@@ -102,14 +113,14 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
         for i=1:N
             qd(i,:) = ((i-1)*d) + coord_max;
         end
-        scatter(qd(:,1),zeros(N,1),[1:N]');
+        %scatter(qd(:,1),zeros(N,1),[1:N]');
     elseif m == 2
         for i=1:ceil(sqrt(N))
             for j=1:ceil(sqrt(N))
                 qd((i-1)*ceil(sqrt(N))+j,:) = [((i-1)*d) ((j-1)*d)] + [coord_max coord_max];
             end
         end
-        scatter(qd(:,1),qd(:,2));
+        %scatter(qd(:,1),qd(:,2));
     elseif m == 3
         for i=1:ceil(N^(1/3))
             for j=1:ceil(N^(1/3))
@@ -118,13 +129,15 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
                 end
             end
         end
-        scatter(qd(:,1),qd(:,2),qd(:,3));
+        %scatter(qd(:,1),qd(:,2),qd(:,3));
     end
     qd=qd(1:N,:); %shrink to maximum N
     %qd=qd.*5;
     %qd=ones(N,m).*coord_max*5;
     qd=zeros(N,m);
     pd=zeros(N,m);
+    
+    qd=ones(N,m)*500;
     
     qr=qd;
     pr=pd;
@@ -134,14 +147,14 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
     %p=pd;
     
     %obstacles: k obstacles with radius Rk, centered at yk
-    Ms = [150 150; 30 100; 25 25]; %from paper, last row is radius, first rows are x,y,z,... positions
+    %Ms = [150 150; 30 100; 25 25]; %from paper, last row is radius, first rows are x,y,z,... positions
     %Ms = [100 110 120 130 150 160; 20 60 40 -20 40 0; 10 4 2 5 5 3]
-    R_k = Ms(size(Ms,1),:);
-    for i=1:size(Ms,2)
-        for j=1:size(Ms,1)-1
-            y_k(i,j) = Ms(j,i);
-        end
-    end
+    %R_k = Ms(size(Ms,1),:);
+    %for i=1:size(Ms,2)
+    %    for j=1:size(Ms,1)-1
+    %        y_k(i,j) = Ms(j,i);
+    %    end
+    %end
     
     de = deviationEnergy(q,r,d,delta)
     %pne = proximityNetEdges(q,r,d)
@@ -153,6 +166,7 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
     uGradient_history = zeros([round(u_steps), N, m]);
     uConsensus_history = zeros([round(u_steps), N, m]);
     uGamma_history = zeros([round(u_steps), N, m]);
+    uNew_history = zeros([round(u_steps), N, m]);
     q_history = zeros([round(steps), N, m]);
     p_history = zeros([round(steps), N, m]);
     qr_history = zeros([round(steps), N, m]);
@@ -162,40 +176,43 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r, d, tdiv, tmax, update
     %uPeriod = (1:N)'.*0.01
     uPeriod = ones(N,1)*Tc
     %uPeriod = [Tc Tc*2 Tc Tc*2 Tc Tc*2 Tc Tc*2 Tc]'
-    uPeriod(1) = Tc*5;
+    %uPeriod(1) = Tc*5; %make one node update its control slowly
 
+    %add arbitrary delay to each control update
     %uOffset = delay_max + (delay_min - delay_max).*rand(N, 1)
     tadd = tcyc / tdiv;
     uOffset = zeros(N,1);
     for i=1:N
-        to=round(rand(1,1)*tdiv)
+        to=round(rand(1,1)*tdiv);
         for j=1:to
-            uOffset(i) = uOffset(i) + tadd;
+            %uOffset(i) = uOffset(i) + tadd;
         end
     end
     uOffset
-switches = 0;
+
+    switches = 0; %initialize to 0 (before any goal updates occur)
+
     %system evolution
     for t=0:tcyc:tmax-tcyc
         t_i=round(t/tcyc)+1;
         
-        if t > tswitch && switches == 0
-            %set a new goal
-            qd = qd.^2 + ones(N, m)*100;
-            pd = pd.^2 + ones(N, m)*10;
-            qr = qd
-            pr = pd
-            switches = switches + 1;
-        end
-        
-        if t > (tswitch*3) && switches == 1
-            %set a new goal
-            qd = qd*2 + ones(N, m)*10;
-            pd = pd*2 + ones(N, m);
-            qr = qd
-            pr = pd
-            switches = switches + 1;
-        end
+%         if t > tswitch && switches == 0
+%             %set a new goal
+%             qd = qd.^2 + ones(N, m)*100;
+%             pd = pd.^2 + ones(N, m)*10;
+%             qr = qd
+%             pr = pd
+%             switches = switches + 1;
+%         end
+%         
+%         if t > (tswitch*3) && switches == 1
+%             %set a new goal
+%             qd = qd*2 + ones(N, m)*10;
+%             pd = pd*2 + ones(N, m);
+%             qr = qd
+%             pr = pd
+%             switches = switches + 1;
+%         end
         
         if t_i==1 || mod(t_i+1, u_steps / updates) == 0
             %we will call the below plotting loop every some odd iterations of the
@@ -206,10 +223,61 @@ switches = 0;
             end
 
             if m == 1
-                subplot(subplotRows,subplotCols,subplotCount), scatter(q(:,1),zeros(N,1));
-                subplot(subplotRows,subplotCols,subplotCount), scatter(qr(:,1),zeros(N,1),'r');
-                scatter(qr(:,1),zeros(N,1),r,'g');
-                scatter(qr(:,1),zeros(N,1),d,'k');
+                isBad = zeros(N,1);
+                qBad = zeros(N,1);
+                qGood = zeros(N,1);
+
+                %locate nodes violating safety condition and plot as
+                %different color so we can identify them easily
+                %TODO: would be nice to have a bubble plot with radius of
+                %      circles the size of the safety region (and also
+                %      additionally interaction region if different
+                %      radius), but Matlab's bubble plotting seems rather
+                %      limited as the radius appears to be a relative size,
+                %      not an actual point value
+                iBad=0;
+                iGood=0;
+                for i=1:N
+                    done = 0;
+                    bad = 0;
+                    %search over already bad nodes and don't add again
+                    for j=1:N
+                        if i == isBad(j)
+                            done = 1;
+                            break;
+                        end
+                    end
+                    
+                    if done == 1
+                        continue; %already added this as bad
+                    end
+                    
+                    for j=1:N
+                        if i == isBad(j) && (i ~= j)
+                            bad = 1;
+                            break;
+                        elseif (norm(q(i,1) - q(j,1), 2) <= d) && (i ~= j)
+                            qBad(iBad + 1) = q(i,:);
+                            isBad(iBad + 1) = i; %save indexes
+                            iBad = iBad + 1;
+                            bad = 1;
+                        end
+                    end
+                    
+                    if bad == 0
+                        %if wasn't bad, add to good
+                        qGood(iGood + 1) = q(i,:);
+                        iGood = iGood + 1;
+                    end
+                end
+                qBad = qBad(1:iBad); %shrink
+                qGood = qGood(1:iGood); %shrink
+                qBad
+                qGood
+                scatter(qGood(:,1),zeros(iGood,1),r,'b');
+                scatter(qBad(:,1),zeros(iBad,1),r,'r');
+                %subplot(subplotRows,subplotCols,subplotCount), scatter(q(:,1),zeros(N,1),'b'); 
+                scatter(qr(:,1),zeros(N,1),'g'); %plot goal
             elseif m == 2
                 subplot(subplotRows,subplotCols,subplotCount), scatter(q(:,1),q(:,2));
                 subplot(subplotRows,subplotCols,subplotCount), scatter(qr(:,1),qr(:,2),'r');
@@ -283,18 +351,16 @@ switches = 0;
                     uGradient_history(t_i,:,:) = uGradient(:,:);
                     uConsensus_history(t_i,:,:) = uConsensus(:,:);
                     uGamma_history(t_i,:,:) = uGamma(:,:);
+                    uNew_history(t_i,:,:) = uNew(:,:);
 
-                    %reinitialze all controls (not dependent upon past control value)
-                    %u = zeros(N, m);
-                    %uGradient = zeros(N, m);
-                    %uConsensus = zeros(N, m);
-                    %uGamma = zeros(N, m);
+                    %reinitialze this nodes controls (not dependent upon past control value)
                     u(i,:) = zeros(1,m);
                     uGradient(i,:) = zeros(1,m);
                     uConsensus(i,:) = zeros(1,m);
                     uBetaGradient(i,:) = zeros(1,m);
                     uBetaConsensus(i,:) = zeros(1,m);
                     uGamma(i,:) = zeros(1,m);
+                    uNew(i,:) = zeros(1,m);
 
                     js = neighborsSpatial(i, q(i,:), q, r, d);
                     betas = neighborsSpatial(i, q(i,:), q, rprime, dprime);
@@ -330,7 +396,39 @@ switches = 0;
 
                     %sum all forces
                     %uGamma(:,:) = zeros(N,m)
-                    u(i,:) = uGradient(i,:) + uConsensus(i,:) + uGamma(i,:) + c1beta*uBetaGradient(i,:) + c2beta*uBetaConsensus(i,:);
+                    %olfati-saber control
+                    %u(i,:) = uGradient(i,:) + uConsensus(i,:) + uGamma(i,:) + c1beta*uBetaGradient(i,:) + c2beta*uBetaConsensus(i,:);
+                    
+                    %1: check all nodes to see if they see anyone on their
+                    %   right, then have them go to goal with max
+                    %   acceleration
+                    %   for implementation, just check THIS node (i) and
+                    %   see if this is the case
+                    %2: find nearest right hand neightbor and apply 
+                    %   u_i = a * (xhat_i - x_i - s) + b * (vhat_i - v_i)
+                    %   where s is minumum separation (d)
+
+                    uNew(i,:) = ((qd(i,:) - q(i,:)) / norm(qd(i,:) - q(i,:), 2)) * a_max;
+                    %overwrite control if necessary
+                    for j=1:N
+                        if (norm(q(j) - q(i),2) <= 2*r) && ((q(j)) > (q(i))) && (j ~= i)
+                            uNew(i,:) = aS * (q(j,:) - q(i,:) - d) + bS * (p(j,:) - p(i,:));
+                        elseif (norm(q(j) - q(i),2) <= 2*r) && ((q(j)) < (q(i))) && (j ~= i)
+                            uNew(i,:) = -aS * (q(j,:) - q(i,:) - d) - bS * (p(j,:) - p(i,:));
+                        end
+                        
+                        %start from conditions: 0 velocity, close to one
+                        %another (within comm distance and almost safety,
+                        %such that radius to form lattice is between these
+                        %two)
+                        
+                        %add vmax
+                        
+                        %add condition such that if neighbor to right is
+                        %too close, wait instead of going in opposite
+                        %direction
+                    end
+                    u(i,:) = uNew(i,:);
                     
                     %saturate the controls
                     for k=1:m
@@ -340,6 +438,11 @@ switches = 0;
                             u(i,k) = uMin;
                         end
                     end
+                    %faster way?
+                    %sign(u(i,:)).*(min(abs(u(i,:)),uMax))
+                    
+                    %saturate the velocity
+                    p(i,:) = sign(p(i,:))*(min(abs(p(i,:)),2));
                 end
             end
             
@@ -398,14 +501,18 @@ switches = 0;
             
             if m == 1
                 plot(time_ctrl,u_history(:,i,1),'b--');
-                plot(time_ctrl,uGradient_history(:,i,1),'r--');
-                plot(time_ctrl,uConsensus_history(:,i,1),'k--');
-                plot(time_ctrl,uGamma_history(:,i,1),'g--');
-                plot(time_traj,q_history(:,i,1) - qr_history(i,1),'c-.');
-                plot(time_traj,p_history(:,i,1) - pr_history(i,1),'m-.');
+                %plot(time_ctrl,uGradient_history(:,i,1),'r--');
+                %plot(time_ctrl,uConsensus_history(:,i,1),'k--');
+                %plot(time_ctrl,uGamma_history(:,i,1),'g--');
+                plot(time_ctrl,uNew_history(:,i,1),'m--');
+                plot(time_traj,q_history(:,i,1),'c-.');
+                plot(time_traj,p_history(:,i,1),'m-.');
+                %plot(time_traj,q_history(:,i,1) - qr_history(i,1),'c-.');
+                %plot(time_traj,p_history(:,i,1) - pr_history(i,1),'m-.');
                 %plot(time_traj,de_history(:,i,1),'c');
-                legend('u', 'uGradient', 'uConsensus', 'uGamma', 'q-qr', 'p-pr');
+                %legend('u', 'uGradient', 'uConsensus', 'uGamma', 'q-qr', 'p-pr');
                 %legend('u', 'uGradient', 'uConsensus', 'uGamma', 'de');
+                legend('u', 'uNew', 'q', 'p');
             elseif m == 2
                 %plot(time_ctrl,u_history(:,i,1),'b--');
                 %plot(time_ctrl,u_history(:,i,2),'c--');
