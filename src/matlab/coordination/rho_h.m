@@ -5,13 +5,13 @@ function [out] = rho_h(z, h)
     %for h \in (0,1)
     
     %old: smooth
-    %if (z >= 0 && z < h)
-    %    out = 1;
-    %elseif (z >= h && z <= 1)
-    %    out = (1/2) * (1 + cos(pi * (z - h)/1 -h));
-    %else
-    %    out = 0;
-    %end
+    if (z >= 0 && z < h)
+        outa = 1;
+    elseif (z >= h && z <= 1)
+        outa = (1/2) * (1 + cos(pi * (z - h)/1 -h));
+    else
+        outa = 0;
+    end
     
     %new: not smooth, determined in mathematica
     if (z >= 0 && z < 1)
@@ -19,4 +19,6 @@ function [out] = rho_h(z, h)
     else
         out = 0;
     end
+    
+    norm(outa - out,2);
 end
