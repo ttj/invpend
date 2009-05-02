@@ -34,11 +34,27 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r_comm, r_lattice, r_saf
     b=5;
     ha=0.2;
     hb=0.9;
+
+    kappa = r_comm / r_lattice;
+
+    v_max = 5;  %maximum velocity
+
+    a_max = 100;    %maximum acceleration
+
+    Tc=(min(2*v_max, (r_comm / (2*v_max / a_max))))/a_max %need to get r_comm into the calculation for Tc
+    %Tc=0.01;
+    %Tc=sqrt(r_safety/v_max*(v_max/a_max));
+    %Tc=0.001;
+    fc=1/Tc;
+    t_a = 2*v_max / a_max
+    t_v = r_safety / (2*v_max) 
+    %r_init = r_safety + Tc*2*v_max + (Tc^2)*a_max + Tc*(2*v_max/a_max) + Tc*(r_safety/(2*v_max))
+    %r_init = r_safety/(2*v_max/a_max)
+    r_init = r_safety + max(2*v_max*((t_a)), v_max * t_v)
+    r_lattice=r_init;
+    
     delta=r_safety/5;
     
-    aS = 3;
-    bS = 10;
-
     r_lattice_prime = 0.6 * r_lattice;
     r_comm_prime = 1.2 * r_lattice_prime;
     
@@ -46,52 +62,70 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r_comm, r_lattice, r_saf
     r_lattice_sig = sig_norm(r_lattice, epsilon);
     r_safety_sig  = sig_norm(r_safety, epsilon);
     
-    Ts=0.001;
-    Tc=0.001;
-    fs=1/Ts;
-    fc=1/Tc;
-
-    kappa = r_comm / r_lattice;
-
-    v_min = -100; %minimum velocity
-    v_max = 100;  %maximum velocity
-
-    a_min = -10000;   %minimum acceleration
-    a_max =  10000;    %maximum acceleration
-    
     delay_min = - (Tc / 4);
     delay_max = (Tc / 4);
 
     %generate velocity matrix
-    p = v_max/10 + (0 - v_max/10).*rand(N, m);
     %p = ones(N, m); %start from 1 velocity
-    %p = zeros(N, m);
+    p = zeros(N, m)
+    
+    %p = v_max + (-v_max - v_max).*rand(N, m)
     
     %generate state matrix randomly such that no nodes are already
     %neighbors
-    q=zeros(N, m);
-    for i=1:1:N
-        q(i,:) = coord_max + (coord_min - coord_max).*rand(1, m);
-        
-        for j=1:1:i %only need to go up to i's already initialized
-            if i ~= j
-                %ensure no vertices start as neighbors, that is 
-                %(norm(q_i,q_j,2) < r) != true
-                while size(neighborsSpatial(i, q(i,:), q, r_comm, r_lattice),1) > 0
-                    q(i,:) = coord_max + (coord_min - coord_max).*rand(1, m);
-                end
+%     q=zeros(N, m);
+%     for i=1:1:N
+%         q(i,:) = coord_max + (coord_min - coord_max).*rand(1, m);
+%         
+%         for j=1:1:i %only need to go up to i's already initialized
+%             if i ~= j
+%                 %ensure no vertices start as neighbors, that is 
+%                 %(norm(q_i,q_j,2) < r) != true
+%                 while size(neighborsSpatial(i, q(i,:), q, r_init, r_init),1) > 0
+%                     q(i,:) = coord_max + (coord_min - coord_max).*rand(1, m);
+%                 end
+%             end
+%         end
+%     end
+    
+    %q=[0:(r_lattice-delta):(r_lattice-delta)*(N-1)]';
+    
+    %q = [5; 50; 90; 120; 150; 180; 210; 230; 250; 260]
+    q = [1:N]'*r_init
+    %q = [5; 5+r_safety+((r_init-r_safety)/2); 19; 26; 40; 47; 55; 62; 70; 77]
+    %p = [v_max; -v_max; v_max; v_max; v_max; -v_max; v_max; -v_max; -v_max; v_max]
+    %p = [v_max; -v_max; v_max; v_max; v_max; -v_max; v_max; -v_max; -v_max; v_max;
+    %     v_max; -v_max; v_max; v_max; v_max; v_max; v_max: v_max: v_max; -v_max; -v_max; -v_max]
+    %p = [v_max; -v_max];
+    %v_max; v_max; v_max; v_max; v_max; v_max; -v_max; v_max; 
+        %-v_max; v_max; v_max; v_max; v_max; v_max; v_max; v_max; v_max; -v_max]
+    
+    %q = [5; 5+r_init]
+    %p = [v_max; -v_max]
+    
+    for c0=1:N
+        for c1=1:m
+            if (rand(1) > 0.5)
+                p(c0,c1) = v_max;
+            else
+                p(c0,c1) = -v_max;
             end
         end
     end
+    p
     
-    %q=[0:(r_lattice-delta):(r_lattice-delta)*(N-1)]';
+    
+    
+    size(q)
+    size(p)
+%    return
 
     spatial_neighbors = zeros(N, N, N);
 
     tcyc=Tc;
     time_ctrl=[0:tcyc:tmax-tcyc]';       %vector of control cycle times
     time_traj=[0:tcyc/tdiv:tmax]';  %vector of trajectories
-    u_steps=((tmax-tcyc)/tcyc)+1;   %number of control update steps
+    u_steps=round(((tmax-tcyc)/tcyc))+1;   %number of control update steps
     steps=tmax/(tcyc/tdiv);         %total numbers of trajectory steps
 
     %goals for gamma control term
@@ -153,7 +187,7 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r_comm, r_lattice, r_saf
     %    end
     %end
     
-    de = deviationEnergy(q,r_comm,r_lattice,delta)
+    %de = deviationEnergy(q,r_comm,r_lattice,delta)
     %pne = proximityNetEdges(q,r_comm,r_lattice)
     
     subplotRows=1;%ceil(sqrt(updates));
@@ -170,7 +204,7 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r_comm, r_lattice, r_saf
     p_history = zeros([round(steps), N, m]);
     qr_history = zeros([round(steps), N, m]);
     pr_history = zeros([round(steps), N, m]);
-    de_history = zeros([round(steps), N, m]);
+    %de_history = zeros([round(steps), N, m]);
     
     %uPeriod = (1:N)'.*0.01 %different update periods for all particles
     uPeriod = ones(N,1)*Tc %same update period for all particles
@@ -214,7 +248,6 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r_comm, r_lattice, r_saf
 %             pr = pd
 %             switches = switches + 1;
 %         end
-        
         if t_i==1 || mod(t_i+1, u_steps / updates) == 0
             %we will call the below plotting loop every some odd iterations of the
             %system evolution to see how it's doing
@@ -224,89 +257,91 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r_comm, r_lattice, r_saf
             end
 
             if m == 1
-                isSafety = zeros(N,1);
-                isLattice = zeros(N,1);
-                isComm = zeros(N,1);
-                isElse = zeros(N,1);
-                qSafety = zeros(N,1);
-                qLattice = zeros(N,1);
-                qComm = zeros(N,1);
-                qElse = zeros(N,1);
-
-                %locate nodes satisfying different radius constraints
-                %(communication, lattice, and safety) and plot in various
-                %colors so we can more easily see system evolution
-                %TODO: would be nice to have a bubble plot with radius of
-                %      circles the size of the safety region (and also
-                %      additionally interaction region if different
-                %      radius), but Matlab's bubble plotting seems rather
-                %      limited as the radius appears to be a relative size,
-                %      not an actual point value
-                iSafety=0;
-                iLattice=0;
-                iComm=0;
-                iElse=0;
-                for i=1:N
-                    done = 0;
-                    bad = 0;
-                    %search over already bad nodes and don't add again
-                    for j=1:N
-                        if i == isSafety(j) || i == isLattice(j) || i == isComm(j) || i == isElse(j)
-                            done = 1;
-                            break;
-                        end
-                    end
-                    
-                    if done == 1
-                        continue; %already added this as bad
-                    end
-                    
-                    for j=1:N
-                        if i == isSafety(j) && (i ~= j)
-                            bad = 1;
-                            break;
-                        elseif (norm(q(i,1) - q(j,1), 2) <= r_safety) && (i ~= j)
-                            %this needs to occur before other as anything
-                            %that satisfies safety would satisfy lattice
-                            %and comm
-                            qSafety(iSafety + 1) = q(i,:);
-                            isSafety(iSafety + 1) = i; %save indexes
-                            iSafety = iSafety + 1;
-                            bad = 1;
-                        elseif (norm(q(i,1) - q(j,1), 2) <= r_lattice) && (i ~= j)
-                            %TODO: change <= r_lattice to |qi - qj - r_lattice| <= delta
-                            %      to allow for quasi-lattices
-                            qLattice(iLattice + 1) = q(i,:);
-                            isLattice(iLattice + 1) = i; %save indexes
-                            iLattice = iLattice + 1;
-                            bad = 1;
-                        elseif (norm(q(i,1) - q(j,1), 2) <= r_comm) && (i ~= j)
-                            qComm(iComm + 1) = q(i,:);
-                            isComm(iComm + 1) = i; %save indexes
-                            iComm = iComm + 1;
-                            bad = 1;
-                        end
-                    end
-                    
-                    if bad == 0
-                        %if wasn't bad, add to good
-                        qElse(iElse + 1) = q(i,:);
-                        iElse = iElse + 1;
-                    end
-                end
-                qElse = qElse(1:iElse); %shrink
-                qComm = qComm(1:iComm); %shrink
-                qLattice = qLattice(1:iLattice); %shrink
-                qSafety = qSafety(1:iSafety); %shrink
-                qElse
-                qComm
-                qLattice
-                qSafety
-                scatter(qElse(:,1),zeros(iElse,1),'k');
-                scatter(qComm(:,1),zeros(iComm,1),r_comm,'b');
-                scatter(qLattice(:,1),zeros(iLattice,1),r_lattice,'g');
-                scatter(qSafety(:,1),zeros(iSafety,1),r_safety,'r');
-                %subplot(subplotRows,subplotCols,subplotCount), scatter(q(:,1),zeros(N,1),'b'); 
+%                 isSafety = zeros(N,1);
+%                 isLattice = zeros(N,1);
+%                 isComm = zeros(N,1);
+%                 isElse = zeros(N,1);
+%                 qSafety = zeros(N,1);
+%                 qLattice = zeros(N,1);
+%                 qComm = zeros(N,1);
+%                 qElse = zeros(N,1);
+% 
+%                 %locate nodes satisfying different radius constraints
+%                 %(communication, lattice, and safety) and plot in various
+%                 %colors so we can more easily see system evolution
+%                 %TODO: would be nice to have a bubble plot with radius of
+%                 %      circles the size of the safety region (and also
+%                 %      additionally interaction region if different
+%                 %      radius), but Matlab's bubble plotting seems rather
+%                 %      limited as the radius appears to be a relative size,
+%                 %      not an actual point value
+%                 iSafety=0;
+%                 iLattice=0;
+%                 iComm=0;
+%                 iElse=0;
+%                 for i=1:N
+%                     done = 0;
+%                     bad = 0;
+%                     %search over already bad nodes and don't add again
+%                     for j=1:N
+%                         if i == isSafety(j) || i == isLattice(j) || i == isComm(j) || i == isElse(j)
+%                             done = 1;
+%                             break;
+%                         end
+%                     end
+%                     
+%                     if done == 1
+%                         continue; %already added this as bad
+%                     end
+%                     
+%                     for j=1:N
+%                         if i == isSafety(j) && (i ~= j)
+%                             bad = 1;
+%                             break;
+%                         elseif (norm(q(i,1) - q(j,1), 2) <= r_safety) && (i ~= j)
+%                             %this needs to occur before other as anything
+%                             %that satisfies safety would satisfy lattice
+%                             %and comm
+%                             qSafety(iSafety + 1) = q(i,:);
+%                             isSafety(iSafety + 1) = i; %save indexes
+%                             iSafety = iSafety + 1;
+%                             bad = 1;
+%                         elseif (norm(q(i,1) - q(j,1) - r_lattice, 2) <= delta) && (i ~= j)
+%                             %TODO: change <= r_lattice to |qi - qj - r_lattice| <= delta
+%                             %      to allow for quasi-lattices
+%                             qLattice(iLattice + 1) = q(i,:);
+%                             isLattice(iLattice + 1) = i; %save indexes
+%                             iLattice = iLattice + 1;
+%                             bad = 1;
+%                         elseif (norm(q(i,1) - q(j,1), 2) <= r_comm) && (i ~= j)
+%                             qComm(iComm + 1) = q(i,:);
+%                             isComm(iComm + 1) = i; %save indexes
+%                             iComm = iComm + 1;
+%                             bad = 1;
+%                         end
+%                     end
+%                     
+%                     if bad == 0
+%                         %if wasn't bad, add to good
+%                         qElse(iElse + 1) = q(i,:);
+%                         iElse = iElse + 1;
+%                     end
+%                 end
+%                 qElse = qElse(1:iElse); %shrink
+%                 qComm = qComm(1:iComm); %shrink
+%                 qLattice = qLattice(1:iLattice); %shrink
+%                 qSafety = qSafety(1:iSafety); %shrink
+%                 qElse
+%                 qComm
+%                 qLattice
+%                 qSafety
+%                 scatter(qElse(:,1),zeros(iElse,1),'k');
+%                 scatter(qComm(:,1),zeros(iComm,1),r_comm,'b');
+%                 scatter(qLattice(:,1),zeros(iLattice,1),r_lattice,'g');
+%                 scatter(qSafety(:,1),zeros(iSafety,1),r_safety,'r');
+%                 %subplot(subplotRows,subplotCols,subplotCount), scatter(q(:,1),zeros(N,1),'b'); 
+%                 scatter(qr(:,1),zeros(N,1),'g'); %plot goal
+                subplot(subplotRows,subplotCols,subplotCount), scatter(q(:,1),zeros(N,1),'b');
                 scatter(qr(:,1),zeros(N,1),'g'); %plot goal
             elseif m == 2
                 subplot(subplotRows,subplotCols,subplotCount), scatter(q(:,1),q(:,2));
@@ -353,10 +388,10 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r_comm, r_lattice, r_saf
 
         for t_j=(t_i-1)*tdiv+1 : 1 : tdiv+(t_i-1)*tdiv+1
             tt=t_j*(tcyc/tdiv);
-            
+
             %compute control (based on state vector, possibly delayed, etc)
             for i=1:N
-                if (mod(tt, (uPeriod(i) + uOffset(i))) == 0)
+                if t_j == 1 || (mod(tt, (uPeriod(i) + uOffset(i))) == 0)
                     %tt
                     %u_i = u_i^\alpha + u_i^\gamma
                     %n_ij = ((q_j - q_i ) / (sqrt(1 + epsilon * norm(q_j - q_i, 2))^2));
@@ -438,17 +473,30 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r_comm, r_lattice, r_saf
                     %   u_i = a * (xhat_i - x_i - s) + b * (vhat_i - v_i)
                     %   where s is lattice separation (r_lattice)
 
-                    uNew(i,:) = ((qd(i,:) - q(i,:)) / norm(qd(i,:) - q(i,:), 2)) * aS;
-                    dist_min = inf;
+                    uNew(i,:) = ((qd(i,:) - q(i,:)) / norm(qd(i,:) - q(i,:), 2)) * a_max;
+                    dist_min_right = inf;
+                    dist_min_left = inf;
 
                     %overwrite control if necessary
                     for j=1:N
-                        if (norm(q(j) - q(i),2) <= r_comm) && ((q(j)) > (q(i))) && (j ~= i) && (norm(q(j) - q(i),2) <= dist_min)
-                            uNew(i,:) = aS * (q(j,:) - q(i,:) - r_lattice + delta) + bS * (p(j,:) - p(i,:));
-                            dist_min = norm(q(j) - q(i),2);
-                            if norm(q(j) - q(i),2) <= (r_lattice - delta)
-                                uNew(i,:) = 0;
+                        if (norm(q(j) - q(i),2) <= r_comm) && ((q(j)) > (q(i))) && (j ~= i) && (norm(q(j) - q(i),2) <= dist_min_right)
+                            %uNew(i,:) = aS * (q(j,:) - q(i,:) - r_lattice + delta) + bS * (p(j,:) - p(i,:));
+                            uNew(i,:) = (1/Tc) * (q(j,:) - q(i,:) - r_init) + (1/Tc) * (p(j,:) - p(i,:));
+                            %uNew(i,:) = a_max;
+                            dist_min_right = norm(q(j) - q(i),2);
+                            %if norm(q(j) - q(i),2) <= (r_lattice - delta)
+                            if norm(q(j) - q(i),2) <= r_init
+                                uNew(i,:) = -a_max;
                             end
+%                         elseif (norm(q(j) - q(i),2) <= r_comm) && ((q(j)) < (q(i))) && (j ~= i) && (norm(q(j) - q(i),2) <= dist_min_left)
+%                             %slow the lead node down to form flocking
+%                             dist_min_left = norm(q(j) - q(i),2);
+%                             uNew(i,:) = -a_max;
+%                             %uNew(i,:) = - (1/Tc) * (q(j,:) - q(i,:) - r_init) - (1/Tc) * (p(j,:) - p(i,:));
+%                             %uNew(i,:) = -(aS/4) * (q(j,:) - q(i,:) - r_init) - bS * (p(j,:) - p(i,:));
+%                             if norm(q(j) - q(i),2) <= r_init
+%                                 uNew(i,:) = a_max;
+%                             end
                         %elseif (norm(q(j) - q(i),2) <= r_comm) && ((q(j)) < (q(i))) && (j ~= i) && (norm(q(j) - q(i),2) <= dist_min)
                         %    uNew(i,:) = -aS * (q(j,:) - q(i,:) - r_lattice) - bS * (p(j,:) - p(i,:));
                         %    dist_min = norm(q(j) - q(i),2);
@@ -464,24 +512,20 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r_comm, r_lattice, r_saf
                         %direction
                     end
                     u(i,:) = uNew(i,:);
-                    
-                    %saturate the controls
-                    for k=1:m
-                        if u(i,k) > a_max
-                            u(i,k) = a_max;
-                        elseif u(i,k) < a_min
-                            u(i,k) = a_min;
-                        end
-                    end
-                    %faster way?
-                    %sign(u(i,:)).*(min(abs(u(i,:)),uMax))
                 end
             end
+            
+            %saturate the controls (no effect until out of neighbors loop
+            %above, so might as well be efficient and do it once for
+            %everything)
+            u = sign(u).*(min(abs(u),a_max));
             
             %run system evolution
             
             %saturate the velocity
-            p(i,:) = sign(p(i,:))*(min(abs(p(i,:)),v_max));
+            %sign(p)
+            %(min(abs(p),v_max))
+            p = sign(p).*(min(abs(p),v_max));
             
             %state space form
             %q'=p;     => [q'; p']=[0 1; 0 0]*[q; p] + [0;1]*[u]
@@ -504,14 +548,14 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r_comm, r_lattice, r_saf
             p_history(t_j,:,:) = p(:,:);
             qr_history(t_j,:,:) = qr(:,:);
             pr_history(t_j,:,:) = pr(:,:);
-            de_history(t_j,:,:) = de(:,:);
+            %de_history(t_j,:,:) = de(:,:);
             
             %TODO: verify correctness of this as a solution
             %      in general, can we use this solution if the control
             %      is nonlinear but numerical?
             q = q + p.*(tcyc/tdiv) + u.*((tcyc/tdiv)^2);
             p = p + u.*(tcyc/tdiv);
-            de = deviationEnergy(q,r_comm,r_lattice,delta);
+            %de = deviationEnergy(q,r_comm,r_lattice,delta);
             
             %gamma agent
             qr=qr + pr.*(tcyc/tdiv) + fr(qr, pr).*((tcyc/tdiv)^2);
@@ -536,60 +580,75 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r_comm, r_lattice, r_saf
             figure;
             hold on;
             for i=1:N
-                plot(time_traj,q_history(:,i,1),'c-.');
-                legend('q');
+                if mod(i,2)==0
+                    plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1),'r');
+                else
+                    plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1),'b');
+                end
+            end
+            legend('q1');
+
+            if m >= 2
+                figure;
+                hold on;
+                for i=1:N
+                    plot(time_traj,q_history(:,i,2),'m-.');
+                    legend('q2');
+                end
             end
         end
 
-        for i=1:N
-            figure;
-            hold on;
+        if plotControls == 2
+            for i=1:N
+                figure;
+                hold on;
 
-            if m == 1
-                plot(time_ctrl,u_history(:,i,1),'b--');
-                %plot(time_ctrl,uGradient_history(:,i,1),'r--');
-                %plot(time_ctrl,uConsensus_history(:,i,1),'k--');
-                %plot(time_ctrl,uGamma_history(:,i,1),'g--');
-                plot(time_ctrl,uNew_history(:,i,1),'m--');
-                plot(time_traj,q_history(:,i,1),'c-.');
-                plot(time_traj,p_history(:,i,1),'g-.');
-                %plot(time_traj,q_history(:,i,1) - qr_history(i,1),'c-.');
-                %plot(time_traj,p_history(:,i,1) - pr_history(i,1),'m-.');
-                %plot(time_traj,de_history(:,i,1),'c');
-                %legend('u', 'uGradient', 'uConsensus', 'uGamma', 'q-qr', 'p-pr');
-                %legend('u', 'uGradient', 'uConsensus', 'uGamma', 'de');
-                legend('u', 'uNew', 'q', 'p');
-            elseif m == 2
-                %plot(time_ctrl,u_history(:,i,1),'b--');
-                %plot(time_ctrl,u_history(:,i,2),'c--');
-                plot(time_ctrl,sqrt(u_history(:,i,1).^2 + u_history(:,i,2).^2),'b--');
-                plot(time_ctrl,sqrt(uGradient_history(:,i,1).^2 + uGradient_history(:,i,2).^2),'r--');
-                plot(time_ctrl,sqrt(uConsensus_history(:,i,1).^2 + uConsensus_history(:,i,2).^2),'k--');
-                plot(time_ctrl,sqrt(uGamma_history(:,i,1).^2 + uGamma_history(:,i,2).^2),'g--');
-                %plot(time_traj,q_history(:,i,1) - qd(i,1),'r:');
-                %plot(time_traj,q_history(:,i,2) - qd(i,1),'m:');
-                %plot(time_traj,p_history(:,i,1) - pd(i,1),'k:');
-                %plot(time_traj,p_history(:,i,2) - pd(i,1),'b:');
-                legend('u', 'uGradient', 'uConsensus', 'uGamma');
-                
-                if plotControls == 2
-                    figure;
-                    hold on;
-                    plot3(time_ctrl,u_history(:,i,1),u_history(:,i,2),'b--');
-                    plot3(time_ctrl,uGradient_history(:,i,1),uGradient_history(:,i,2),'r--');
-                    plot3(time_ctrl,uConsensus_history(:,i,1),uConsensus_history(:,i,2),'k--');
-                    plot3(time_ctrl,uGamma_history(:,i,1),uGamma_history(:,i,2),'g--');
-                    plot3(time_traj,q_history(:,i,1) - qd(i,1),q_history(:,i,2) - qd(i,2),'r:');
-                    plot3(time_traj,p_history(:,i,1),p_history(:,i,2),'k:');
-                    legend('u', 'uGradient', 'uConsensus', 'uGamma', 'q - qd', 'p');
+                if m == 1
+                    plot(time_ctrl,u_history(:,i,1),'b--');
+                    %plot(time_ctrl,uGradient_history(:,i,1),'r--');
+                    %plot(time_ctrl,uConsensus_history(:,i,1),'k--');
+                    %plot(time_ctrl,uGamma_history(:,i,1),'g--');
+                    plot(time_ctrl,uNew_history(:,i,1),'m--');
+                    plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1),'c-.');
+                    plot(time_traj(1:size(p_history(:,i,1))),p_history(:,i,1),'g-.');
+                    %plot(time_traj,q_history(:,i,1) - qr_history(i,1),'c-.');
+                    %plot(time_traj,p_history(:,i,1) - pr_history(i,1),'m-.');
+                    %plot(time_traj,de_history(:,i,1),'c');
+                    %legend('u', 'uGradient', 'uConsensus', 'uGamma', 'q-qr', 'p-pr');
+                    %legend('u', 'uGradient', 'uConsensus', 'uGamma', 'de');
+                    legend('u', 'uNew', 'q', 'p');
+                elseif m == 2
+                    %plot(time_ctrl,u_history(:,i,1),'b--');
+                    %plot(time_ctrl,u_history(:,i,2),'c--');
+                    plot(time_ctrl,sqrt(u_history(:,i,1).^2 + u_history(:,i,2).^2),'b--');
+                    plot(time_ctrl,sqrt(uGradient_history(:,i,1).^2 + uGradient_history(:,i,2).^2),'r--');
+                    plot(time_ctrl,sqrt(uConsensus_history(:,i,1).^2 + uConsensus_history(:,i,2).^2),'k--');
+                    plot(time_ctrl,sqrt(uGamma_history(:,i,1).^2 + uGamma_history(:,i,2).^2),'g--');
+                    %plot(time_traj,q_history(:,i,1) - qd(i,1),'r:');
+                    %plot(time_traj,q_history(:,i,2) - qd(i,1),'m:');
+                    %plot(time_traj,p_history(:,i,1) - pd(i,1),'k:');
+                    %plot(time_traj,p_history(:,i,2) - pd(i,1),'b:');
+                    legend('u', 'uGradient', 'uConsensus', 'uGamma');
+
+                    if plotControls == 2
+                        figure;
+                        hold on;
+                        plot3(time_ctrl,u_history(:,i,1),u_history(:,i,2),'b--');
+                        plot3(time_ctrl,uGradient_history(:,i,1),uGradient_history(:,i,2),'r--');
+                        plot3(time_ctrl,uConsensus_history(:,i,1),uConsensus_history(:,i,2),'k--');
+                        plot3(time_ctrl,uGamma_history(:,i,1),uGamma_history(:,i,2),'g--');
+                        plot3(time_traj,q_history(:,i,1) - qd(i,1),q_history(:,i,2) - qd(i,2),'r:');
+                        plot3(time_traj,p_history(:,i,1),p_history(:,i,2),'k:');
+                        legend('u', 'uGradient', 'uConsensus', 'uGamma', 'q - qd', 'p');
+                    end
+                elseif m == 3
+                    %use only norms here or we'll get too busy
+                    plot(time_ctrl,sqrt(u_history(:,i,1).^2 + u_history(:,i,2).^2 + u_history(:,i,3).^2),'b--');
+                    plot(time_ctrl,sqrt(uGradient_history(:,i,1).^2 + uGradient_history(:,i,2).^2 + uGradient_history(:,i,3).^2),'r--');
+                    plot(time_ctrl,sqrt(uConsensus_history(:,i,1).^2 + uConsensus_history(:,i,2).^2 + uConsensus_history(:,i,3).^2),'k--');
+                    plot(time_ctrl,sqrt(uGamma_history(:,i,1).^2 + uGamma_history(:,i,2).^2 + uGamma_history(:,i,3).^2),'g--');
+                    legend('u', 'uGradient', 'uConsensus', 'uGamma');
                 end
-            elseif m == 3
-                %use only norms here or we'll get too busy
-                plot(time_ctrl,sqrt(u_history(:,i,1).^2 + u_history(:,i,2).^2 + u_history(:,i,3).^2),'b--');
-                plot(time_ctrl,sqrt(uGradient_history(:,i,1).^2 + uGradient_history(:,i,2).^2 + uGradient_history(:,i,3).^2),'r--');
-                plot(time_ctrl,sqrt(uConsensus_history(:,i,1).^2 + uConsensus_history(:,i,2).^2 + uConsensus_history(:,i,3).^2),'k--');
-                plot(time_ctrl,sqrt(uGamma_history(:,i,1).^2 + uGamma_history(:,i,2).^2 + uGamma_history(:,i,3).^2),'g--');
-                legend('u', 'uGradient', 'uConsensus', 'uGamma');
             end
         end
     end
@@ -599,7 +658,7 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r_comm, r_lattice, r_saf
     p
     qd
     pd
-    de
+    %de
     qc=Ave(q)
     pc=Ave(p)
 end
