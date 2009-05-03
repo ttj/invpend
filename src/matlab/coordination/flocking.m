@@ -39,9 +39,9 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r_comm, r_lattice, r_saf
 
     v_max = 5;  %maximum velocity
 
-    a_max = 100;    %maximum acceleration
+    a_max = 10;    %maximum acceleration
 
-    Tc=(min(2*v_max, (r_comm / (2*v_max / a_max))))/a_max %need to get r_comm into the calculation for Tc
+    Tc=(min(2*v_max, (r_comm / (2*v_max / a_max))))/a_max %need this to be a min of 2 functions?
     %Tc=0.01;
     %Tc=sqrt(r_safety/v_max*(v_max/a_max));
     %Tc=0.001;
@@ -50,7 +50,7 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r_comm, r_lattice, r_saf
     t_v = r_safety / (2*v_max) 
     %r_init = r_safety + Tc*2*v_max + (Tc^2)*a_max + Tc*(2*v_max/a_max) + Tc*(r_safety/(2*v_max))
     %r_init = r_safety/(2*v_max/a_max)
-    r_init = r_safety + max(2*v_max*((t_a)), v_max * t_v)
+    r_init = r_safety + max(2*v_max*((t_a)), v_max * t_v) %need Tc in here somewhere?
     r_lattice=r_init;
     
     delta=r_safety/5;
@@ -555,6 +555,8 @@ function [ out ] = flocking(N, m, coord_min, coord_max, r_comm, r_lattice, r_saf
             %      is nonlinear but numerical?
             q = q + p.*(tcyc/tdiv) + u.*((tcyc/tdiv)^2);
             p = p + u.*(tcyc/tdiv);
+            
+            p = sign(p).*(min(abs(p),v_max));
             %de = deviationEnergy(q,r_comm,r_lattice,delta);
             
             %gamma agent
