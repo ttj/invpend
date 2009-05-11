@@ -1,0 +1,1238 @@
+
+%% bare_conf.tex
+%% V1.3
+%% 2007/01/11
+%% by Michael Shell
+%% See:
+%% http://www.michaelshell.org/
+%% for current contact information.
+%%
+%% This is a skeleton file demonstrating the use of IEEEtran.cls
+%% (requires IEEEtran.cls version 1.7 or later) with an IEEE conference paper.
+%%
+%% Support sites:
+%% http://www.michaelshell.org/tex/ieeetran/
+%% http://www.ctan.org/tex-archive/macros/latex/contrib/IEEEtran/
+%% and
+%% http://www.ieee.org/
+
+%%*************************************************************************
+%% Legal Notice:
+%% This code is offered as-is without any warranty either expressed or
+%% implied; without even the implied warranty of MERCHANTABILITY or
+%% FITNESS FOR A PARTICULAR PURPOSE! 
+%% User assumes all risk.
+%% In no event shall IEEE or any contributor to this code be liable for
+%% any damages or losses, including, but not limited to, incidental,
+%% consequential, or any other damages, resulting from the use or misuse
+%% of any information contained here.
+%%
+%% All comments are the opinions of their respective authors and are not
+%% necessarily endorsed by the IEEE.
+%%
+%% This work is distributed under the LaTeX Project Public License (LPPL)
+%% ( http://www.latex-project.org/ ) version 1.3, and may be freely used,
+%% distributed and modified. A copy of the LPPL, version 1.3, is included
+%% in the base LaTeX documentation of all distributions of LaTeX released
+%% 2003/12/01 or later.
+%% Retain all contribution notices and credits.
+%% ** Modified files should be clearly indicated as such, including  **
+%% ** renaming them and changing author support contact information. **
+%%
+%% File list of work: IEEEtran.cls, IEEEtran_HOWTO.pdf, bare_adv.tex,
+%%                    bare_conf.tex, bare_jrnl.tex, bare_jrnl_compsoc.tex
+%%*************************************************************************
+
+% *** Authors should verify (and, if needed, correct) their LaTeX system  ***
+% *** with the testflow diagnostic prior to trusting their LaTeX platform ***
+% *** with production work. IEEE's font choices can trigger bugs that do  ***
+% *** not appear when using other class files.                            ***
+% The testflow support page is at:
+% http://www.michaelshell.org/tex/testflow/
+
+
+
+% Note that the a4paper option is mainly intended so that authors in
+% countries using A4 can easily print to A4 and see how their papers will
+% look in print - the typesetting of the document will not typically be
+% affected with changes in paper size (but the bottom and side margins will).
+% Use the testflow package mentioned above to verify correct handling of
+% both paper sizes by the user's LaTeX system.
+%
+% Also note that the "draftcls" or "draftclsnofoot", not "draft", option
+% should be used if it is desired that the figures are to be displayed in
+% draft mode.
+%
+\documentclass[10pt, conference, compsocconf]{IEEEtran}
+% Add the compsocconf option for Computer Society conferences.
+%
+% If IEEEtran.cls has not been installed into the LaTeX system files,
+% manually specify the path to it like:
+% \documentclass[conference]{../sty/IEEEtran}
+
+
+
+
+\usepackage{tikz}
+\usetikzlibrary{shapes}
+\usetikzlibrary{automata}
+
+\usepackage[usenames,dvipsnames]{pstricks}
+\usepackage{epsfig}
+%\usepackage{pst-grad} % For gradients
+%\usepackage{pst-plot} % For axes
+
+\usepackage{palatino}
+\RequirePackage{ifthen}
+\usepackage{latexsym}
+\RequirePackage{amsmath}
+\RequirePackage{amsthm}
+\RequirePackage{amssymb}
+\RequirePackage{xspace}
+\RequirePackage{graphics}
+\usepackage{xcolor}
+%\usepackage{fullpage}
+\usepackage{schemabloc}
+\RequirePackage{textcomp}
+\usepackage{keyval}
+%\usepackage{listings}
+\usepackage{xspace}
+\usepackage{mathrsfs}
+%\usepackage{textcomp}
+%\usepackage{graphicx}
+\usepackage{paralist}
+\usepackage{amsmath,amssymb,url,listings,mathrsfs}
+%\usepackage{pvs}
+%\usepackage{supertabular,alltt,latexsym}
+%\usepackage{multicol,multirow,epsfig}
+%\usepackage[dvips, usenames]{color}
+\usepackage{framed}
+\usepackage{lipsum}
+%\usepackage[dvipsnames]{color}
+
+\definecolor{reddish}{rgb}{1,.8,0.8}
+\definecolor{blueish}{rgb}{0.8,.8,1}
+\definecolor{greenish}{rgb}{.8,1,0.8}
+\definecolor{yellowish}{rgb}{1,1,.20}
+
+
+% Some very useful LaTeX packages include:
+% (uncomment the ones you want to load)
+
+
+% *** MISC UTILITY PACKAGES ***
+%
+%\usepackage{ifpdf}
+% Heiko Oberdiek's ifpdf.sty is very useful if you need conditional
+% compilation based on whether the output is pdf or dvi.
+% usage:
+% \ifpdf
+%   % pdf code
+% \else
+%   % dvi code
+% \fi
+% The latest version of ifpdf.sty can be obtained from:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/oberdiek/
+% Also, note that IEEEtran.cls V1.7 and later provides a builtin
+% \ifCLASSINFOpdf conditional that works the same way.
+% When switching from latex to pdflatex and vice-versa, the compiler may
+% have to be run twice to clear warning/error messages.
+
+
+
+
+
+
+% *** CITATION PACKAGES ***
+%
+%\usepackage{cite}
+% cite.sty was written by Donald Arseneau
+% V1.6 and later of IEEEtran pre-defines the format of the cite.sty package
+% \cite{} output to follow that of IEEE. Loading the cite package will
+% result in citation numbers being automatically sorted and properly
+% "compressed/ranged". e.g., [1], [9], [2], [7], [5], [6] without using
+% cite.sty will become [1], [2], [5]--[7], [9] using cite.sty. cite.sty's
+% \cite will automatically add leading space, if needed. Use cite.sty's
+% noadjust option (cite.sty V3.8 and later) if you want to turn this off.
+% cite.sty is already installed on most LaTeX systems. Be sure and use
+% version 4.0 (2003-05-27) and later if using hyperref.sty. cite.sty does
+% not currently provide for hyperlinked citations.
+% The latest version can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/cite/
+% The documentation is contained in the cite.sty file itself.
+
+
+
+
+
+
+% *** GRAPHICS RELATED PACKAGES ***
+%
+\ifCLASSINFOpdf
+  % \usepackage[pdftex]{graphicx}
+  % declare the path(s) where your graphic files are
+  % \graphicspath{{../pdf/}{../jpeg/}}
+  % and their extensions so you won't have to specify these with
+  % every instance of \includegraphics
+  % \DeclareGraphicsExtensions{.pdf,.jpeg,.png}
+\else
+  % or other class option (dvipsone, dvipdf, if not using dvips). graphicx
+  % will default to the driver specified in the system graphics.cfg if no
+  % driver is specified.
+  % \usepackage[dvips]{graphicx}
+  % declare the path(s) where your graphic files are
+  % \graphicspath{{../eps/}}
+  % and their extensions so you won't have to specify these with
+  % every instance of \includegraphics
+  % \DeclareGraphicsExtensions{.eps}
+\fi
+% graphicx was written by David Carlisle and Sebastian Rahtz. It is
+% required if you want graphics, photos, etc. graphicx.sty is already
+% installed on most LaTeX systems. The latest version and documentation can
+% be obtained at: 
+% http://www.ctan.org/tex-archive/macros/latex/required/graphics/
+% Another good source of documentation is "Using Imported Graphics in
+% LaTeX2e" by Keith Reckdahl which can be found as epslatex.ps or
+% epslatex.pdf at: http://www.ctan.org/tex-archive/info/
+%
+% latex, and pdflatex in dvi mode, support graphics in encapsulated
+% postscript (.eps) format. pdflatex in pdf mode supports graphics
+% in .pdf, .jpeg, .png and .mps (metapost) formats. Users should ensure
+% that all non-photo figures use a vector format (.eps, .pdf, .mps) and
+% not a bitmapped formats (.jpeg, .png). IEEE frowns on bitmapped formats
+% which can result in "jaggedy"/blurry rendering of lines and letters as
+% well as large increases in file sizes.
+%
+% You can find documentation about the pdfTeX application at:
+% http://www.tug.org/applications/pdftex
+
+
+
+
+
+% *** MATH PACKAGES ***
+%
+%\usepackage[cmex10]{amsmath}
+% A popular package from the American Mathematical Society that provides
+% many useful and powerful commands for dealing with mathematics. If using
+% it, be sure to load this package with the cmex10 option to ensure that
+% only type 1 fonts will utilized at all point sizes. Without this option,
+% it is possible that some math symbols, particularly those within
+% footnotes, will be rendered in bitmap form which will result in a
+% document that can not be IEEE Xplore compliant!
+%
+% Also, note that the amsmath package sets \interdisplaylinepenalty to 10000
+% thus preventing page breaks from occurring within multiline equations. Use:
+%\interdisplaylinepenalty=2500
+% after loading amsmath to restore such page breaks as IEEEtran.cls normally
+% does. amsmath.sty is already installed on most LaTeX systems. The latest
+% version and documentation can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/required/amslatex/math/
+
+
+
+
+
+% *** SPECIALIZED LIST PACKAGES ***
+%
+%\usepackage{algorithmic}
+% algorithmic.sty was written by Peter Williams and Rogerio Brito.
+% This package provides an algorithmic environment fo describing algorithms.
+% You can use the algorithmic environment in-text or within a figure
+% environment to provide for a floating algorithm. Do NOT use the algorithm
+% floating environment provided by algorithm.sty (by the same authors) or
+% algorithm2e.sty (by Christophe Fiorio) as IEEE does not use dedicated
+% algorithm float types and packages that provide these will not provide
+% correct IEEE style captions. The latest version and documentation of
+% algorithmic.sty can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/algorithms/
+% There is also a support site at:
+% http://algorithms.berlios.de/index.html
+% Also of interest may be the (relatively newer and more customizable)
+% algorithmicx.sty package by Szasz Janos:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/algorithmicx/
+
+
+
+
+% *** ALIGNMENT PACKAGES ***
+%
+%\usepackage{array}
+% Frank Mittelbach's and David Carlisle's array.sty patches and improves
+% the standard LaTeX2e array and tabular environments to provide better
+% appearance and additional user controls. As the default LaTeX2e table
+% generation code is lacking to the point of almost being broken with
+% respect to the quality of the end results, all users are strongly
+% advised to use an enhanced (at the very least that provided by array.sty)
+% set of table tools. array.sty is already installed on most systems. The
+% latest version and documentation can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/required/tools/
+
+
+%\usepackage{mdwmath}
+%\usepackage{mdwtab}
+% Also highly recommended is Mark Wooding's extremely powerful MDW tools,
+% especially mdwmath.sty and mdwtab.sty which are used to format equations
+% and tables, respectively. The MDWtools set is already installed on most
+% LaTeX systems. The lastest version and documentation is available at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/mdwtools/
+
+
+% IEEEtran contains the IEEEeqnarray family of commands that can be used to
+% generate multiline equations as well as matrices, tables, etc., of high
+% quality.
+
+
+%\usepackage{eqparbox}
+% Also of notable interest is Scott Pakin's eqparbox package for creating
+% (automatically sized) equal width boxes - aka "natural width parboxes".
+% Available at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/eqparbox/
+
+
+
+
+
+% *** SUBFIGURE PACKAGES ***
+%\usepackage[tight,footnotesize]{subfigure}
+% subfigure.sty was written by Steven Douglas Cochran. This package makes it
+% easy to put subfigures in your figures. e.g., "Figure 1a and 1b". For IEEE
+% work, it is a good idea to load it with the tight package option to reduce
+% the amount of white space around the subfigures. subfigure.sty is already
+% installed on most LaTeX systems. The latest version and documentation can
+% be obtained at:
+% http://www.ctan.org/tex-archive/obsolete/macros/latex/contrib/subfigure/
+% subfigure.sty has been superceeded by subfig.sty.
+
+
+
+%\usepackage[caption=false]{caption}
+%\usepackage[font=footnotesize]{subfig}
+% subfig.sty, also written by Steven Douglas Cochran, is the modern
+% replacement for subfigure.sty. However, subfig.sty requires and
+% automatically loads Axel Sommerfeldt's caption.sty which will override
+% IEEEtran.cls handling of captions and this will result in nonIEEE style
+% figure/table captions. To prevent this problem, be sure and preload
+% caption.sty with its "caption=false" package option. This is will preserve
+% IEEEtran.cls handing of captions. Version 1.3 (2005/06/28) and later 
+% (recommended due to many improvements over 1.2) of subfig.sty supports
+% the caption=false option directly:
+%\usepackage[caption=false,font=footnotesize]{subfig}
+%
+% The latest version and documentation can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/subfig/
+% The latest version and documentation of caption.sty can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/caption/
+
+
+
+
+% *** FLOAT PACKAGES ***
+%
+%\usepackage{fixltx2e}
+% fixltx2e, the successor to the earlier fix2col.sty, was written by
+% Frank Mittelbach and David Carlisle. This package corrects a few problems
+% in the LaTeX2e kernel, the most notable of which is that in current
+% LaTeX2e releases, the ordering of single and double column floats is not
+% guaranteed to be preserved. Thus, an unpatched LaTeX2e can allow a
+% single column figure to be placed prior to an earlier double column
+% figure. The latest version and documentation can be found at:
+% http://www.ctan.org/tex-archive/macros/latex/base/
+
+
+
+%\usepackage{stfloats}
+% stfloats.sty was written by Sigitas Tolusis. This package gives LaTeX2e
+% the ability to do double column floats at the bottom of the page as well
+% as the top. (e.g., "\begin{figure*}[!b]" is not normally possible in
+% LaTeX2e). It also provides a command:
+%\fnbelowfloat
+% to enable the placement of footnotes below bottom floats (the standard
+% LaTeX2e kernel puts them above bottom floats). This is an invasive package
+% which rewrites many portions of the LaTeX2e float routines. It may not work
+% with other packages that modify the LaTeX2e float routines. The latest
+% version and documentation can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/sttools/
+% Documentation is contained in the stfloats.sty comments as well as in the
+% presfull.pdf file. Do not use the stfloats baselinefloat ability as IEEE
+% does not allow \baselineskip to stretch. Authors submitting work to the
+% IEEE should note that IEEE rarely uses double column equations and
+% that authors should try to avoid such use. Do not be tempted to use the
+% cuted.sty or midfloat.sty packages (also by Sigitas Tolusis) as IEEE does
+% not format its papers in such ways.
+
+
+
+
+
+% *** PDF, URL AND HYPERLINK PACKAGES ***
+%
+%\usepackage{url}
+% url.sty was written by Donald Arseneau. It provides better support for
+% handling and breaking URLs. url.sty is already installed on most LaTeX
+% systems. The latest version can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/misc/
+% Read the url.sty source comments for usage information. Basically,
+% \url{my_url_here}.
+
+
+
+
+
+% *** Do not adjust lengths that control margins, column widths, etc. ***
+% *** Do not use packages that alter fonts (such as pslatex).         ***
+% There should be no need to do such things with IEEEtran.cls V1.6 and later.
+% (Unless specifically asked to do so by the journal or conference you plan
+% to submit to, of course. )
+
+
+\input{prelude1}
+
+% correct bad hyphenation here
+\hyphenation{op-tical net-works semi-conduc-tor}
+
+
+\begin{document}
+%
+% paper title
+% can use linebreaks \\ within to get better formatting as desired
+\title{Tentative:Towards Fault Tolerance in Distributed Real-time Control}
+
+
+% author names and affiliations
+% use a multiple column layout for up to two different
+% affiliations
+
+\author{\IEEEauthorblockN{Authors Name/s per 1st Affiliation (Author)}
+\IEEEauthorblockA{line 1 (of Affiliation): dept. name of organization\\
+line 2: name of organization, acronyms acceptable\\
+line 3: City, Country\\
+line 4: Email: name@xyz.com}
+\and
+\IEEEauthorblockN{Authors Name/s per 2nd Affiliation (Author)}
+\IEEEauthorblockA{line 1 (of Affiliation): dept. name of organization\\
+line 2: name of organization, acronyms acceptable\\
+line 3: City, Country\\
+line 4: Email: name@xyz.com}
+}
+
+% conference papers do not typically use \thanks and this command
+% is locked out in conference mode. If really needed, such as for
+% the acknowledgment of grants, issue a \IEEEoverridecommandlockouts
+% after \documentclass
+
+% for over three affiliations, or if they all won't fit within the width
+% of the page, use this alternative format:
+% 
+%\author{\IEEEauthorblockN{Michael Shell\IEEEauthorrefmark{1},
+%Homer Simpson\IEEEauthorrefmark{2},
+%James Kirk\IEEEauthorrefmark{3}, 
+%Montgomery Scott\IEEEauthorrefmark{3} and
+%Eldon Tyrell\IEEEauthorrefmark{4}}
+%\IEEEauthorblockA{\IEEEauthorrefmark{1}School of Electrical and Computer Engineering\\
+%Georgia Institute of Technology,
+%Atlanta, Georgia 30332--0250\\ Email: see http://www.michaelshell.org/contact.html}
+%\IEEEauthorblockA{\IEEEauthorrefmark{2}Twentieth Century Fox, Springfield, USA\\
+%Email: homer@thesimpsons.com}
+%\IEEEauthorblockA{\IEEEauthorrefmark{3}Starfleet Academy, San Francisco, California 96678-2391\\
+%Telephone: (800) 555--1212, Fax: (888) 555--1212}
+%\IEEEauthorblockA{\IEEEauthorrefmark{4}Tyrell Inc., 123 Replicant Street, Los Angeles, California 90210--4321}}
+
+
+
+
+% use for special paper notices
+%\IEEEspecialpapernotice{(Invited Paper)}
+
+
+% make the title area
+\maketitle
+
+
+\begin{abstract}
+The abstract goes here. DO NOT USE SPECIAL CHARACTERS, SYMBOLS, OR MATH IN YOUR TITLE OR ABSTRACT.
+
+\end{abstract}
+
+\begin{IEEEkeywords}
+component; formatting; style; styling;
+
+\end{IEEEkeywords}
+
+
+\def\titleName{{Towards Fault Tolerant Distributed Real-time Control}}
+\def\authorName{{Taylor Johnson}}
+
+%\usepackage[pdftex]{hyperref}
+%\hypersetup{
+%  pdftitle={\titleName},
+%  pdfauthor={\authorName},
+%%  colorlinks=true,
+%%  citecolor={blue},
+%%  linkcolor = {blue},
+%%  backref={true}
+%}
+
+\section{Introduction}
+\label{sec:intro}
+
+%
+Our understanding of real-world computing systems would be incomplete
+without understanding the effect of failures on such systems.
+Computers and communication channels failures are captured by failure models 
+such as crashes, omissions, and byzantine behavior, and their effect on 
+computing systems have been well studied in the literature. 
+%
+In fact, the central theme in the distributed computing research 
+is understanding the power and limitations of computing systems under 
+different types of failures. 
+%
+Results in this area provide algorithms
+for solving canonical problems 
+such as consensus, leader election, and clock synchronization
+in the presence of certain types of failures, and also establish 
+lower bounds about impossibility of solving those 
+problems with certain resource constraints. 
+%
+Distributed control systems consist not only of computers, 
+but also the physical world which they interact with through 
+sensors and actuators. 
+%
+Thus, to understand the power and limitations of 
+real-world distributed control systems, in this paper, we 
+initiate the study of such systems in the face of computer, sensor, and actuator---failures. 
+
+Rough notes:
+New failure models and their physical manifestations.
+Sensors and actuators require completely new failure models.
+Crash, stuck-at, byzantine.
+%
+Give examples.
+%
+Also need to consider new failure models for computers, e.g.
+timing failures. 
+%
+These failures now have physical manifestations, 
+directly challenging safety of the control system.
+
+Failure detection.
+In distributed computing failure detection is often very hard.
+E.g., we cannot tell differentiate between a slow and
+a crashed computer in an asynchronous system.
+In contrast, failure detection is often easy 
+for actuators. Give example.  
+Timing failures can be detected by runtime environment.
+
+The above suggests new fault-tolerance strategies
+for distributed control systems.
+Mantra: 
+Combine fault detection with the model for physical manifestation
+of failure to avoid bad states. 
+
+Our approach (this is very rough):
+Middleware detects failures and presents a modified 
+world view to the controller. In this world view, faulty agents
+are ``obstacles''. Controller reacts to obstacles in the ``usual'' way.
+
+Case studies. Flocking. Coverage.
+
+Organization:
+
+\section{Related Work}
+\label{sec:rw}
+Giotto. 
+Simplex.  System Simplex.
+PTIDES.  
+P.R. Kumar's system.
+
+\section{Background}
+\label{sec:basics}
+Brief description of HIOA.
+Executions, invariants, etc.
+
+This material is likely to be used by
+both the flocking and the coverage 
+case studies.
+
+%
+Let us describe the 
+physical world model of the two case studies here.
+%
+The two physical worlds are similar in that
+they both model the channels (Communications radius: $r_{comm}$), 
+but they differ in the physics of agents. 
+%
+
+
+
+We describe the failure models for sensors 
+and actuators here. These failure models are also 
+similar for the two case studies. 
+
+\begin{figure}[h!]
+\centering
+  \hrule
+  {\lstinputlisting[language=ioa,firstline=1]{PhysicalWorld.hioa}}
+  \hrule
+  \caption{HIOA Model Physical World}
+  \label{fig:physicalWorld}
+\end{figure}
+
+Denote the communication radius as $r_{comm}$, the initial radius to maintain safety as $r_{init}$, and the safety radius as $\mathit{r_{safety}}$.  To maintain safety, we must have that $r_{comm} > r_{init} > \mathit{r_{safety}}$.
+%
+Denote the time required to change a node's velocity from maximum to minimum (and vice-versa) as $t_a = \frac{2v_{max}}{a_{max}}$.  Denote the time required to travel between the communication radius and the safety radius as $t_v = \frac{r_{comm} - \mathit{r_{safety}}}{2v_{max}}$.  Then, $\Delta \leq \min(t_a, t_v)$.
+%
+Denote the distance covered while changing a node's velocity from one extrema to the other as $r_a = 2v_{max}t_a = \frac{4v_{max}^2}{a_{max}}$.  Denote the maximum distance traveled during the delay as $r_d = 2v_{max}\Delta$.
+%
+(Note that we must fix one of $r_{comm}$ or $\Delta$, as they are functions of one another.  We can then ensure the given $r_{comm}$ and computed $\Delta$ (or vice-versa) satisfy the initial conditions.)
+%
+Now explicitly, define $r_{init} \equiv \mathit{r_{safety}} + r_a + r_d$, and require $r_{comm} \geq r_{init} + r_d$.
+
+We assume the following of $S_0$:
+
+$ \begin{array}{ll}
+		1) & \vx.x_i > 0 \\
+		2) & \textrm{ if } j > i \Rightarrow \vx.x_j > \vx.x_i \\
+		3) & \abs{\vx.v_i - \vx.v_{j}} < 2v_{max} \\
+		4) & \abs{\vx.x_i - \vx.x_{j}} > r_{init} \\
+		5) & u_i = 0 \\
+		6) & x_g > x_i \\
+		7) & \Delta \leq \min(t_a, t_v)
+	\end{array} $
+$\forall i, j \in N$ and $i \neq j$.
+
+\section{New Flocking}
+\label{sec:flocking}
+
+In this section, we study a 
+distributed flocking algorithm under several
+failure models. 
+%
+Informally, the system consists of $N$ agents starting at arbitrary 
+locations on the real line, where $N \in \naturals, N > 1$
+with the goal of 
+\begin{inparaenum}[(a)]
+\item reaching a fixed waypoint $x^* \in \reals$, and 
+\item forming a {\em flock\/} or an equispaced formation on the way to $x^*$.
+\end{inparaenum}  
+The algorithm we shall study also works when a sequence of waypoints 
+are presented to the agents, but for simplicity of presentation, 
+we fix $x^*$.
+
+\subsection{Specification}
+\label{sec:flockspec}
+The flocking algorithm is specified by the HIOA $\auto{Agent_i}$ of 
+Figure~\ref{fig:agent_i}.
+
+Describe the code. State variables, actions, transitions, trajectories.
+
+The transition $send_i$ occurs at every time $\vx.now = next_i$ and adds a message containing physical state measurements of $\auto{Agent_i}$ to a $Queue$ in $\auto{PhysicalWorld}$ for each of $\auto{Agent_i}$'s communication neighbors, to be delivered before $\vx.now = d$, such that the state measurements are available for computation at $\vx.now = \vx.next_i$.  Also, the control for $\auto{Agent_i}$ is set at this transition, based on the measurement values at the time $\vx.now - \Delta$.
+%
+The transition $recv_{ij}$ removes a message containing physical state measurements of $\auto{Agent_j}$ from a $Queue$ in $\auto{PhysicalWorld}$ which is for $\auto{Agent_i}$ and adds it to a $\mathit{buffer}$.
+%
+Thus, each $\auto{Agent_i}$ receives knowledge of all nearby neighbors in time.
+
+This state knowledge of neighbors is stored in a $\mathit{buffer}$ which maps from the set of indices of nodes, $[N]$ to $(\mathbb{R} \cup \{\perp\})^3$.  That is, if an $\auto{Agent_i}$ has not received a message from $\auto{Agent_j}$ yet, then $j \notin nbrs_i$, and thus the mapping with $j$ will yield triple of $\{\perp\}$s.
+%
+Each of the functions $\hat{x}$, $\hat{v}$, and $\hat{u}$ maps from the set of neighbors of $\auto{Agent_i}$, $nbrs_i$ to triples of physical state variables in $\math{R}$.  This achieves the same result as accessing the $\mathit{buffer}$, we should clarify this, as it should be the case that $\hat{x}(j)=\mathit{buffer}(j)=x_j$ from time $\vx.next_i - \Delta$.  We are using the $\mathit{buffer}$ behind the scenes to actually store the message values, and then just use the functions $\hat{x}$, $\hat{v}$, and $\hat{u}$ as a convenient notation. TODO: There is some confusion here--why are we setting the buffer and hat functions separately?
+
+\begin{figure}[h!]
+\centering
+  \hrule
+  {\lstinputlisting[language=ioa,firstline=1]{Agent_i.hioa}}
+  \hrule
+  \caption{HIOA Model of $Agent_i$}
+  \label{fig:agent_i}
+\end{figure}
+
+The control, $ctrl(i, x_g, x_i, v_i, u_i, \hat{x}, \hat{v}, \hat{u}, nbrs_i)$, is defined as
+
+$ctrl\left(i, x_g, x_i, v_i, u_i, \hat{x}, \hat{v}, \hat{u}, nbrs_i \right) = \\
+	\left\{
+		\begin{array}{ll}
+			\sgn{x_g - x_i}a_{max} & \textrm{if } nbrs_i = \{\} \\
+				\left\{
+					\begin{array}{l}
+						\sgn{\tilde{v}}a_{max} \textrm{  if } \abs{x_i - \tilde{x}} \leq r_{init} \\
+						a\left(\tilde{x} - x_i\right - r_{init}) + b\left(\tilde{v} - v_i\right) \textrm{  else }
+					\end{array}
+				\right.
+			& \textrm{else} \\
+		\end{array}
+	\right. $
+
+where $\tilde{x} = \hat{x}(\tilde{i})$, $\tilde{v} = \hat{v}(\tilde{i})$, $\tilde{u} = \hat{u}(\tilde{i})$, $\tilde{i} = \argmin{\left(\hat{x}(j) - x_i\right)}{j \in nbrs_i}$, $a \in \mathbb{R}_+$, and $b \in \mathbb{R}_+$.
+
+Let $\A$ be the HIOA obtained by composing 
+$\auto{PhysicalWorld} \| \auto{Agent}_1 \| \ldots \auto{Agent}_N$.
+We denote a state of $\A$ by $\vx$ and individual 
+state components by $\vx.x_i$, $\vx.\mathit{next}_i$, etc.
+%
+
+\subsection{Analysis}
+\label{sec:flockana}
+
+
+
+We would like to show that the \textit{safety property}, that the distance between each node $i$ and $j$ is at least $\mathit{r_{safety}}$ is satisfied.  However, before we begin working toward the safety property, we must make some assumptions about communications and prove some simpler invariants.
+
+Assume that the network delay between nodes is bounded, such that a message sent by node $i$ is received by all its communication neighbors $j \in N_c(i, s)$ within time $d$.  This assumption immediately gives that all $recv_{ij}$ and $recv_{ji}$ actions will be correct, in that the necessary state information is delivered before the next period.
+
+%
+%Notes: while of course no nodes have knowledge of all of $S$ for the actual operation, for the proof we can assume we have all of this knowledge.  Basically, as long as all nodes start far enough apart, with bounded relative velocities, and a fast enough update period $\Delta$, and big enough $r_{comm}$, we can guarantee that all nodes receive messages between $\Delta$.
+
+Lets distinguish between state and physical location, velocity etc. Because the state of each agent includes other variables such as $nbrs_i$, etc.
+
+Recall from above that $d < \Delta$, that is, the \textit{communications delay} $d$ is such that messages are delivered before control updates that occur at $\Delta$.
+
+\begin{inv}
+\label{inv:now}
+$\forall i, j, \vx.now_i = \vx.now_j = \vx.now$.
+\end{inv}
+
+The next invariant follows from synchronous communication.
+All nodes receive messages about the state information from time $next - \Delta$ before time $next$.
+Define the time for the last send with respect to state $s$ as $start(s) = s.next - \Delta$.
+\begin{inv}
+\label{inv:send}
+
+$\vx.nbrs_i = N_c(i, \vx)(start(\vx))$
+
+$\I_{nbrs}\left(S\right) = \\
+	\left\{
+		\begin{array}{l}
+			\textrm{if } \vx.now - start(\vx) \geq d \\ \textrm{then } \vx.nbrs_i = N_c(i, \vx)(start(\vx))\\
+			\textrm{elseif } \vx.now - start(\vx) < d \\ \textrm{then } N_c(i, \vx)(start(\vx)) = \vx.nbrs_i \cup \{\vx.Channel_{ij}\}\\
+		\end{array}
+	\right.$
+\end{inv}
+\begin{proof}
+Fix a reachable state $s$.  Expanding $s.now - start(s) \geq d$ to $s.now - s.next + \Delta \geq d$, it is clear that if $s.now \geq start(s) + d$, all messages will have been delivered due to the stopping condition for the $recv_{ij}$ actions to occur in $PhysicalWorld$.  However, before that time in the other case, all messages may still be in the channel since no stopping condition has been reached (and all messages were put in the channel at time $start(s)$), or some messages may have been delivered already, so all messages are either in the channel or have been delivered, and thus, the set of neighbors of node $i$ is the union of these.  All closed trajectories $\tau$ that could violate this are excluded by the stopping condition.
+\end{proof}
+
+\begin{inv}
+
+$\I_{channelSize}\left(S\right) = size(\vx.Channel_{ij}) \leq 1$
+
+\end{inv}
+
+\begin{proof}
+This holds trivially since all messages will be delivered by time $start + d$, so they will be inserted and removed from the queue in $PhysicalWorld$ before the next $\Delta$.  The size when $\vx.now = start(\vx)$ is $1$, since all messages are in the channel after the $Send_i$ action occurs at time $start(\vx)$.  The size between $\vx.now = start(\vx)$ and $\vx.now = start(\vx) + d$ is either $0$ or $1$, since some messages may have been delivered, but some may not have.  The size between $\vx.now = start(\vx) + d$ and $\vx.next$ is $0$, since all messages must have been delivered by the stopping conditions and thus no closed trajectory $\tau$ could have crossed this boundary.
+\end{proof}
+
+\begin{inv}
+The set of \textit{communication neighbors} of node $i$ at time $next - \Delta$ is the same as the set of \textit{physical neighbors} at time $start + d$.
+
+Assume $S_0$ is given such that $\I_{recv}(S_0)$ is satisfied at time $t_0$, then $\I_{recv}(S)$ is satisfied, and thus the receive property is maintained $\forall t \geq t_0$.
+\end{inv}
+
+\begin{proof}
+
+This statement can be made more precise. But the property you want, I think, is the following invariant:
+Let $\vx$ be a reachable state of the complete system. 
+
+For every agent i, j, 
+if 
+(a) $\vx.now_i = \vx.next_i$ (i.e., process i is about to send), and
+(b) $\abs{\vx.x_i - \vx.x_j} <= r_{comm} - 2v_{max} * \Delta$ (i and j are "close") 
+then 
+$j \in \vx.nbrs_i$ (i knows about j).
+
+As usual, you may have to strengthen this invariant in order to make it inductive. This statement does not say anything about $\vx.now_i != \vx.next$, you'll probably need to say something about that.
+
+If $r_{comm} > r_{init}$, then nodes within at least $r_{comm}$ of one another get messages before their distance is less than $r_{init}$.  Nodes may then be within between $r_{init}$ and $\mathit{r_{safety}}$ of one another.
+
+We are given that $S_0$ is such that at the initial time $t_0$ the invariant $\I_{recv}(S_0)$ is satisfied.  This gives us the following
+
+$\forall S \xrightarrow{a} S^{\prime} : \I_{recv}\left(S\right) \Rightarrow \I_{recv}\left(S^{\prime}\right)$
+
+We consider each action separately in cases:
+
+i) $send_i$
+
+ii) $recv_ij$
+If the delay $d$ between messages is less than the period of synchronous communication $\Delta$, then all $Recv$ actions will have occurred before the next period.
+
+$\forall \tau,\textrm{ if } \forall S \xrightarrow{\tau} S^{\prime} : \I_{recv}\left(S\right) \Rightarrow \I_{recv}\left(S^{\prime}\right)$
+
+While it is tempting to say that the worst scenario for $Recv$ is when two neighbors $i$ and $j$ are moving away from one another with maximum velocity and acceleration, this is actually not the case if we only care about the safety property defined as no nodes come within $\mathit{r_{safety}}$ of one another.  The worst case is still when these two nodes are coming together with maximum acceleration and velocity, and that they are \textbf{not} yet within $r_{comm}$.  If they can cover their distance $\abs{x_i - x_j}$ before the next $\Delta$, plus some details on the velocity and number of cycles required to change direction, then they may collide.  What we want is an upper bound of $\Delta$ to guarantee everything, such as the following:
+
+Note that we really should not have to talk about $u_i > 0$ as different to the $a_{max}$ case, since the worst affect on $\mathit{r_{safety}}$ comes from $v_i$, which if bounded by $v_{max}$ is already done.  Any time we have acceleration and the particles are moving at less than $v_{max}$, as long as we know we work for $v_{max}$, we will work for anything less than $v_{max}$, regardless of the rate of change of $v_i$.
+
+However, when two nodes are moving away from one another with maximum acceleration and velocity is the worst case for flocking.  If we enforce an initial condition about all nodes being within $r_{comm}$, and that their initial velocities are not such that they can leave $r_{comm}$ before the first control update, then we should be able to guarantee flocking for all time.  This gives us both an upper and lower bound on $r_{comm}$.  (Note: We should check to see if this definition on initial conditions is basically what Olfati-Saber is referring to in the previous work for Algorithm 1 to maintain flocking instead of segmentation.)
+
+\end{proof}
+
+\begin{inv}
+$I_{reorder}(S) = \vx.x_i < \vx.x_j \forall i < j$
+\end{inv}
+
+\begin{proof}
+The base case is satisfied by assumption on the initial conditions that $\vx.x_i < \vx.x_j$.
+
+The inductive case requires using the assumptions on the initial conditions are such that using the specified control maintains this ordering property.
+\end{proof}
+
+\begin{inv}
+
+$\I_{safety}\left(S\right) = \\
+	\left\{ \begin{array}{l}
+		\textrm{if } \left( \vx.now = \vx.next_i \right) \wedge \neg \vx.Send \Rightarrow \\
+		\forall i \left(\vx.x_{i} - \vx.x_{i-1}\right) + \Delta\left(\vx.v_{i} - \vx.v_{i-1}\right) + \frac{1}{2}a_{max}\Delta^2 \geq \\ \mathit{r_{safety}} \\
+		\textrm{if } \left( \vx.now \neq \vx.next_i \right) \vee \left( \vx.now = \vx.next_i \wedge Send \right) \Rightarrow \\
+		\forall i \left(\vx.x_{i} - \vx.x_{i-1}\right) + t_{Rem}\left(\vx.v_{i} - \vx.v_{i-1}\right) + \frac{1}{2}a_{max}t_{Rem}^2 \geq \\  \mathit{r_{safety}} \\
+	\end{array}
+\right.$ where $t_{Rem} \equiv \left(\vx.next_i - \vx.now\right)$.
+\end{inv}
+
+\begin{proof}
+There are three possible cases that can arise for the controls at $\vx.next_i$, assuming at $start(\vx, i)$ the state is okay:
+%
+There are three interesting cases, two of which are when nodes can now communicate when they could not before, and the other is when nodes are still communicating.  If nodes are not communicating, everything is boring as they just apply the go-to-goal control.
+%
+\begin{itemize}
+\item First, when nodes are still more than $r_{init}$ apart, they apply
+%
+$r_{comm} \geq \abs{x_i - x_j} \geq r_{init} > \mathit{r_{safety}}$
+%
+$u_i = a\left(\tilde{x} - x_i\right - r_{init}) + b\left(\tilde{v} - v_i\right)$
+
+\item Second, when nodes are less than $r_{init}$ apart, they apply the collision avoidance control
+%
+$r_{comm} \geq r_{init} > \abs{x_i - x_j} > \mathit{r_{safety}}$
+%
+$u_i = \sgn{v_j}a_{max}$
+%
+The only time this situation arises (as in, this is the only time we can recover from it) is as follows:
+%
+$r_{comm} \geq r_{init} > \abs{x_i - x_j} > r_{init} - r_d > \mathit{r_{safety}}$
+%
+that is, the nodes must still be separated by almost the radius required to recover safety, $r_{init}$, but can tolerate the distance covered over the delay.
+
+\item If nodes could previously communicate and still can, it is an interesting case, as they could be in either of the above cases.
+%
+If $r_{comm} \geq \abs{x_i - x_j} \geq r_{init} > \mathit{r_{safety}}$, then
+$u_i = a\left(\tilde{x} - x_i\right - r_{init}) + b\left(\tilde{v} - v_i\right)$.
+%
+Otherwise, if $r_{comm} \geq r_{init} > \abs{x_i - x_j} > \mathit{r_{safety}}$
+%
+$u_i = \sgn{v_j}a_{max}$
+
+\item The most boring case is when nodes are still not communications neighbors, they just go towards the goal.
+%
+$\abs{x_i - x_j} > r_{comm} > r_{init} > \mathit{r_{safety}}$
+%
+$u_i = \sgn{x_g - x_i}*a_{max}$
+
+\end{itemize}
+
+Assume $S_0$ is given such that $\I_{safety}(S_0)$ is satisfied.  If $\I_{safety}(S_0)$ is satisfied, then $\I_{safety}(S)$ is satisfied, and thus the safety property is maintained.
+
+We are given that $S_0$ is such that at the initial time $0$ the invariant $\I_{safety}(S_0)$ is satisfied.  This gives us the following
+
+$\forall S \xrightarrow{a} S^{\prime} : \I\left(S\right) \Rightarrow \I\left(S^{\prime}\right)$
+
+We consider each action separately in cases:
+i) $send_i$
+Send does not affect the state of node $j$, and it does not affect the state of node $i$ until $next$, so it is vacuously true in both cases.
+
+ii) $recv_ij$
+Trivially from the $I_{recv}$ invariant.
+
+$\forall \tau, if \forall S \xrightarrow{\tau} S^{\prime} : \I\left(S\right) \Rightarrow \I\left(S^{\prime}\right)$
+
+For the trajectories, it is sufficient to consider the worst possible trajectory affecting the safety condition, that is, when particles are coming towards one another with maximum acceleration.  Given the assumption that $\abs{x_i - x_j} < C_1$, we see that the relative velocities of any particles are bounded, and we will be immediately finished.
+
+In reality, given a large enough $r_{comm}$ (or small enough $\Delta$), this is overly conservative, as the control law would prohibit nodes from moving towards one another with acceleration $a_{max}$.
+\end{proof}
+
+\begin{inv}Progress
+
+All nodes reach the goal.
+\end{inv}
+
+\begin{proof}
+Show that if $x_g > x_i$, then $v_i > 0 \forall i$ eventually and for long enough time to reach goal.  Symmetrically, if $x_g < x_i$, then $v_i < 0 \forall i$ eventually and for long enough time to reach goal.  That is, we must show that $\exists t_g$ such that $v_i t_g \geq x_g \forall i$.  (Slightly more complicated than this, integral of velocity over time?)
+
+Is it useful to do this proof as a stability proof, showing that eventually, $\forall i, v_i = v_max$, in the direction of the goal?
+
+Or equivalently, showing that $x_i - x_g = 0$, to say that the node eventually reaches the goal by stability.
+\end{proof}
+
+\begin{inv}Flocking
+
+This is not possible in general here without a different control.
+\end{inv}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%\section{Flocking}
+%\label{sec:flocking}
+%%$\dot{q}_i = p_i$
+%%
+%%$\dot{p}_i = u_i$
+%%
+%%$q_i, p_i, u_i \in \mathbb{R}^m$
+%%
+%%Neighbors
+%%
+%%$N_c(i) = \left\{ j \in V : ||q_j - q_i|| < r\right\}$
+%%
+%%$\alpha$-lattice if:
+%%$||q_j - q_i|| = d, \forall j \in N_c(i)\left(q\right)$
+%%
+%%quasi $\alpha$-lattice if:
+%%$-\delta \leq ||q_j - q_i|| -d \leq \delta, \forall \left(i,j\right) \in \varepsilon\left(q\right)$
+%%
+%%$\sigma$-norm ($\mathbb{R}^m \rightarrow \mathbb{R}_{\geq 0}$)
+%
+%%$||z||_{\sigma}=\frac{1}{\epsilon}\left[\sqrt{1 + \epsilon||z||^2} - 1\right]$
+%%
+%%for $\epsilon > 0$ and gradient $\sigma_{\epsilon}\left(z\right) = \nabla ||z||_{\sigma}$ where
+%%
+%%$\sigma_{\epsilon}\left(z\right) = \frac{z}{\sqrt{1 + \epsilon||z||^2}} = \frac{z}{1 + \epsilon||z||_{\sigma}}$
+%%
+%%bump function:
+%%
+%%$\rho_{h}\left(z\right) = \left\{ 1, z \in \left[0, h\right)
+%%\frac{1}{2}\left[1 + cos\left(\pi\frac{\left(z - h\right)}{\left(1 - h\right)}\right)\right], z \in \left[h, 1\right] 0, else$
+%%
+%%spatial adjacency matrix:
+%%
+%%$a_{ij}\left(q\right) = \rho_{h}\left(\frac{||q_j - q_i||_{\sigma}}{||r||_{\sigma}}\right) \in \left[0, 1\right], j \neq i$
+%%
+%%$n_{ij}=\frac{\left(q_j - q_i\right)}{\sqrt{1 + \epsilon ||q_j - q_i||^2}}$
+%%
+%%
+%
+%%% SAYANstart:
+%
+%
+%
+%%% SAYANend:
+%
+%Consider a system of $N$ agents in one dimension along the $\mathbb{R}$ line, with dynamics described by the double integrator model $\dot{x}_{i} = v_{i}$ and $\dot{v}_{i} = a_i = u_i$, where $x_i$, $v_i$, $u_i$ $\in \mathbb{R}$.  The set of indices of the agents is defined $[N] \subset \mathbb{N} = \{0 \ldots N \}$.  All agents are trying to reach a goal position $x_g \in \mathbb{R}$.  Note that $\exists v_{max}, a_{max}$, a maximum velocity and acceleration, respectively, such that, $\dot{x}_{i} \leq v_{max} \wedge \dot{v}_{i} \leq a_{max} \forall t$.  The existence of a maximum acceleration is reasonable given that it would be produced by some actuator with limited operating range and power source.  Note that of course the existence of a maximum acceleration does not imply the existence of a maximum velocity.  However, the existence of a maximum force that can be applied as a control, which is proportional to the maximum acceleration, and in the presence of opposing forces proportional to the velocity such that $\sum{F}=0$ where $F \in \mathbb{R}$, does imply the existence of a maximum velocity, so this is a reasonable assumption.  On Earth the balancing forces could be aerodynamic resistance, whereas in space, relativistic limits could be imposed.  We consider the overall state space $S \subset \mathbb{R}^{3n}=\cup_i\left(x_i \cup v_i \cup a_i \right)$ (notation here?) where the initial state space is denoted $S_{0}$, which corresponds to time $t_0$ (notation again, $t_0 = 0$ since we start $now=0$?).
+%
+%We model the agents as HIOA in ~\ref{fig:agent_i} and the physical world the agents interact through as in ~\ref{fig:physicalWorld}.
+%
+%\begin{figure}[h!]
+%\centering
+%  \hrule
+%  {\lstinputlisting[language=ioa,firstline=1]{Agent_i.hioa}}
+%  \hrule
+%  \caption{HIOA Model of $Agent_i$}
+%  \label{fig:agent_i}
+%\end{figure}
+%
+%\begin{figure}[h!]
+%\centering
+%  \hrule
+%  {\lstinputlisting[language=ioa,firstline=1]{PhysicalWorld.hioa}}
+%  \hrule
+%  \caption{HIOA Model Physical World}
+%  \label{fig:physicalWorld}
+%\end{figure}
+%
+%First, consider a model of communication where all agents synchronously send messages to all other nodes within a communication radius $r_{comm}$ of their current position every $\Delta$ time.  The set of nodes within the communication radius of a node $i$ is called the \textit{communication neighbors} of $i$ and is defined as $N_c(i) = N(i, r_{comm}) \equiv \left\{ j \in [N] : \abs{x_i - x_j} \leq r_{comm}\right\}$.  Also at every $\Delta$ time, each node $i$ updates its own control law, $u_i$.  This scenario is that every node $i$ is updating its control $u_i$ using the states of all of its neighbors from time $start = next - \Delta$.
+%
+%%That is, all nodes $i$ and $j$ communicate at $now \geq k*\Delta$ where $k \in \mathbb{N}$ and $j : \forall i . \abs{x_{i} - x_{j}} \leq r_{comm}$.
+%
+%We assume the following of $S_0$:
+%
+%$ \begin{array}{ll}
+%		1) & x_i > 0 \\
+%		2) & \textrm{ if } j > i \Rightarrow x_j > x_i \\
+%		3) & \abs{v_i - v_{j}} < 2v_{max} \\
+%		4) & \abs{x_i - x_{j}} > r_{init} \\
+%		5) & u_i = 0 \\
+%		6) & x_g > x_i
+%	\end{array} $
+%$\forall i, j \in N$ and $i \neq j$.
+%
+%Communications radius: $r_{comm}$
+%
+%Safety radius: $\mathit{r_{safety}}$
+%
+%Initial radius to maintain safety: $r_{init}$
+%
+%$r_{comm} > r_{init} > \mathit{r_{safety}}$
+%
+%The control, $ctrl(i, x_g, x_i, v_i, u_i, \hat{x}, \hat{v}, \hat{u}, nbrs_i)$, is defined as
+%
+%$ctrl\left(i, x_g, x_i, v_i, u_i, \hat{x}, \hat{v}, \hat{u}, nbrs_i \right) = \\
+%	\left\{
+%		\begin{array}{ll}
+%			\sgn{x_g - x_i}a_{max} & \textrm{if } nbrs_i = \{\} \\
+%				\left\{
+%					\begin{array}{l}
+%						\sgn{\tilde{v}}a_{max} \textrm{  if } \abs{x_i - \tilde{x}} \leq r_{init} \\
+%						a\left(\tilde{x} - x_i\right - r_{init}) + b\left(\tilde{v} - v_i\right) \textrm{  else }
+%					\end{array}
+%				\right.
+%			& \textrm{ else} \\
+%		\end{array}
+%	\right. $
+%
+%where $\tilde{x} = \hat{x}(\tilde{i})$, $\tilde{v} = \hat{v}(\tilde{i})$, $\tilde{u} = \hat{u}(\tilde{i})$, $\tilde{i} = \argmin{\left(\hat{x}(j) - x_i\right)}{j \in nbrs_i}$, $a \in \mathbb{R}_+$, and $b \in \mathbb{R}_+$.
+%
+%We would like to show that the \textit{safety property}, that the distance between each node $i$ and $j$ is at least $\mathit{r_{safety}}$ is satisfied.  However, before we begin working toward the safety property, we must make some assumptions about communications and prove some simpler invariants.  First, assume that the network delay between nodes is bounded, such that a message sent by node $i$ is received by all its communication neighbors $j \in N_c(i)$ within time $d$.  This assumption immediately gives that all $recv_{ij}$ and $recv_{ji}$ actions will be correct, in that the necessary state information is delivered before the next period.
+%
+%
+%%
+%%Notes: while of course no nodes have knowledge of all of $S$ for the actual operation, for the proof we can assume we have all of this knowledge.  Basically, as long as all nodes start far enough apart, with bounded relative velocities, and a fast enough update period $\Delta$, we can guarantee that all nodes receive messages between $\Delta$.
+%
+%Recall from above that $d < \Delta$, that is, the \textit{communications delay} $d$ is such that messages are delivered before control updates that occur at $\Delta$.
+%
+%\textbf{Invariant}
+%
+%$\forall i, j, agent_i.now_i = agent_j.now_j = PhysicalWorld.now$
+%
+%This is given by the assumption of synchronous communication.
+%
+%\textbf{Invariant}
+%
+%All nodes receive messages about the state information from time $next - \Delta$ before time $next$.
+%
+%Define the time for the last send with respect to state $s$ as $start(s) = s.next - \Delta$.
+%
+%$s.nbrs_i = N(i, r_{comm})(start(s))$
+%
+%$\I_{nbrs}\left(S\right) = \\
+%	\left\{
+%		\begin{array}{l}
+%			\textrm{if } s.now - start(s) \geq d \textrm{ then } s.nbrs_i = N_c(i)(start(s))\\
+%			\textrm{elseif } s.now - start(s) < d \textrm{ then } N_c(i)(start(s)) = s.nbrs_i \cup \{s.Channel_{ij}\}\\
+%		\end{array}
+%	\right.$
+%
+%Fix a reachable state $s$.  Expanding $s.now - start(s) \geq d$ to $s.now - s.next + \Delta \geq d$, it is clear that if $s.now \geq start(s) + d$, all messages will have been delivered due to the stopping condition for the $recv_{ij}$ actions to occur in $PhysicalWorld$.  However, before that time in the other case, all messages may still be in the channel since no stopping condition has been reached (and all messages were put in the channel at time $start(s)$), or some messages may have been delivered already, so all messages are either in the channel or have been delivered, and thus, the set of neighbors of node $i$ is the union of these.  All closed trajectories $\tau$ that could violate this are excluded by the stopping condition.
+%
+%\textbf{Invariant}
+%
+%The set of \textit{communication neighbors} of node $i$ at time $next - \Delta$ is the same as the set of \textit{physical neighbors} at time $start + d$.
+%
+%\textbf{Invariant}
+%
+%$\I_{channelSize}\left(S\right) = \textrm{if } \Delta > d \textrm{, then } size(Channel_{ij}) \leq 1$
+%
+%This holds trivially since all messages will be delivered by time $now + d$, so they will be inserted and removed from the queue in $PhysicalWorld$ before the next $\Delta$.
+%
+%Slightly more formally (should be stated in this manner as the invariant?):
+%
+%Size when $now = start$ is 1, since all messages are in the channel after the $Send_i$ action occurs at time $start$.
+%
+%Size between $now = start$ and $now = start + d$ is either 0 or 1, since some messages may have been delivered, but some may not have.
+%
+%Size between $now = start + d$ and $\Delta$ is 0, since all messages must have been delivered by the stopping conditions and thus no closed trajectory $\tau$ could have crossed this boundary.
+%
+%\textbf{Invariant}
+%
+%If $r_{comm} > r_{init}$, then nodes within at least $r_{comm}$ of one another get messages before their distance is less than $r_{init}$.  Nodes may then be within between $r_{init}$ and $\mathit{r_{safety}}$ of one another.
+%
+%Denote the time required to change a node's velocity from maximum to minimum (and vice-versa) as $t_a = \frac{2v_{max}}{a_{max}}$.  Denote the time required to travel between the communication radius and the safety radius as $t_v = \frac{r_{comm} - \mathit{r_{safety}}}{2v_{max}}$.  Then, $\Delta = \min(t_a, t_v)$.
+%
+%Denote the distance covered while changing a node's velocity from one extrema to the other as $r_a = 2v_{max}t_a = \frac{4v_{max}^2}{a_{max}}$.  Denote the maximum distance traveled during the delay as $r_d = 2v_{max}\Delta$.
+%
+%Note that we must fix one of $r_{comm}$ or $\Delta$, as they are functions of one another.  We can then ensure the given $r_{comm}$ and computed $\Delta$ (or vice-versa) satisfy the initial conditions.
+%
+%\textbf{Invariant}
+%
+%Assume $S_0$ is given such that $\I_{recv}(S_0)$ is satisfied at time $t_0$, then $\I_{recv}(S)$ is satisfied, and thus the receive property is maintained $\forall t \geq t_0$.
+%
+%We are given that $S_0$ is such that at the initial time $t_0$ the invariant $\I_{recv}(S_0)$ is satisfied.  This gives us the following
+%
+%$\forall S \xrightarrow{a} S^{\prime} : \I_{recv}\left(S\right) \Rightarrow \I_{recv}\left(S^{\prime}\right)$
+%
+%We consider each action separately in cases:
+%
+%i) $Send$
+%
+%ii) $Recv$
+%If the delay $d$ between messages is less than the period of synchronous communication $\Delta$, then all $Recv$ actions will have occurred before the next period.
+%
+%$\forall \tau,\textrm{ if } \forall S \xrightarrow{\tau} S^{\prime} : \I_{recv}\left(S\right) \Rightarrow \I_{recv}\left(S^{\prime}\right)$
+%
+%While it is tempting to say that the worst scenario for $Recv$ is when two neighbors $i$ and $j$ are moving away from one another with maximum velocity and acceleration, this is actually not the case if we only care about the safety property defined as no nodes come within $\mathit{r_{safety}}$ of one another.  The worst case is still when these two nodes are coming together with maximum acceleration and velocity, and that they are \textbf{not} yet within $r_{comm}$.  If they can cover their distance $\abs{x_i - x_j}$ before the next $\Delta$, plus some details on the velocity and number of cycles required to change direction, then they may collide.  What we want is an upper bound of $\Delta$ to guarantee everything, such as the following:
+%
+%%$\Delta(x, v) \equiv \frac{x_i - x_j - r_{comm}}{v_i - v_j}$
+%%
+%%or, with acceleration:
+%%
+%%$\Delta(x, v) \equiv \frac{x_i - x_j - r_{comm}}{v_i - v_j} - \frac{v_i - v_j}{a_{max}}$
+%%
+%%and with existing bounds:
+%%
+%%$\Delta(x, v) \equiv \frac{\mathit{r_{safety}} - r_{comm}}{C_1} - \frac{C_1}{a_{max}}$
+%%
+%%(or equivalently:)
+%%
+%%$\Delta(x, v) \equiv \frac{\mathit{r_{safety}} - r_{comm}}{2v_{max}} - \frac{2v_{max}}{a_{max}}$
+%%
+%%The above seems a bit wrong, the following seems correct:
+%%
+%%$\Delta(x, v) \equiv \frac{C_1 - \frac{r_{comm}}{\Delta}}{a_{max}}$
+%%
+%%or equivalently: $\Delta(x, v) \equiv \frac{2v_{max} - \frac{r_{comm}}{\Delta}}{a_{max}}$
+%%
+%%where we replace $\Delta$ with $t_{Rem}$
+%%
+%%$\Delta(x, v) \equiv \frac{C_1 - \frac{r_{comm}}{t_{Rem}}}{a_{max}}$
+%
+%Note that we really should not have to talk about $u_i > 0$ as different to the $a_{max}$ case, since the worst affect on $\mathit{r_{safety}}$ comes from $v_i$, which if bounded by $v_{max}$ is already done.  Any time we have acceleration and the particles are moving at less than $v_{max}$, as long as we know we work for $v_{max}$, we will work for anything less than $v_{max}$, regardless of the rate of change of $v_i$.
+%
+%However, when two nodes are moving away from one another with maximum acceleration and velocity is the worst case for flocking.  If we enforce an initial condition about all nodes being within $r_{comm}$, and that their initial velocities are not such that they can leave $r_{comm}$ before the first control update, then we should be able to guarantee flocking for all time.  This gives us both an upper and lower bound on $r_{comm}$.  (Note: We should check to see if this definition on initial conditions is basically what Olfati-Saber is referring to in the previous work for Algorithm 1 to maintain flocking instead of segmentation.)
+%
+%%Consider two particles $i$ and $j$ that are going towards one another with maximum acceleration (and $x_j > x_i$, that is, $j$ is to the right of $i$) that are not yet communication neighbors (that is, $\abs{x_i - x_j} > r_{comm}$), such that from time $t$ (or $k*\Delta$), where the control was applied, and time $t+\Delta$ (or $(k+1)*\Delta$).
+%%
+%%We want first to show: If $\abs{x_i(t) - x_j(t)} > r_{comm}$, then $\abs{x_i(t) - x_j(t)} \geq \mathit{r_{safety}}$
+%%
+%%$x_i(t+\Delta) = x_i(t) + v_i(t)\Delta + \frac{1}{2}a_{max}\Delta^2$
+%%
+%%$x_j(t+\Delta) = x_j(t) - v_j(t)\Delta - \frac{1}{2}a_{max}\Delta^2$
+%%
+%%$x_i(t+\Delta) - x_j(t+\Delta)$
+%%
+%%$x_i(t) + v_i(t)\Delta + \frac{1}{2}a_{max}\Delta^2 - (x_j(t) - v_j(t)\Delta - \frac{1}{2}a_{max}\Delta^2) \geq \mathit{r_{safety}}$
+%%
+%%$x_i(t) - x_j(t) + (v_i(t) + v_j(t))\Delta + a_{max}\Delta^2$
+%%
+%%$x_i(t) - x_j(t) + 2(v_{max})\Delta + a_{max}\Delta^2$
+%
+%%\textbf{Invariant}
+%%
+%%Controls decrease relative velocities of nodes coming towards one another.  If two nodes are coming together at step $x$, then at step $x^\prime$, their relative velocities must have decreased.  This gives us one bound for the periodicity: $\Delta \leq \frac{\overline{v_{rel}}}{a_{max}}$.  The other bound comes from $\Delta \leq \frac{\mathit{r_{safety}}}{\overline{v_{rel}}}$.  This lets us define $\Delta = \min{\frac{\overline{v_{rel}}}{a_{max}}, \frac{\mathit{r_{safety}}}{\overline{v_{rel}}}$.  This follows from Invariant 3 and the definition of the control.
+%%
+%%If at $k$, $\abs{v_i - v_j} = c$, then at $k+1$, $\abs{v_i - v_j} < c$.
+%%
+%%send: no affect on this node's state
+%%recv: does affect control: must show that values arrive in $\Delta$, such that values for $x^\prime$ are from $x$.
+%%$\tau$: know values at $x^\prime$ are from $x$, so we applied the appropriate control to avoid collision (reduced velocity): does this imply the control needs to use $r_{init}$ instead of $\mathit{r_{safety}}$ for the part where it switches the direction of control?
+%%
+%%At any rate, since $\exists \overline{v_{rel}}$, then as long as $\mathit{r_{safety}} \leq \abs{x_i - x_j} + \overline{v_{rel}}\Delta$, then we are done.  The other absolute case, when $\abs{v_i - v_j} < \overline{v_{rel}}$, then we must have that $\mathit{r_{safety}} \leq \abs{x_i - x_j} + \abs{v_i - v_j}\Delta + a_{max}\Delta^2$.  The interim case, when neither we have maximum velocity nor acceleration is interesting, but is easily bounded by these others, and requires $\mathit{r_{safety}} \leq \abs{x_i - x_j} + \abs{v_i - v_j}\Delta + \abs{u_i - u_j}\Delta^2$.  The $\abs{u_i - u_j}$ is fixed to a constant value $u_c$ at the beginning of the period.  We can then make the claim that at most the relative velocity of $i$ and $j$ becomes $\overline{v_{rel}}$, so we are covered by the earlier case.
+%
+%\textbf{Invariant: No Reordering}
+%
+%$x_i < x_j \forall i < j$
+%
+%Base case: satisfied by assumption that $x_i < x_j$.
+%
+%Inductive case: bring in control from safety argument below
+%
+%
+%
+%\textbf{Invariant: Safety}
+%
+%Consider the safety invariant:
+%
+%$\I_{safety}\left(S\right) = 
+%	\left\{ \begin{array}{l}
+%		\textrm{if } \left( now = next \right) \wedge \neg Send \Rightarrow \\
+%		\forall i \left(x_{i} - x_{i-1}\right) + \Delta\left(v_{i} - v_{i-1}\right) + \frac{1}{2}a_{max}\Delta^2 \geq \\ \mathit{r_{safety}} \\
+%		\textrm{if } \left( now \neq next \right) \vee \left( now = next \wedge Send \right) \Rightarrow \\
+%		\forall i \left(x_{i} - x_{i-1}\right) + t_{Rem}\left(v_{i} - v_{i-1}\right) + \frac{1}{2}a_{max}t_{Rem}^2 \geq \\  \mathit{r_{safety}} \\
+%	\end{array}
+%\right.$ where $t_{Rem} \equiv next - now$.
+%
+%There are three possible cases that can arise for the controls at $next$, assuming at $start$ the state is okay:
+%
+%1) There are two interesting cases, both are when nodes can now communicate when they could not before.  First, when nodes are still more than $r_{init}$ apart, they apply
+%
+%$r_{comm} \geq \abs{x_i - x_j} \geq r_{init} > \mathit{r_{safety}}$
+%
+%$u_i = a\left(\tilde{x} - x_i\right - r_{init}) + b\left(\tilde{v} - v_i\right)$
+%
+%2) Second, when nodes are less than $r_{init}$ apart, they apply the collision avoidance control
+%
+%$r_{comm} \geq r_{init} > \abs{x_i - x_j} > \mathit{r_{safety}}$
+%
+%$u_i = \sgn{v_j}a_{max}$
+%
+%The only time this situation arises (as in, this is the only time we can recover from it) is as follows:
+%
+%$r_{comm} \geq r_{init} > \abs{x_i - x_j} > r_{init} - r_d > \mathit{r_{safety}}$
+%
+%that is, the nodes must still be separated by the radius required to recover safety, but can tolerate the distance covered over the delay.
+%
+%3) The most boring case is when nodes are still not communications neighbors, they just go towards the goal:
+%
+%$\abs{x_i - x_j} > r_{comm} > r_{init} > \mathit{r_{safety}}$
+%
+%$u_i = \sgn{x_g - x_i}*a_{max}$
+%
+%Discussion:  For the second invariant assumption, it is necessary to include the term $\left( now = next \wedge Send \right)$ as otherwise a single point at the $Send$ may be omitted.  Similarly, it is necessary to consider this condition for trajectories that are less than the length of $\Delta$.
+%
+%Assume $S_0$ is given such that $\I_{safety}(S_0)$ is satisfied.  If $\I_{safety}(S_0)$ is satisfied, then $\I_{safety}(S)$ is satisfied, and thus the safety property is maintained.
+%
+%We are given that $S_0$ is such that at the initial time $0$ the invariant $\I_{safety}(S_0)$ is satisfied.  This gives us the following
+%
+%$\forall S \xrightarrow{a} S^{\prime} : \I\left(S\right) \Rightarrow \I\left(S^{\prime}\right)$
+%
+%We consider each action separately in cases:
+%i) $Send$
+%Send does not affect the state of node $j$, and it does not affect the state of node $i$ until $next$, so it is vacuously true in both cases.
+%
+%ii) $Recv$
+%Trivially from the $I_{recv}$ invariant.
+%
+%$\forall \tau, if \forall S \xrightarrow{\tau} S^{\prime} : \I\left(S\right) \Rightarrow \I\left(S^{\prime}\right)$
+%
+%For the trajectories, it is sufficient to consider the worst possible trajectory affecting the safety condition, that is, when particles are coming towards one another with maximum acceleration.  Given the assumption that $\abs{x_i - x_j} < C_1$, we see that the relative velocities of any particles are bounded, and we will be immediately finished.
+%
+%%Consider two particles $i$ and $j$ that are going towards one another with maximum acceleration (and $x_j > x_i$, that is, $j$ is to the right of $i$), such that from time $t$, where the control was applied, and time $t+\Delta$, the final positions will be determined by:
+%%
+%%If $\abs{x_i(t) - x_j(t)} \geq \mathit{r_{safety}}$, then 
+%%
+%%$x_i(t+\Delta) = x_i(t) + v_i(t)\Delta + \frac{1}{2}a_{max}\Delta^2$
+%%
+%%$x_j(t+\Delta) = x_j(t) - v_j(t)\Delta - \frac{1}{2}a_{max}\Delta^2$
+%%
+%%Want: $\abs{x_i(t+\Delta) - x_j(t+\Delta)} \geq r_{safety1}$
+%%
+%%$x_i(t) + v_i(t)\Delta + \frac{1}{2}a_{max}\Delta^2 - (x_j(t) - v_j(t)\Delta - \frac{1}{2}a_{max}\Delta^2) \geq r_{safety1}$
+%%
+%%$x_i(t) - x_j(t) + (v_i(t) + v_j(t))\Delta + a_{max}\Delta^2 \geq r_{safety1}$
+%%
+%%$x_i(t) - x_j(t) + (v_i(t) + v_j(t))\Delta + a_{max}\Delta^2 \geq r_{safety1}$
+%%
+%%To ensure we can handle this case, we really need that $r_{safety1}$ is at least this size:
+%%
+%%$x_i(t) - x_j(t) + 2(v_{max})\Delta + a_{max}\Delta^2 \geq r_{safety1}$
+%%
+%%$\mathit{r_{safety}} + 2(v_{max})\Delta + a_{max}\Delta^2 \geq r_{safety1}$
+%%
+%%This $r_{safety1}$ is the real bound for the starting states that we need to work with to easily ensure the invariant inductively.  We can also replace the $2v_{max}$ by $C_1$, the maximum relative velocities.
+%
+%In reality, given a large enough $r_{comm}$ (or small enough $\Delta$), this is overly conservative, as the control law would prohibit nodes from moving towards one another with acceleration $a_{max}$.
+%
+%
+%\textbf{Invariant: Progress}
+%
+%Show that if $x_g > x_i$, then $v_i > 0 \forall i$ eventually and for long enough time to reach goal.  Symmetrically, if $x_g < x_i$, then $v_i < 0 \forall i$ eventually and for long enough time to reach goal.  That is, we must show that $\exists t_g$ such that $v_i t_g \geq x_g \forall i$.  (Slightly more complicated than this, integral of velocity over time?)
+%
+%Is it useful to do this proof as a stability proof, showing that eventually, $\forall i, v_i = v_max$, in the direction of the goal?
+%
+%Or equivalently, showing that $x_i - x_g = 0$, to say that the node eventually reaches the goal by stability.
+
+
+
+\end{document}
