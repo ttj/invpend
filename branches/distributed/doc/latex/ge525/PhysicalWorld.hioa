@@ -1,0 +1,30 @@
+automaton $\auto{PhysicalWorld}(d:\Real^+, r_{comm}:\Real^+, r_{init}:\Real^+ )$ 
+	where $d < \Delta$
+	signature
+		input  $\act{send_{i}}(x, v, u:\Real)$
+		output $\act{recv_{ij}}(x, v, u:\Real)$
+		
+	variables
+		output $x_i, x_g, v_i:\Real \forall i \in [N]$;
+		input  $u_i:\Real \forall i \in [N]$;
+		internal $Channel_{ij} : Queue[[<msg : \Real^3, dl : \Real^+>]] := empty$; 
+						 $now :\Real := 0$;
+		initially $\abs{x_i - x_j} \geq r_{init} \forall i, j \in [N], i \neq j$;
+              $x_g = +\infty$;
+
+	transitions
+		input $\act{send_i}(x, v, u)$
+			eff: $Channel_{ij} := append(Channel_{ij}, <<x, v, u>, now + \Delta_{delay}),$
+                            $\forall j : \abs{x_i - x_j} \leq r_{comm}$;
+					
+		output $\act{recv_{ij}}(x, v, u)$
+			pre $\exists ! t \in \Real : <x, v, u, t> \in Channel_{ij}$
+			eff	$Channel_{ij} = Channel_{ij} - \{<x, v, u, t>\}$;
+	
+	trajectories
+		trajdef $\smodel{hold}$ 
+ 			evolve $\forall i \in [N]$:
+ 						 $d(x_i) = v_i$;
+ 						 $d(v_i) = u_i$;
+ 						 $d(now) = 1$;
+ 			stop when $\exists i, j \exists m, t : <x, v, u, t> \in Channel_{ij} \wedge t = now$;
