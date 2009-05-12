@@ -1,4 +1,3 @@
-
 %% bare_conf.tex
 %% V1.3
 %% 2007/01/11
@@ -495,7 +494,7 @@ lower bounds about impossibility of solving those
 problems with certain resource constraints. 
 %
 Distributed control systems consist not only of computers, 
-but also the physical world which they interact with through 
+but also the physical world with which they interact through 
 sensors and actuators. 
 %
 Thus, to understand the power and limitations of 
@@ -534,21 +533,21 @@ Middleware detects failures and presents a modified
 world view to the controller. In this world view, faulty agents
 are ``obstacles''. Controller reacts to obstacles in the ``usual'' way.
 
-Case studies. Flocking. Coverage.
+Case studies. Flocking \cite{olfatiFlocking2006}. Coverage.
 
 Organization:
 
 \section{Related Work}
 \label{sec:rw}
-Giotto. 
-Simplex.  System Simplex.
-PTIDES.  
-P.R. Kumar's system.
+Giotto. \cite{HenzingerGiotto2001}
+Simplex \cite{ShaACC1998}.  System Simplex. \cite{BakRTSS2009}
+PTIDES. \cite{ptidesRTSS2009}
+Etherware. \cite{KumarEtherware2004}
 
 \section{Background}
 \label{sec:basics}
-Brief description of HIOA.
-Executions, invariants, etc.
+Brief description of HIOA. \cite{lynchHioa2003}
+Executions, invariants \cite{lynchTa1996}, etc. 
 
 This material is likely to be used by
 both the flocking and the coverage 
@@ -601,6 +600,26 @@ $ \begin{array}{ll}
 	\end{array} $
 $\forall i, j \in N$ and $i \neq j$.
 
+Assume that the network delay between nodes is bounded, such that a message sent by node $i$ is received by all its communication neighbors $j \in N_c(i, s)$ within time $d$.  This assumption immediately gives that all $recv_{ij}$ and $recv_{ji}$ actions will be correct, in that the necessary state information is delivered before the next period.  Recall from above that $d < \Delta$, that is, the \textit{communications delay} $d$ is such that messages are delivered before control updates that occur at $\Delta$.
+
+\begin{inv}
+\label{inv:now}
+$\forall i, j, \vx.now_i = \vx.now_j = \vx.now$.
+\end{inv}
+\begin{proof}
+This is given by the definition of synchronous communication.
+\end{proof}
+
+\begin{inv}
+
+$\I_{channelSize}\left(S\right) = size(\vx.Channel_{ij}) \leq 1$
+
+\end{inv}
+
+\begin{proof}
+This holds trivially since all messages will be delivered by time $start + d$, so they will be inserted and removed from the queue in $PhysicalWorld$ before the next $\Delta$.  The size when $\vx.now = start(\vx)$ is $1$, since all messages are in the channel after the $Send_i$ action occurs at time $start(\vx)$.  The size between $\vx.now = start(\vx)$ and $\vx.now = start(\vx) + d$ is either $0$ or $1$, since some messages may have been delivered, but some may not have.  The size between $\vx.now = start(\vx) + d$ and $\vx.next$ is $0$, since all messages must have been delivered by the stopping conditions and thus no closed trajectory $\tau$ could have crossed this boundary.
+\end{proof}
+
 \section{New Flocking}
 \label{sec:flocking}
 
@@ -612,12 +631,12 @@ Informally, the system consists of $N$ agents starting at arbitrary
 locations on the real line, where $N \in \naturals, N > 1$
 with the goal of 
 \begin{inparaenum}[(a)]
-\item reaching a fixed waypoint $x^* \in \reals$, and 
-\item forming a {\em flock\/} or an equispaced formation on the way to $x^*$.
+\item reaching a fixed waypoint $x_g \in \reals$, and 
+\item forming a {\em flock\/} or an equispaced formation on the way to $x_g$.
 \end{inparaenum}  
 The algorithm we shall study also works when a sequence of waypoints 
 are presented to the agents, but for simplicity of presentation, 
-we fix $x^*$.
+we fix $x_g$.
 
 \subsection{Specification}
 \label{sec:flockspec}
@@ -632,9 +651,9 @@ The transition $recv_{ij}$ removes a message containing physical state measureme
 %
 Thus, each $\auto{Agent_i}$ receives knowledge of all nearby neighbors in time.
 
-This state knowledge of neighbors is stored in a $\mathit{buffer}$ which maps from the set of indices of nodes, $[N]$ to $(\mathbb{R} \cup \{\perp\})^3$.  That is, if an $\auto{Agent_i}$ has not received a message from $\auto{Agent_j}$ yet, then $j \notin nbrs_i$, and thus the mapping with $j$ will yield triple of $\{\perp\}$s.
+This state knowledge of neighbors is stored in a $\mathit{buffer}$ which maps from the set of indices of nodes, $[N]$ to $(\mathbb{R} \cup \{\perp\})^3$.  That is, if an $\auto{Agent_i}$ has not received a message from $\auto{Agent_j}$ yet, then $j \notin \mathit{nbrs}_i$, and thus the mapping with $j$ will yield triple of $\{\perp\}$s.
 %
-Each of the functions $\hat{x}$, $\hat{v}$, and $\hat{u}$ maps from the set of neighbors of $\auto{Agent_i}$, $nbrs_i$ to triples of physical state variables in $\math{R}$.  This achieves the same result as accessing the $\mathit{buffer}$, we should clarify this, as it should be the case that $\hat{x}(j)=\mathit{buffer}(j)=x_j$ from time $\vx.next_i - \Delta$.  We are using the $\mathit{buffer}$ behind the scenes to actually store the message values, and then just use the functions $\hat{x}$, $\hat{v}$, and $\hat{u}$ as a convenient notation. TODO: There is some confusion here--why are we setting the buffer and hat functions separately?
+Each of the functions $\hat{x}$, $\hat{v}$, and $\hat{u}$ maps from the set of neighbors of $\auto{Agent_i}$, $\mathit{nbrs}_i$ to triples of physical state variables in $\mathbb{R}$.  This achieves the same result as accessing the $\mathit{buffer}$, we should clarify this, as it should be the case that $\hat{x}(j)=\mathit{buffer}(j)=x_j$ from time $\vx.next_i - \Delta$.  We are using the $\mathit{buffer}$ behind the scenes to actually store the message values, and then just use the functions $\hat{x}$, $\hat{v}$, and $\hat{u}$ as a convenient notation. TODO: There is some confusion here--why are we setting the buffer and hat functions separately?
 
 \begin{figure}[h!]
 \centering
@@ -645,23 +664,18 @@ Each of the functions $\hat{x}$, $\hat{v}$, and $\hat{u}$ maps from the set of n
   \label{fig:agent_i}
 \end{figure}
 
-The control, $ctrl(i, x_g, x_i, v_i, u_i, \hat{x}, \hat{v}, \hat{u}, nbrs_i)$, is defined as
+The control, $ctrl(i, x_g, x_i, v_i, u_i, \hat{x}, \hat{v}, \hat{u}, \mathit{nbrs}_i)$, is defined as
 
-$ctrl\left(i, x_g, x_i, v_i, u_i, \hat{x}, \hat{v}, \hat{u}, nbrs_i \right) = \\
+$ctrl\left(i, x_g, x_i, v_i, u_i, \hat{x}, \hat{v}, \hat{u}, \mathit{nbrs}_i \right) = \\
 	\left\{
 		\begin{array}{ll}
-			\sgn{x_g - x_i}a_{max} & \textrm{if } nbrs_i = \{\} \\
-				\left\{
-					\begin{array}{l}
-						\sgn{\tilde{v}}a_{max} \textrm{  if } \abs{x_i - \tilde{x}} \leq r_{init} \\
-						a\left(\tilde{x} - x_i\right - r_{init}) + b\left(\tilde{v} - v_i\right) \textrm{  else }
-					\end{array}
-				\right.
-			& \textrm{else} \\
+			\sgn{x_g - x_i}a_{max} & \textrm{if } \mathit{nbrs}_i = \{\} \\
+			\sgn{\tilde{v}}a_{max} & \textrm{elseif } \abs{x_i - \tilde{x}} \leq r_{init} \\
+			a\tilde{x} - x_i - r_{init}) + b\left(\tilde{v} - v_i\right) & \textrm{else}
 		\end{array}
-	\right. $
+	\right.$
 
-where $\tilde{x} = \hat{x}(\tilde{i})$, $\tilde{v} = \hat{v}(\tilde{i})$, $\tilde{u} = \hat{u}(\tilde{i})$, $\tilde{i} = \argmin{\left(\hat{x}(j) - x_i\right)}{j \in nbrs_i}$, $a \in \mathbb{R}_+$, and $b \in \mathbb{R}_+$.
+where $\tilde{x} = \hat{x}(\tilde{i})$, $\tilde{v} = \hat{v}(\tilde{i})$, $\tilde{u} = \hat{u}(\tilde{i})$, $\tilde{i} = \argmin{\left(\hat{x}(j) - x_i\right)}{j \in \mathit{nbrs}_i}$, $a \in \mathbb{R}_+$, and $b \in \mathbb{R}_+$.
 
 Let $\A$ be the HIOA obtained by composing 
 $\auto{PhysicalWorld} \| \auto{Agent}_1 \| \ldots \auto{Agent}_N$.
@@ -672,23 +686,9 @@ state components by $\vx.x_i$, $\vx.\mathit{next}_i$, etc.
 \subsection{Analysis}
 \label{sec:flockana}
 
-
-
 We would like to show that the \textit{safety property}, that the distance between each node $i$ and $j$ is at least $\mathit{r_{safety}}$ is satisfied.  However, before we begin working toward the safety property, we must make some assumptions about communications and prove some simpler invariants.
 
-Assume that the network delay between nodes is bounded, such that a message sent by node $i$ is received by all its communication neighbors $j \in N_c(i, s)$ within time $d$.  This assumption immediately gives that all $recv_{ij}$ and $recv_{ji}$ actions will be correct, in that the necessary state information is delivered before the next period.
-
-%
-%Notes: while of course no nodes have knowledge of all of $S$ for the actual operation, for the proof we can assume we have all of this knowledge.  Basically, as long as all nodes start far enough apart, with bounded relative velocities, and a fast enough update period $\Delta$, and big enough $r_{comm}$, we can guarantee that all nodes receive messages between $\Delta$.
-
-Lets distinguish between state and physical location, velocity etc. Because the state of each agent includes other variables such as $nbrs_i$, etc.
-
-Recall from above that $d < \Delta$, that is, the \textit{communications delay} $d$ is such that messages are delivered before control updates that occur at $\Delta$.
-
-\begin{inv}
-\label{inv:now}
-$\forall i, j, \vx.now_i = \vx.now_j = \vx.now$.
-\end{inv}
+Lets distinguish between state and physical location, velocity etc. Because the state of each agent includes other variables such as $\mathit{nbrs}_i$, etc.
 
 The next invariant follows from synchronous communication.
 All nodes receive messages about the state information from time $next - \Delta$ before time $next$.
@@ -696,93 +696,150 @@ Define the time for the last send with respect to state $s$ as $start(s) = s.nex
 \begin{inv}
 \label{inv:send}
 
-$\vx.nbrs_i = N_c(i, \vx)(start(\vx))$
-
-$\I_{nbrs}\left(S\right) = \\
+$\I_{\mathit{nbrs}}\left(S\right) = \\
 	\left\{
 		\begin{array}{l}
-			\textrm{if } \vx.now - start(\vx) \geq d \\ \textrm{then } \vx.nbrs_i = N_c(i, \vx)(start(\vx))\\
-			\textrm{elseif } \vx.now - start(\vx) < d \\ \textrm{then } N_c(i, \vx)(start(\vx)) = \vx.nbrs_i \cup \{\vx.Channel_{ij}\}\\
+			\textrm{if } \vx.now - start(\vx) > d \\ \textrm{then } \vx.\mathit{nbrs}_i = \vx.\mathit{nbrs}(i)\\
+			\textrm{elseif } \vx.now - start(\vx) \leq d \\ \textrm{then } \vx.\mathit{nbrs}_i \subset \vx.\mathit{nbrs}(i)\\
 		\end{array}
 	\right.$
 \end{inv}
 \begin{proof}
-Fix a reachable state $s$.  Expanding $s.now - start(s) \geq d$ to $s.now - s.next + \Delta \geq d$, it is clear that if $s.now \geq start(s) + d$, all messages will have been delivered due to the stopping condition for the $recv_{ij}$ actions to occur in $PhysicalWorld$.  However, before that time in the other case, all messages may still be in the channel since no stopping condition has been reached (and all messages were put in the channel at time $start(s)$), or some messages may have been delivered already, so all messages are either in the channel or have been delivered, and thus, the set of neighbors of node $i$ is the union of these.  All closed trajectories $\tau$ that could violate this are excluded by the stopping condition.
+Fix a reachable state $s$.  Expanding $s.now - start(s) \geq d$ to $s.now - s.next + \Delta \geq d$, it is clear that if $s.now \geq start(s) + d$, all messages will have been delivered due to the stopping condition for the $recv_{ij}$ actions to occur in $\auto{PhysicalWorld}$, so the set of neighbors in $\auto{PhysicalWorld}$ for each $\auto{Agent_i}$ is exactly the same after $d$ time has elapsed.  However, before that time, all messages may still be in the channel since no stopping condition has been reached (and all messages were put in the channel at time $start(s)$), or some messages may have been delivered already, so all messages are either in the channel or have been delivered, and thus, the set of neighbors of $\auto{Agent_i}$, $s.nbrs_i$, is a subset of the set neighbors in $\auto{PhysicalWorld}$, $s.nbrs(i)$.  All closed trajectories $\tau$ that could violate this are excluded by the stopping condition.
 \end{proof}
 
-\begin{inv}
-
-$\I_{channelSize}\left(S\right) = size(\vx.Channel_{ij}) \leq 1$
-
-\end{inv}
-
-\begin{proof}
-This holds trivially since all messages will be delivered by time $start + d$, so they will be inserted and removed from the queue in $PhysicalWorld$ before the next $\Delta$.  The size when $\vx.now = start(\vx)$ is $1$, since all messages are in the channel after the $Send_i$ action occurs at time $start(\vx)$.  The size between $\vx.now = start(\vx)$ and $\vx.now = start(\vx) + d$ is either $0$ or $1$, since some messages may have been delivered, but some may not have.  The size between $\vx.now = start(\vx) + d$ and $\vx.next$ is $0$, since all messages must have been delivered by the stopping conditions and thus no closed trajectory $\tau$ could have crossed this boundary.
-\end{proof}
-
-\begin{inv}
-The set of \textit{communication neighbors} of node $i$ at time $next - \Delta$ is the same as the set of \textit{physical neighbors} at time $start + d$.
-
-Assume $S_0$ is given such that $\I_{recv}(S_0)$ is satisfied at time $t_0$, then $\I_{recv}(S)$ is satisfied, and thus the receive property is maintained $\forall t \geq t_0$.
-\end{inv}
-
-\begin{proof}
-
-This statement can be made more precise. But the property you want, I think, is the following invariant:
-Let $\vx$ be a reachable state of the complete system. 
-
-For every agent i, j, 
-if 
-(a) $\vx.now_i = \vx.next_i$ (i.e., process i is about to send), and
-(b) $\abs{\vx.x_i - \vx.x_j} <= r_{comm} - 2v_{max} * \Delta$ (i and j are "close") 
-then 
-$j \in \vx.nbrs_i$ (i knows about j).
-
-As usual, you may have to strengthen this invariant in order to make it inductive. This statement does not say anything about $\vx.now_i != \vx.next$, you'll probably need to say something about that.
-
-If $r_{comm} > r_{init}$, then nodes within at least $r_{comm}$ of one another get messages before their distance is less than $r_{init}$.  Nodes may then be within between $r_{init}$ and $\mathit{r_{safety}}$ of one another.
-
-We are given that $S_0$ is such that at the initial time $t_0$ the invariant $\I_{recv}(S_0)$ is satisfied.  This gives us the following
-
-$\forall S \xrightarrow{a} S^{\prime} : \I_{recv}\left(S\right) \Rightarrow \I_{recv}\left(S^{\prime}\right)$
-
-We consider each action separately in cases:
-
-i) $send_i$
-
-ii) $recv_ij$
-If the delay $d$ between messages is less than the period of synchronous communication $\Delta$, then all $Recv$ actions will have occurred before the next period.
-
-$\forall \tau,\textrm{ if } \forall S \xrightarrow{\tau} S^{\prime} : \I_{recv}\left(S\right) \Rightarrow \I_{recv}\left(S^{\prime}\right)$
-
-While it is tempting to say that the worst scenario for $Recv$ is when two neighbors $i$ and $j$ are moving away from one another with maximum velocity and acceleration, this is actually not the case if we only care about the safety property defined as no nodes come within $\mathit{r_{safety}}$ of one another.  The worst case is still when these two nodes are coming together with maximum acceleration and velocity, and that they are \textbf{not} yet within $r_{comm}$.  If they can cover their distance $\abs{x_i - x_j}$ before the next $\Delta$, plus some details on the velocity and number of cycles required to change direction, then they may collide.  What we want is an upper bound of $\Delta$ to guarantee everything, such as the following:
-
-Note that we really should not have to talk about $u_i > 0$ as different to the $a_{max}$ case, since the worst affect on $\mathit{r_{safety}}$ comes from $v_i$, which if bounded by $v_{max}$ is already done.  Any time we have acceleration and the particles are moving at less than $v_{max}$, as long as we know we work for $v_{max}$, we will work for anything less than $v_{max}$, regardless of the rate of change of $v_i$.
-
-However, when two nodes are moving away from one another with maximum acceleration and velocity is the worst case for flocking.  If we enforce an initial condition about all nodes being within $r_{comm}$, and that their initial velocities are not such that they can leave $r_{comm}$ before the first control update, then we should be able to guarantee flocking for all time.  This gives us both an upper and lower bound on $r_{comm}$.  (Note: We should check to see if this definition on initial conditions is basically what Olfati-Saber is referring to in the previous work for Algorithm 1 to maintain flocking instead of segmentation.)
-
-\end{proof}
+%\begin{inv}
+%The set of \textit{communication neighbors} of node $i$ at time $next - \Delta$ is the same as the set of \textit{physical neighbors} at time $start + d$.
+%
+%Assume $S_0$ is given such that $\I_{recv}(S_0)$ is satisfied at time $t_0$, then $\I_{recv}(S)$ is satisfied, and thus the receive property is maintained $\forall t \geq t_0$.
+%\end{inv}
+%
+%\begin{proof}
+%
+%Let $\vx$ be a reachable state of the complete system. 
+%
+%$\forall i, j$
+%if 
+%(a) $\vx.now_i = \vx.next_i$ (i.e., process i is about to send), and
+%(b) $\abs{\vx.x_i - \vx.x_j} <= r_{comm} - 2v_{max} * \Delta$ (i and j are "close") 
+%then 
+%$j \in \vx.\mathit{nbrs}_i$ (i knows about j).  As usual, you may have to strengthen this invariant in order to make it inductive. This statement does not say anything about $\vx.now_i != \vx.next$, you'll probably need to say something about that.
+%
+%If $r_{comm} > r_{init}$, then nodes within at least $r_{comm}$ of one another get messages before their distance is less than $r_{init}$.  Nodes may then be within between $r_{init}$ and $\mathit{r_{safety}}$ of one another.
+%
+%We are given that $S_0$ is such that at the initial time $t_0$ the invariant $\I_{recv}(S_0)$ is satisfied.  This gives us the following
+%
+%$\forall S \xrightarrow{a} S^{\prime} : \I_{recv}\left(S\right) \Rightarrow \I_{recv}\left(S^{\prime}\right)$
+%
+%We consider each action separately in cases:
+%
+%i) $send_i$
+%
+%ii) $recv_ij$
+%If the delay $d$ between messages is less than the period of synchronous communication $\Delta$, then all $Recv$ actions will have occurred before the next period.
+%
+%$\forall \tau,\textrm{ if } \forall S \xrightarrow{\tau} S^{\prime} : \I_{recv}\left(S\right) \Rightarrow \I_{recv}\left(S^{\prime}\right)$
+%
+%While it is tempting to say that the worst scenario for $Recv$ is when two neighbors $i$ and $j$ are moving away from one another with maximum velocity and acceleration, this is actually not the case if we only care about the safety property defined as no nodes come within $\mathit{r_{safety}}$ of one another.  The worst case is still when these two nodes are coming together with maximum acceleration and velocity, and that they are \textbf{not} yet within $r_{comm}$.  If they can cover their distance $\abs{x_i - x_j}$ before the next $\Delta$, plus some details on the velocity and number of cycles required to change direction, then they may collide.  What we want is an upper bound of $\Delta$ to guarantee everything, such as the following:
+%
+%Note that we really should not have to talk about $u_i > 0$ as different to the $a_{max}$ case, since the worst affect on $\mathit{r_{safety}}$ comes from $v_i$, which if bounded by $v_{max}$ is already done.  Any time we have acceleration and the particles are moving at less than $v_{max}$, as long as we know we work for $v_{max}$, we will work for anything less than $v_{max}$, regardless of the rate of change of $v_i$.
+%
+%However, when two nodes are moving away from one another with maximum acceleration and velocity is the worst case for flocking.  If we enforce an initial condition about all nodes being within $r_{comm}$, and that their initial velocities are not such that they can leave $r_{comm}$ before the first control update, then we should be able to guarantee flocking for all time.  This gives us both an upper and lower bound on $r_{comm}$.  (Note: We should check to see if this definition on initial conditions is basically what Olfati-Saber is referring to in the previous work for Algorithm 1 to maintain flocking instead of segmentation.)
+%
+%\end{proof}
 
 \begin{inv}
-$I_{reorder}(S) = \vx.x_i < \vx.x_j \forall i < j$
-\end{inv}
+The basic property we want to show is that, $\vx.x_i > \vx.x_j \forall i > j$, but to specify this as a valid statement, we should look at it in more detail, as
 
-\begin{proof}
-The base case is satisfied by assumption on the initial conditions that $\vx.x_i < \vx.x_j$.
-
-The inductive case requires using the assumptions on the initial conditions are such that using the specified control maintains this ordering property.
-\end{proof}
-
-\begin{inv}
-
-$\I_{safety}\left(S\right) = \\
+$\I_{noReorder}\left(S\right) = \\
 	\left\{ \begin{array}{l}
-		\textrm{if } \left( \vx.now = \vx.next_i \right) \wedge \neg \vx.Send \Rightarrow \\
-		\forall i \left(\vx.x_{i} - \vx.x_{i-1}\right) + \Delta\left(\vx.v_{i} - \vx.v_{i-1}\right) + \frac{1}{2}a_{max}\Delta^2 \geq \\ \mathit{r_{safety}} \\
-		\textrm{if } \left( \vx.now \neq \vx.next_i \right) \vee \left( \vx.now = \vx.next_i \wedge Send \right) \Rightarrow \\
-		\forall i \left(\vx.x_{i} - \vx.x_{i-1}\right) + t_{Rem}\left(\vx.v_{i} - \vx.v_{i-1}\right) + \frac{1}{2}a_{max}t_{Rem}^2 \geq \\  \mathit{r_{safety}} \\
+		\textrm{if } \left( \vx.now = \vx.next_i \right) \Rightarrow \\
+		\forall i>j \vx.x_{i} + \vx.v_{i}\Delta + \frac{1}{2}ctrl(\vx, i)\Delta^2 > \\ \vx.x_{j} + \vx.v_{j}\Delta + \frac{1}{2}\vx.u_j\Delta^2 \\
+		\textrm{if } \left( \vx.now \neq \vx.next_i \right) \Rightarrow \\
+		\forall i>j \vx.x_{i} + \vx.v_{i}\vx.t_{Rem} + \frac{1}{2}\vx.u_i\vx.t_{Rem}^2 > \\ \vx.x_{j} + \vx.v_{j}\vx.t_{Rem} + \frac{1}{2}\vx.u_j\vx.t_{Rem}^2 \\
 	\end{array}
-\right.$ where $t_{Rem} \equiv \left(\vx.next_i - \vx.now\right)$.
+\right.$
+%
+where $\vx.t_{Rem} \equiv \left(\vx.next_i - \vx.now\right)$, $\tau.len = t$, and $ctrl(\vx, i)=ctrl(\vx.i, \vx.x_g, \vx.x_i, \vx.v_i, \vx.u_i, \vx.\hat{x}, \vx.\hat{v}, \vx.\hat{u}, \vx.\mathit{nbrs}_i)$.
+\end{inv}
+
+\begin{proof}
+The base case is satisfied by assumption on the initial conditions that $\vx.x_i - \vx.x_j > r_{init}$, so thus, $\vx.x_i > \vx.x_j + r_{init}$.
+
+The $send_i$ and $recv_{ij}$ actions have been shown to provide state measurements no older than $\Delta$, the sampling period, since the communications delay, $d$, is less than $\Delta$.  These state measurements are used in the computation of the control, so we assume they have arrived in time and delegate this correctness to another invariant.  The interesting cases are thus all closed trajectories $\tau$ of length $\tau.len = t$.  At the control update, we have $\vx.x_{i} + \vx.v_{i}\Delta + \frac{1}{2}ctrl(\vx, i)\Delta^2 > \vx.x_{j} + \vx.v_{j}\Delta + \frac{1}{2}\vx.u_j\Delta^2$.  Then, for all closed trajectories, we have 
+$\vx.x_{i} + \vx.v_{i}(\vx.t_{Rem} - t) + \frac{1}{2}\vx.u_i(\vx.t_{Rem} - t)^2 > \vx.x_{j} + \vx.v_{j}(\vx.t_{Rem} - t) + \frac{1}{2}\vx.u_j(\vx.t_{Rem} - t)^2$.  This setup will work since we have set it up accordingly, but it is interesting if we substitute the controls.  That is, after manipulation, we see that the control update must satisfy $ctrl(\vx, i) > \frac{2(\vx.x_{j} - \vx.x_{i}) + 2(\vx.v_{j} - \vx.v_{i})\Delta + \vx.u_j\Delta^2}{\Delta^2}$.  Replacing each of these quantities with what we know from initial conditions, note that $x_i > x_j \Rightarrow x_j - x_i < 0$, and assume $x_g >> x_i$.
+
+$ctrl(\vx, i) > \frac{-2(\mathit{r_{safety}}) + 2(v_{max})\Delta + \vx.u_j\Delta^2}{\Delta^2}$
+
+Then performing the case analysis,
+
+$\textrm{if } \mathit{nbrs}_i = \{\}$
+
+$\sgn{\vx.x_g - \vx.x_i}a_{max} > \frac{-2(\mathit{r_{safety}}) + 2(v_{max})\Delta + \vx.u_j\Delta^2}{\Delta^2}$
+
+$a_{max} > \frac{-2(\mathit{r_{safety}}) + 2(v_{max})\Delta + \vx.u_j\Delta^2}{\Delta^2}$
+
+$a_{max} > \frac{-2(\mathit{r_{safety}}) + 2(v_{max})\Delta + \vx.u_j\Delta^2}{\Delta^2}$
+
+$a_{max} > \frac{-2\mathit{r_{safety}}}{\Delta^2} + \frac{2v_{max}}{\Delta} + \vx.u_j$
+
+Here we have a slight problem, as now we are dependent upon what $u_j$ is doing.  At best or worst, it is at $a_{max}$ or $-a_{max}$, respectively.  If we are working with synchronous communications, we know that $\vx.u_j$ will be updated accordingly to maintain safety, such that if it needs to move away, it will apply acceleration in the opposite direction of $i$'s new acceleration.  However, when moving to asynchronous we will not have this assumption.  At any rate, we can look at the worst case, $u_j = a_{max}$, then
+
+$a_{max} > \frac{-2\mathit{r_{safety}}}{\Delta^2} + \frac{2v_{max}}{\Delta} + a_{max}$
+
+$\frac{\mathit{r_{safety}}}{\Delta} > v_{max}$
+
+Which we know to be true by assumption.
+
+The other cases have to be considered separately, as it is not always the case that the $a_{max}$ control will be applied, for instance, what if $i$'s control is small, whereas $j$'s control is large?
+
+%$a_{max} > \frac{2r_{init} + 2(2v_{max})\Delta + \vx.u_j\Delta^2}{\Delta^2}$
+%
+%$a_{max} > \frac{2(r_{safety} + \frac{4v_{max}^2}{a_{max}} + 2v_{max}\Delta) + 2(2v_{max})\Delta + \vx.u_j\Delta^2}{\Delta^2}$
+%
+%$a_{max} > \frac{2r_{safety}}{\Delta^2} + \frac{4v_{max}^2}{a_{max}\Delta^2} + \frac{2v_{max}\Delta}{\Delta^2} + \frac{2(2v_{max})\Delta}{\Delta^2} + \frac{\vx.u_j\Delta^2}{\Delta^2}$
+%
+%$a_{max} > \frac{2r_{safety}}{\Delta^2} + \frac{4v_{max}^2}{a_{max}\Delta^2} + \frac{2v_{max}}{\Delta} + \frac{2(2v_{max})}{\Delta} + \vx.u_j$
+%
+%$a_{max} > \frac{2r_{safety}}{\Delta^2} + \frac{4v_{max}^2}{a_{max}\Delta^2} + \frac{6v_{max}}{\Delta} + \vx.u_j$
+%
+%$a_{max} > \frac{2r_{safety}}{\Delta^2} + \frac{4v_{max}^2}{a_{max}\Delta^2} + \frac{6v_{max}}{\Delta} + \vx.u_j$
+%
+%We face a problem here, as we actually now depend on the choice of $\auto{Agent_j}$'s control.  If $\vx.u_j = -a_{max}$, this is helpful, but if $\vx.u_j=a_{max}$, we have violated reordering, so we actually depend on $\vx.u_j$ being properly selected:
+%
+%
+%$\textrm{elseif } \abs{x_i - \tilde{x}} \leq r_{init}$
+%
+%If the nearest right hand neighbor is moving towards $i$, then 
+%
+%$a_{max} > \frac{2(\vx.x_{j} - \vx.x_{i}) + 2(\vx.v_{j} - \vx.v_{i})\Delta + \vx.u_j\Delta^2}{\Delta^2}$
+%
+%Otherwise,
+%
+%$-a_{max} > \frac{2(\vx.x_{j} - \vx.x_{i}) + 2(\vx.v_{j} - \vx.v_{i})\Delta + \vx.u_j\Delta^2}{\Delta^2}$
+%
+%$a\tilde{x} - x_i - r_{init}) + b(\tilde{v} - v_i) > \frac{2(\vx.x_{j} - \vx.x_{i}) + 2(\vx.v_{j} - \vx.v_{i})\Delta + \vx.u_j\Delta^2}{\Delta^2}$
+\end{proof}
+
+%\begin{inv}
+%
+%Fix $r_{min} < r_{max}$ and define $D_x = x_1 - x_2$ and $D_v = v_1 - v_2$.  If $D_x + D_v\Delta \leq r_{min}$, then $v_1 = v_1 + 1$ and $v_2 = v_2 - 1$, otherwise if $D_x + D_v\Delta > r_{max}$, then $v_1 = v_1 - 1$ and $v_2 = v_2 + 1$.  The invariant is then $R_{min} \leq D_x + D_v t_{Rem} \leq R_{max}$ where $R_{min} < r_{min} < r_{max} < R_{max}$.
+%
+%\end{inv}
+
+\begin{inv}
+The safety invariant is defined as 
+
+$\I_{\mathit{safety}}\left(S\right) = 
+	\left\{ \begin{array}{l}
+		\textrm{if } \left( \vx.now = \vx.next_i \right) \Rightarrow \\
+		\forall i \left(\vx.x_{i} - \vx.x_{j}\right) + \left(\vx.v_{i} - \vx.v_{j}\right)\Delta + \\ \frac{1}{2}\left(ctrl(\vx, i) - \vx.u_j\right)\Delta^2 \geq \mathit{r_{safety}} \\
+		\textrm{if } \left( \vx.now \neq \vx.next_i \right) \Rightarrow \\
+		\forall i \left(\vx.x_{i} - \vx.x_{j}\right) + \left(\vx.v_{i} - \vx.v_{j}\right)\vx.t_{Rem} + \\ \frac{1}{2}\left(\vx.u_i - \vx.u_j\right)\vx.t_{Rem}^2 \geq  \mathit{r_{safety}} \\
+	\end{array}
+\right.$
+%
+where $\vx.t_{Rem} \equiv \left(\vx.next_i - \vx.now\right)$, $\tau.len = t$, and $ctrl(\vx, i)=ctrl(\vx.i, \vx.x_g, \vx.x_i, \vx.v_i, \vx.u_i, \vx.\hat{x}, \vx.\hat{v}, \vx.\hat{u}, \vx.\mathit{nbrs}_i)$.
 \end{inv}
 
 \begin{proof}
@@ -826,30 +883,32 @@ $u_i = \sgn{x_g - x_i}*a_{max}$
 
 \end{itemize}
 
-Assume $S_0$ is given such that $\I_{safety}(S_0)$ is satisfied.  If $\I_{safety}(S_0)$ is satisfied, then $\I_{safety}(S)$ is satisfied, and thus the safety property is maintained.
-
-We are given that $S_0$ is such that at the initial time $0$ the invariant $\I_{safety}(S_0)$ is satisfied.  This gives us the following
-
-$\forall S \xrightarrow{a} S^{\prime} : \I\left(S\right) \Rightarrow \I\left(S^{\prime}\right)$
-
-We consider each action separately in cases:
-i) $send_i$
-Send does not affect the state of node $j$, and it does not affect the state of node $i$ until $next$, so it is vacuously true in both cases.
-
-ii) $recv_ij$
-Trivially from the $I_{recv}$ invariant.
-
-$\forall \tau, if \forall S \xrightarrow{\tau} S^{\prime} : \I\left(S\right) \Rightarrow \I\left(S^{\prime}\right)$
-
-For the trajectories, it is sufficient to consider the worst possible trajectory affecting the safety condition, that is, when particles are coming towards one another with maximum acceleration.  Given the assumption that $\abs{x_i - x_j} < C_1$, we see that the relative velocities of any particles are bounded, and we will be immediately finished.
-
-In reality, given a large enough $r_{comm}$ (or small enough $\Delta$), this is overly conservative, as the control law would prohibit nodes from moving towards one another with acceleration $a_{max}$.
+%Assume $S_0$ is given such that $\I_{safety}(S_0)$ is satisfied.  If $\I_{safety}(S_0)$ is satisfied, then $\I_{safety}(S)$ is satisfied, and thus the safety property is maintained.
+%
+%We are given that $S_0$ is such that at the initial time $0$ the invariant $\I_{safety}(S_0)$ is satisfied.  This gives us the following
+%
+%$\forall S \xrightarrow{a} S^{\prime} : \I\left(S\right) \Rightarrow \I\left(S^{\prime}\right)$
+%
+%We consider each action separately in cases:
+%i) $send_i$
+%Send does not affect the state of node $j$, and it does not affect the state of node $i$ until $next$, so it is vacuously true in both cases.
+%
+%ii) $recv_ij$
+%Trivially from the $I_{recv}$ invariant.
+%
+%$\forall \tau, if \forall S \xrightarrow{\tau} S^{\prime} : \I\left(S\right) \Rightarrow \I\left(S^{\prime}\right)$
+%
+%For the trajectories, it is sufficient to consider the worst possible trajectory affecting the safety condition, that is, when particles are coming towards one another with maximum acceleration.  Given the assumption that $\abs{x_i - x_j} < C_1$, we see that the relative velocities of any particles are bounded, and we will be immediately finished.
+%
+%In reality, given a large enough $r_{comm}$ (or small enough $\Delta$), this is overly conservative, as the control law would prohibit nodes from moving towards one another with acceleration $a_{max}$.
 \end{proof}
 
 \begin{inv}Progress
 
 All nodes reach the goal.
 \end{inv}
+
+How do we specify progress as an invariant?  If an agent's velocity is such that it is moving away from the goal, how can we show it is eventually going towards the goal (and then for long enough)?  How can this be stated in terms of the current state only?  Some statement along the lines of, if agents are in a flock, then the control moves them towards the goal might be what we want.  Otherwise, we could have the $\auto{PhysicalWorld}$ keep a record of all of the velocities over time, and show something like on the average the velocity moves the agents towards the goal.  However, this is fairly unclear at this point.
 
 \begin{proof}
 Show that if $x_g > x_i$, then $v_i > 0 \forall i$ eventually and for long enough time to reach goal.  Symmetrically, if $x_g < x_i$, then $v_i < 0 \forall i$ eventually and for long enough time to reach goal.  That is, we must show that $\exists t_g$ such that $v_i t_g \geq x_g \forall i$.  (Slightly more complicated than this, integral of velocity over time?)
@@ -862,9 +921,19 @@ Or equivalently, showing that $x_i - x_g = 0$, to say that the node eventually r
 \begin{inv}Flocking
 
 This is not possible in general here without a different control.
+
 \end{inv}
 
 
+\section{Future Work}
+\label{sec:future}
+
+\section{Conclusions}
+\label{sec:conclusion}
+
+\label{sec:references}
+\bibliographystyle{IEEEtran}
+\bibliography{IEEEabrv,flocking}
 
 
 
@@ -977,12 +1046,12 @@ This is not possible in general here without a different control.
 %
 %$r_{comm} > r_{init} > \mathit{r_{safety}}$
 %
-%The control, $ctrl(i, x_g, x_i, v_i, u_i, \hat{x}, \hat{v}, \hat{u}, nbrs_i)$, is defined as
+%The control, $ctrl(i, x_g, x_i, v_i, u_i, \hat{x}, \hat{v}, \hat{u}, \mathit{nbrs}_i)$, is defined as
 %
-%$ctrl\left(i, x_g, x_i, v_i, u_i, \hat{x}, \hat{v}, \hat{u}, nbrs_i \right) = \\
+%$ctrl\left(i, x_g, x_i, v_i, u_i, \hat{x}, \hat{v}, \hat{u}, \mathit{nbrs}_i \right) = \\
 %	\left\{
 %		\begin{array}{ll}
-%			\sgn{x_g - x_i}a_{max} & \textrm{if } nbrs_i = \{\} \\
+%			\sgn{x_g - x_i}a_{max} & \textrm{if } \mathit{nbrs}_i = \{\} \\
 %				\left\{
 %					\begin{array}{l}
 %						\sgn{\tilde{v}}a_{max} \textrm{  if } \abs{x_i - \tilde{x}} \leq r_{init} \\
@@ -993,7 +1062,7 @@ This is not possible in general here without a different control.
 %		\end{array}
 %	\right. $
 %
-%where $\tilde{x} = \hat{x}(\tilde{i})$, $\tilde{v} = \hat{v}(\tilde{i})$, $\tilde{u} = \hat{u}(\tilde{i})$, $\tilde{i} = \argmin{\left(\hat{x}(j) - x_i\right)}{j \in nbrs_i}$, $a \in \mathbb{R}_+$, and $b \in \mathbb{R}_+$.
+%where $\tilde{x} = \hat{x}(\tilde{i})$, $\tilde{v} = \hat{v}(\tilde{i})$, $\tilde{u} = \hat{u}(\tilde{i})$, $\tilde{i} = \argmin{\left(\hat{x}(j) - x_i\right)}{j \in \mathit{nbrs}_i}$, $a \in \mathbb{R}_+$, and $b \in \mathbb{R}_+$.
 %
 %We would like to show that the \textit{safety property}, that the distance between each node $i$ and $j$ is at least $\mathit{r_{safety}}$ is satisfied.  However, before we begin working toward the safety property, we must make some assumptions about communications and prove some simpler invariants.  First, assume that the network delay between nodes is bounded, such that a message sent by node $i$ is received by all its communication neighbors $j \in N_c(i)$ within time $d$.  This assumption immediately gives that all $recv_{ij}$ and $recv_{ji}$ actions will be correct, in that the necessary state information is delivered before the next period.
 %
@@ -1015,13 +1084,13 @@ This is not possible in general here without a different control.
 %
 %Define the time for the last send with respect to state $s$ as $start(s) = s.next - \Delta$.
 %
-%$s.nbrs_i = N(i, r_{comm})(start(s))$
+%$s.\mathit{nbrs}_i = N(i, r_{comm})(start(s))$
 %
-%$\I_{nbrs}\left(S\right) = \\
+%$\I_{\mathit{nbrs}}\left(S\right) = \\
 %	\left\{
 %		\begin{array}{l}
-%			\textrm{if } s.now - start(s) \geq d \textrm{ then } s.nbrs_i = N_c(i)(start(s))\\
-%			\textrm{elseif } s.now - start(s) < d \textrm{ then } N_c(i)(start(s)) = s.nbrs_i \cup \{s.Channel_{ij}\}\\
+%			\textrm{if } s.now - start(s) \geq d \textrm{ then } s.\mathit{nbrs}_i = N_c(i)(start(s))\\
+%			\textrm{elseif } s.now - start(s) < d \textrm{ then } N_c(i)(start(s)) = s.\mathit{nbrs}_i \cup \{s.Channel_{ij}\}\\
 %		\end{array}
 %	\right.$
 %
