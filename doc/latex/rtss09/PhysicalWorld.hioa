@@ -15,9 +15,9 @@ automaton $\auto{PhysicalWorld}(d:\Real^+, r_{comm}:\Real^+, r_{init}:\Real^+ )$
 
 	transitions
 		input $\act{send_i}(x, v, u)$
-			eff: $Channel_{ij} := append(Channel_{ij}, <<x, v, u>, now + \Delta_{delay}),$
+			eff: $Channel_{ij} := append(Channel_{ij}, <<x, v, u>, now + \Delta_{delay})$, 
                             $\forall j : \abs{x_i - x_j} \leq r_{comm}$;
-                            $\mathit{nbrs}(i) = \mathit{nbrs}(i) \cup \{j\}$
+                            $\mathit{nbrs}(i) = \mathit{nbrs}(i) \cup \{j\}$, 
                             $\forall j : \abs{x_i - x_j} \leq r_{comm}$;
 					
 		output $\act{recv_{ij}}(x, v, u)$

@@ -25,7 +25,6 @@ automaton $\auto{Agent_i}(\Delta:\Real, i:[N])$ where $\Delta > 0$
 			eff	$next_i = next_i + \Delta$;
 					$u_i := ctrl(i, x_g, x_i, v_i, u_i, \hat{x}, \hat{v}, \hat{u}, \mathit{nbrs}_i)$;
 					$\mathit{nbrs}_i = \{\}$;
-					$sent_i = T$;
 	
 	trajectories
 		trajdef $\smodel{hold}$ 
