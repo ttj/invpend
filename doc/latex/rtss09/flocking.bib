@@ -1110,6 +1110,28 @@ standards.
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @techreport{SetoSha1999,
   author        = "D. Seto and L. Sha",
   title         = "A Case Study on Analytical Analysis of the Inverted Pendulum Real-Time Control System",
@@ -1130,6 +1152,127 @@ standards.
   year          = "1998",
   pages         = "3504-3508"
 }
+
+@INPROCEEDINGS{ShaRTSS1998,
+title={Dependable system upgrade},
+author={Lui Sha},
+journal={Real-Time Systems Symposium, 1998. Proceedings., The 19th IEEE},
+year={1998},
+month={Dec},
+volume={},
+number={},
+pages={440-448},
+keywords={performance evaluation, real-time systems, software fault tolerance, analytically redundant controllers, dependable system upgrade, paradigm shift, real time control software},
+doi={10.1109/REAL.1998.739777},
+ISSN={},
+}
+
+@ARTICLE{936213,
+title={Using simplicity to control complexity},
+author={Lui Sha},
+journal={Software, IEEE},
+year={2001},
+month={Jul/Aug},
+volume={18},
+number={4},
+pages={20-28},
+doi={10.1109/MS.2001.936213},
+ISSN={0740-7459}, }
+
+@ARTICLE{710880,
+title={Dynamic control system upgrade using the Simplex architecture},
+author={Seto, D. and Krogh, B.H. and Sha, L. and Chutinan, A.},
+journal={Control Systems Magazine, IEEE},
+year={1998},
+month={Aug},
+volume={18},
+number={4},
+pages={72-80},
+keywords={computerised control, fault diagnosis, formal logic, process control, real-time systems, software engineering, state-space methodsCarnegie Mellon University, Simplex architecture, control switching logic, dynamic control system, fault detection, real-time system, software change, state space},
+doi={10.1109/37.710880},
+ISSN={0272-1708}, }
+
+@ARTICLE{4753900,
+title={ORTEGA: An Efficient and Flexible Online Fault Tolerance Architecture for Real-Time Control Systems},
+author={Xue Liu and Qixin Wang and Gopalakrishnan, S. and Wenbo He and Lui Sha and Hui Ding and Kihwal Lee},
+journal={Industrial Informatics, IEEE Transactions on},
+year={2008},
+month={Nov. },
+volume={4},
+number={4},
+pages={213-224},
+keywords={control system analysis computing, real-time systems, resource allocation, software architecture, software fault toleranceORTEGA, Simplex, fault coverage, faulty tasks, industrial control applications, on-demand real-time guard, online fault tolerance architecture, real-time computing, real-time control systems, resource utilizations, software fault tolerance architecture, software reliability},
+doi={10.1109/TII.2008.2010774},
+ISSN={1551-3203}, }
+
+@article{BakRTSS2009,
+author = {Stanley Bak and Deepti K. Chivukula and Olugbemiga Adekunle and Mu Sun and Marco Caccamo and Lui Sha},
+title = {The System-Level Simplex Architecture for Improved Real-Time Embedded System Safety},
+journal ={Real-Time and Embedded Technology and Applications Symposium, IEEE},
+volume = {0},
+year = {2009},
+issn = {1080-1812},
+pages = {99-107},
+doi = {http://doi.ieeecomputersociety.org/10.1109/RTAS.2009.20},
+publisher = {IEEE Computer Society},
+address = {Los Alamitos, CA, USA},
+}
+
+
+
+
+
+
+
+
+
+
+
+@inproceedings{ptidesRTSS2009,
+    author = {Jia Zou and Slobodan Matic and Edward A. Lee and
+              Thomas Huining Feng and Patricia Derler},
+    title = {Execution Strategies for PTIDES, a Programming
+              Model for Distributed Embedded Systems},
+    booktitle = {to appear in RTAS},
+    year = {2009},
+    abstract = {We define a family of execution policies for a
+              programming model called PTIDES (Programming
+              Temporally Integrated Distributed Embedded
+              Systems). A PTIDES application (factory
+              automation, for example) is given as a
+              discrete-event(DE) model of a distributed
+              real-time system that includes sensors and
+              actuators. The time stamps of DE events are bound
+              to physical time at the sensors and actuators,
+              turning the DE model into an executable
+              specification of the system with explicit
+              real-time constraints. This paper first defines a
+              general execution strategy that conforms to the DE
+              semantics, and then specializes this strategy to
+              give practical, implementable and distributed
+              policies. Our policies leverage network time
+              synchronization to eliminate the need for null
+              messages, allow independent events to be processed
+              out of time stamp order, thus increasing
+              concurrency and making more models feasible
+              (w.r.t. real-time constraints), and improve fault
+              isolation in distributed systems. The policies are
+              given in terms of a safe to process predicate on
+              events that depends on the time stamp of the
+              events and the local notion of physical time. In a
+              simple case we show how to statically check
+              whether program execution satisfies timing
+              constraints.},
+    URL = {http://chess.eecs.berkeley.edu/pubs/529.html}
+}
+
+
+
+
+
+
+
+
 
 @book{LiberzonSSC2003,
   author        = "D. Liberzon",
@@ -1218,7 +1361,7 @@ standards.
   pages         = "2364-2369"
 }
 
-@article{lynchSV2003,
+@article{lynchHioa2003,
  author = {Nancy Lynch and Roberto Segala and Frits Vaandrager},
  title = {Hybrid I/O automata},
  journal = {Inf. Comput.},
@@ -1231,6 +1374,24 @@ standards.
  publisher = {Academic Press, Inc.},
  address = {Duluth, MN, USA},
  }
+ 
+@inproceedings{lynchTa1996,
+ author = {Lynch,, Nancy},
+ title = {Modelling and verification of automated transit systems, using timed automata, invariants and simulations},
+ booktitle = {Proceedings of the DIMACS/SYCON workshop on Hybrid systems III : verification and control},
+ year = {1996},
+ isbn = {3-540-61155-X},
+ pages = {449--463},
+ location = {New Brunswick, NeW Jersey, United States},
+ publisher = {Springer-Verlag New York, Inc.},
+ address = {Secaucus, NJ, USA},
+ }
+
+
+
+ 
+ 
+ 
 
 @BOOK{Boyd94,
         AUTHOR             = {S. Boyd and L. {El~{G}haoui} and E.
@@ -1278,6 +1439,449 @@ standards.
  address = {Philadelphia, PA, USA},
  }
 
+
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+@inproceedings{DBLP:conf/usenix/CraciunasKPSSS08,
+  author    = {Silviu S. Craciunas and
+               Christoph M. Kirsch and
+               Hannes Payer and
+               Ana Sokolova and
+               Horst Stadler and
+               Robert Staudinger},
+  title     = {A Compacting Real-Time Memory Management System},
+  booktitle = {USENIX Annual Technical Conference},
+  year      = {2008},
+  pages     = {349-362},
+  ee        = {http://www.usenix.org/events/usenix08/tech/full_papers/craciunas/craciunas.pdf},
+  bibsource = {DBLP, http://dblp.uni-trier.de}
+}
+%  crossref  = {DBLP:conf/usenix/2008},
+
+
+
+
+@article{DBLP:journals/tecs/AuerbachBIKRRT09,
+  author    = {Joshua S. Auerbach and
+               David F. Bacon and
+               Daniel T. Iercan and
+               Christoph M. Kirsch and
+               V. T. Rajan and
+               Harald R{\"o}ck and
+               Rainer Trummer},
+  title     = {Low-latency time-portable real-time programming with Exotasks},
+  journal   = {ACM Trans. Embedded Comput. Syst.},
+  volume    = {8},
+  number    = {2},
+  year      = {2009},
+  ee        = {http://doi.acm.org/10.1145/1457255.1457262},
+  bibsource = {DBLP, http://dblp.uni-trier.de}
+}
+
+
+@INPROCEEDINGS{Bacon03controllingfragmentation,
+    author = {David F. Bacon},
+    title = {Controlling fragmentation and space consumption in the Metronome, a real-time garbage collector for Java},
+    booktitle = {In Proceedings of the Conference on Languages, Compilers, and Tools for Embedded Systems},
+    year = {2003},
+    pages = {81--92},
+    publisher = {ACM Press}
+}
+
+@inproceedings{DBLP:conf/jtres/MassonM08,
+  author    = {Damien Masson and
+               Serge Midonnet},
+  title     = {RTSJ extensions: event manager and feasibility analyzer},
+  booktitle = {JTRES},
+  year      = {2008},
+  pages     = {10-18},
+  ee        = {http://doi.acm.org/10.1145/1434790.1434793},
+  crossref  = {DBLP:conf/jtres/2008},
+  bibsource = {DBLP, http://dblp.uni-trier.de}
+}
+
+
+@proceedings{DBLP:conf/jtres/2008,
+  editor    = {Gregory Bollella and
+               C. Douglas Locke},
+  title     = {Proceedings of the 6th International Workshop on Java Technologies
+               for Real-time and Embedded Systems, JTRES 2008, 24-26 September
+               2008, Santa Clara, California, USA},
+  booktitle = {JTRES},
+  publisher = {ACM},
+  series    = {ACM International Conference Proceeding Series},
+  volume    = {343},
+  year      = {2008},
+  isbn      = {978-1-60558-337-2},
+  bibsource = {DBLP, http://dblp.uni-trier.de}
+}
+
+@MISC{legoNXT,
+      NOTE = "\texttt{http://mindstorms.lego.com}"
+}
+
+@MISC{nxtOSEK,
+      NOTE = "\texttt{http://lejos-osek.sourceforge.net}"
+}
+
+
+@MISC{rtsj:website,
+      AUTHOR = "Jeff Bigham",
+      TITLE = "A super-sweet article",
+      MONTH = "May",
+      YEAR = {2006},
+      NOTE = "\texttt{http://www.manticmoo.com/articles/jeff/programming/latex/bibtex-types.php}"
+}
+
+
+@inproceedings{1434798,
+ author = {Kim,, MinSeong and Wellings,, Andy},
+ title = {An efficient and predictable implementation of asynchronous event handling in the RTSJ},
+ booktitle = {JTRES '08: Proceedings of the 6th international workshop on Java technologies for real-time and embedded systems},
+ year = {2008},
+ isbn = {978-1-60558-337-2},
+ pages = {48--57},
+ location = {Santa Clara, California},
+ doi = {http://doi.acm.org/10.1145/1434790.1434798},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ }
+ 
+ @INPROCEEDINGS{Ghosal04event-drivenprogramming,
+    author = {Arkadeb Ghosal and Thomas A. Henzinger and Christoph M. Kirsch and Marco A. A. Sanvido},
+    title = {Event-driven programming with logical execution times},
+    booktitle = {Proc. of HSCC 2004, Lecture Notes in Computer Science},
+    year = {2004},
+    pages = {357--371}
+}
+ 
+ 
+ 
+ 
+ 
+ @INPROCEEDINGS{HenzingerGiotto2001,
+    author = {Thomas A. Henzinger and Benjamin Horowitz and Christoph Meyer Kirsch},
+    title = {Giotto: A time-triggered language for embedded programming},
+    booktitle = {Proceedings of the IEEE},
+    year = {2001},
+    pages = {166--184},
+    publisher = {Springer-Verlag}
+}
+
+
+@techreport{HenzingerXGiotto2003,
+ Author = {Sanvido, Marco A. A. and Ghosal, Arkadeb and Henzinger, Thomas A.},
+ Title = {xGiotto Language Report},
+ Institution = {EECS Department, University of California, Berkeley},
+ Year = {2003},
+ Month = {Jul},
+ Number = {UCB/CSD-03-1261}
+}
+
+
+@techreport{Ghosal:EECS-2006-79,
+ Author = {Arkadeb Ghosal and Thomas A. Henzinger and Daniel Iercan and Christoph Kirsch and Alberto L. Sangiovanni-Vincentelli},
+ Title = {Hierarchical Timing Language},
+ Institution = {EECS Department, University of California, Berkeley},
+ Year = {2006},
+ Month = {May},
+ Number = {UCB/EECS-2006-79}
+}
+
+
+
+
+
+@ARTICLE{1172830,
+title={Timed multitasking for real-time embedded software},
+author={Jie Liu and Lee, E.A.},
+journal={Control Systems Magazine, IEEE},
+year={2003},
+month={Feb},
+volume={23},
+number={1},
+pages={ 65-75},
+keywords={ computerised control, embedded systems, multiprogramming real-time embedded software, real-time programming, timed multitasking},
+doi={10.1109/MCS.2003.1172830},
+ISSN={0272-1708}, }
+
+
+
+
+@ARTICLE{1311013,
+title={Integrating model-based design and preemptive scheduling in mixed time- and event-triggered systems},
+author={Scaife, N. and Caspi, P.},
+journal={Real-Time Systems, 2004. ECRTS 2004. Proceedings. 16th Euromicro Conference on},
+year={2004},
+month={June-2 July},
+volume={},
+number={},
+pages={ 119-126},
+keywords={ formal verification, processor scheduling, real-time systems double buffers, event-triggered systems, fixed-priority deadline, intertask communication, mixed time systems, model-based design, preemptive scheduling, wait-free communication},
+doi={10.1109/EMRTS.2004.1311013},
+ISSN={1068-3070 }, }
+
+
+@article{1286824,
+ author = {Henzinger,, Thomas A. and Kirsch,, Christoph M.},
+ title = {The embedded machine: Predictable, portable real-time code},
+ journal = {ACM Trans. Program. Lang. Syst.},
+ volume = {29},
+ number = {6},
+ year = {2007},
+ issn = {0164-0925},
+ pages = {33},
+ doi = {http://doi.acm.org/10.1145/1286821.1286824},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ }
+ 
+ 
+ @inproceedings{HEmachine,
+    author = {Arkadeb Ghosal and Alberto Sangiovanni-Vincentelli
+              and Tom Henzinger and Christoph Kirsch and Daniel
+              Iercan},
+    title = {Separate Compilation of Hierarchical Real-Time
+              Programs into Linear-Bounded Embedded Machine Code},
+    booktitle = {APGES 2007},
+    month = {October},
+    year = {2008},
+    abstract = {We have recently proposed a coordination language,
+              called Hierarchical Timing Language (HTL), for
+              distributed, hard real-time applications. HTL is a
+              hierarchical extension of Giotto and, like its
+              predecessor, based on the logical execution time
+              (LET) paradigm of real-time programming. Giotto is
+              compiled into code for a virtual machine, called
+              the Embedded Machine (or E~machine). If HTL is
+              targeted to the E~machine, the hierarchical
+              program structure needs to be flattened which
+              makes separate compilation difficult and may
+              result in code of exponential size. In this paper,
+              we propose a generalization of the E~machine which
+              supports a hierarchical program structure at
+              runtime through real-time trigger mechanisms that
+              are arranged in a tree. We present the generalized
+              E~machine, and a modular compiler for HTL that
+              generates code of linear size. The compiler may
+              generate code for any parts of a given HTL program
+              separately in any order.}
+}
+
+@article{942115,
+ author = {Lynch,, Nancy and Segala,, Roberto and Vaandrager,, Frits},
+ title = {Hybrid I/O automata},
+ journal = {Inf. Comput.},
+ volume = {185},
+ number = {1},
+ year = {2003},
+ issn = {0890-5401},
+ pages = {105--157},
+ doi = {http://dx.doi.org/10.1016/S0890-5401(03)00067-1},
+ publisher = {Academic Press, Inc.},
+ address = {Duluth, MN, USA},
+ }
+ 
+ @INPROCEEDINGS{Pree04towardsa,
+    author = {Wolfgang Pree and Josef Templ},
+    title = {Towards a Component Architecture for Hard Real Time},
+    booktitle = {Control Applications, Automotive Software Workshop},
+    year = {2004},
+    pages = {10--12}
+}
+
+
+
+
+
+@TECHREPORT{Gong90alibrary,
+    author = {Chun Gong and Jeannette M. Wing},
+    title = {A library of concurrent objects and their proofs of correctness},
+    institution = {Carnegie Mellon University},
+    year = {1990}
+}
+
+@book{523911,
+ author = {Kopetz,, Hermann},
+ title = {Real-Time Systems: Design Principles for Distributed Embedded Applications},
+ year = {1997},
+ isbn = {0792398947},
+ publisher = {Kluwer Academic Publishers},
+ address = {Norwell, MA, USA},
+ }
+ 
+ @book{1027502,
+ author = {Obermaisser,, Roman},
+ title = {Event-Triggered and Time-Triggered Control Paradigms},
+ year = {2004},
+ isbn = {0387230432},
+ publisher = {Springer-Verlag TELOS},
+ address = {Santa Clara, CA, USA},
+ }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ @ARTICLE{492493,
+title={A scheduling model for reduced CPU energy},
+author={Yao, F. and Demers, A. and Shenker, S.},
+journal={Foundations of Computer Science, 1995. Proceedings., 36th Annual Symposium on},
+year={1995},
+month={Oct},
+volume={},
+number={},
+pages={374-382},
+keywords={ computer power supplies, power consumption, scheduling competitive performance, energy usage, job scheduling, minimum-energy schedule, on-line algorithms, power function, reduced CPU energy, scheduling model},
+doi={10.1109/SFCS.1995.492493},
+ISSN={}, }
+
+@article{502044,
+ author = {Pillai,, Padmanabhan and Shin,, Kang G.},
+ title = {Real-time dynamic voltage scaling for low-power embedded operating systems},
+ journal = {SIGOPS Oper. Syst. Rev.},
+ volume = {35},
+ number = {5},
+ year = {2001},
+ issn = {0163-5980},
+ pages = {89--102},
+ doi = {http://doi.acm.org/10.1145/502059.502044},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ }
+
+@ARTICLE{781298,
+title={Power conscious fixed priority scheduling for hard real-time systems},
+author={Youngsoo Shin and Kiyoung Choi},
+journal={Design Automation Conference, 1999. Proceedings. 36th},
+year={1999},
+month={},
+volume={},
+number={},
+pages={134-139},
+keywords={application specific integrated circuits, integrated circuit design, logic CAD, low-power electronics, real-time systems, scheduling, timingexecution times, hard real-time systems, kernels, power conscious fixed priority scheduling, power efficient design, power reduction, programmable processors, run-time mechanism, slack times, system functionality},
+doi={10.1109/DAC.1999.781298},
+ISSN={}, }
+
+@article{513865,
+ author = {Dudani,, Ajay and Mueller,, Frank and Zhu,, Yifan},
+ title = {Energy-conserving feedback EDF scheduling for embedded systems with real-time constraints},
+ journal = {SIGPLAN Not.},
+ volume = {37},
+ number = {7},
+ year = {2002},
+ issn = {0362-1340},
+ pages = {213--222},
+ doi = {http://doi.acm.org/10.1145/566225.513865},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ }
+
+@inproceedings{1106667,
+ author = {AlEnawy,, Tarek A. and Aydin,, Hakan},
+ title = {Energy-Constrained Scheduling for Weakly-Hard Real-Time Systems},
+ booktitle = {RTSS '05: Proceedings of the 26th IEEE International Real-Time Systems Symposium},
+ year = {2005},
+ isbn = {0-7695-2490-7},
+ pages = {376--385},
+ doi = {http://dx.doi.org/10.1109/RTSS.2005.18},
+ publisher = {IEEE Computer Society},
+ address = {Washington, DC, USA},
+ }
+
+@ARTICLE{4536220,
+title={A simple power-aware scheduling for multicore systems when running real-time applications},
+author={Bautista, D. and Sahuquillo, J. and Hassan, H. and Petit, S. and Duato, J.},
+journal={Parallel and Distributed Processing, 2008. IPDPS 2008. IEEE International Symposium on},
+year={2008},
+month={April},
+volume={},
+number={},
+pages={1-7},
+keywords={microprocessor chips, multi-threading, multiprocessing systems, power aware computing, processor schedulingcomputational requirements, dynamic voltage scaling, energy consumption, energy savings, fair scheduling policy, high-performance microprocessors, multicore processors, multicore systems, multithreaded processors, power consumption requirement, power-aware scheduling, real-time applications, worst case execution time},
+doi={10.1109/IPDPS.2008.4536220},
+ISSN={1530-2075}, }
+
+@ARTICLE{olfatiFlocking2006,
+title={Flocking for multi-agent dynamic systems: algorithms and theory},
+author={Olfati-Saber, R.},
+journal={Automatic Control, IEEE Transactions on},
+year={2006},
+month={March},
+volume={51},
+number={3},
+pages={ 401-420},
+keywords={ Lyapunov methods, distributed algorithms, multi-agent systems, peer-to-peer computing Lyapunov stability, Reynolds rules, collective potentials, constrained flocking algorithm, cost functions, distributed flocking algorithms, flock members, free-flocking algorithm, lattice-shape objects, multi-agent dynamic systems, multi-species framework, particle systems, peer-to-peer network, split-rejoin maneuver, squeezing maneuver, virtual agents, ?,-agents, ?,-lattices, ?,-agents, ?,-agents},
+doi={10.1109/TAC.2005.864190},
+ISSN={0018-9286}, }
+
+@INPROCEEDINGS{KumarEtherware2004,
+title={Etherware: domainware for wireless control networks},
+author={Baliga, G. and Graham, S. and Sha, L. and Kumar, P.R.},
+journal={Object-Oriented Real-Time Distributed Computing, 2004. Proceedings. Seventh IEEE International Symposium on},
+year={2004},
+month={May},
+volume={},
+number={},
+pages={155-162},
+keywords={distributed control, distributed object management, middleware, open systems, protocols, real-time systems, wireless LANEtherware, complex control system, control time protocol, middleware, real-time CORBA, wireless control network},
+doi={10.1109/ISORC.2004.1300341},
+ISSN={}, }
 
 
 
