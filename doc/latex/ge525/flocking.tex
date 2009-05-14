@@ -142,7 +142,6 @@
 
 
 
-
 % *** CITATION PACKAGES ***
 %
 %\usepackage{cite}
@@ -161,31 +160,39 @@
 % http://www.ctan.org/tex-archive/macros/latex/contrib/cite/
 % The documentation is contained in the cite.sty file itself.
 
-
+\usepackage[pdftex]{hyperref}
+\hypersetup{
+  pdftitle={Simulations of Multi-Waypoint Flocking Problem with Delays and Saturation},
+  pdfauthor={Taylor Johnson},
+  colorlinks={true},
+  citecolor={blue},
+  linkcolor={blue},
+  backref={true}
+}
 
 
 
 
 % *** GRAPHICS RELATED PACKAGES ***
 %
-\ifCLASSINFOpdf
-  % \usepackage[pdftex]{graphicx}
+%\ifCLASSINFOpdf
+%  \usepackage[pdftex]{graphicx}
   % declare the path(s) where your graphic files are
   % \graphicspath{{../pdf/}{../jpeg/}}
   % and their extensions so you won't have to specify these with
   % every instance of \includegraphics
-  % \DeclareGraphicsExtensions{.pdf,.jpeg,.png}
-\else
+%  \DeclareGraphicsExtensions{.pdf,.jpeg,.png,.eps}
+%\else
   % or other class option (dvipsone, dvipdf, if not using dvips). graphicx
   % will default to the driver specified in the system graphics.cfg if no
   % driver is specified.
-  % \usepackage[dvips]{graphicx}
+%  \usepackage[dvips]{graphicx}
   % declare the path(s) where your graphic files are
   % \graphicspath{{../eps/}}
   % and their extensions so you won't have to specify these with
   % every instance of \includegraphics
-  % \DeclareGraphicsExtensions{.eps}
-\fi
+%  \DeclareGraphicsExtensions{.eps}
+%\fi
 % graphicx was written by David Carlisle and Sebastian Rahtz. It is
 % required if you want graphics, photos, etc. graphicx.sty is already
 % installed on most LaTeX systems. The latest version and documentation can
@@ -396,7 +403,10 @@
 %
 % paper title
 % can use linebreaks \\ within to get better formatting as desired
-\title{Project: Simulations of Multi-Objective Flocking Problem with Delays and Saturation}
+\title{Simulations of Multi-Waypoint Flocking Problem with Delays and Saturation}
+
+\def\titleName{{\title}}
+\def\authorName{{Taylor Johnson}}
 
 % author names and affiliations
 % use a multiple column layout for up to two different
@@ -441,7 +451,7 @@ May 15, 2009
 
 
 \begin{abstract}
-The flocking problem has been studied for some time ~\cite{TODO}, and is thought to be a good way to perform distributed control of swarms of unmanned autonomous vehicles (UAVs) ~\cite{TODO}.  In general though, these studies have not placed realistic limitations on the system that would be experienced, such as delays and asynchrony due to wireless network transmission and limited actuator operating range.  This project studies through simulation the flocking problem as a group of particles with double integrator dynamics as in ~\cite{os2006} moving from some initial condition towards multiple objectives, analyzing stability (convergence to a flock and convergence to the goals) while comparing a variety of combinations of real world constraints: a) with and without state saturation, b) with and without actuator saturation, and c) synchronous versus asynchronous with bounded delay state feedback.
+The flocking problem has been studied for some time, and is thought to be a good way to perform distributed control for swarms of multi-agent systems, such as UAVs.  The majority of these studies have not placed real-world limitations on the distributed system that would be experienced.  For example, delays and asynchrony due to wireless network transmission of state information and limited actuator operating range are infrequently analyzed.  This project studies through simulation the flocking problem as a group of particles with double integrator dynamics moving from some initial condition towards multiple waypoints (one objective at a time), analyzing stability (convergence to a flock and convergence to the waypoints) while comparing a variety of real-world constraints: \begin{inparaenum}[\itshape a\upshape)] \item with and without state (velocity) saturation, \item with and without actuator saturation, \item synchronous versus asynchronous (with bounded delay) state feedback, and \item combinations of these. \end{inparaenum}  The future work section presents a hybrid system model being investigated for the formal analysis of these systems in the presence of another real-world constraint, failures.
 \end{abstract}
 
 %\begin{IEEEkeywords}
@@ -450,111 +460,416 @@ The flocking problem has been studied for some time ~\cite{TODO}, and is thought
 %\end{IEEEkeywords}
 
 
-\def\titleName{{\title}}
-\def\authorName{{Taylor Johnson}}
-
-%\usepackage[pdftex]{hyperref}
-%\hypersetup{
-%  pdftitle={\titleName},
-%  pdfauthor={\authorName},
-%%  colorlinks=true,
-%%  citecolor={blue},
-%%  linkcolor = {blue},
-%%  backref={true}
-%}
-
 \section{Introduction}
 \label{sec:intro}
 
-a. What is flocking
+Coordinated movement of multi-agent systems has been studied in detail for some time \cite{Spears2004} \cite{Stipanovic2004}, often with a focus on determining controls that lead to what is termed flocking \cite{os2006} or cooperative behavior \cite{FaxMurray2004} \cite{Ryan2004}.
+%
+Flocking behavior is defined as a group of agents with individual control laws eventually reaching an equidistant spacing between themselves, and is found in nature as in schools of fish \cite{shaw1975}, flocks of birds \cite{partridge1984}, particles \cite{vicsek1995}, and more generally \cite{okubo1986}.
 
-b. Dynamics: double integrator, Olfati-Saber controller model
+The work of Reynolds \cite{Reynolds1987} established three general rules that are necessary for flocking behavior to emerge in these systems, \begin{inparaenum}[\itshape 1\upshape)]\item ``Collision Avoidance: avoid collisions with nearby flockmates'' \item ``Velocity Matching: attempt to match velocity with nearby flockmates'' \item ``Flock Centering: attempt to stay close to nearby flockmates''. \end{inparaenum}
+%
+Looking at these rules, it is first necessary to analyze the term ``nearby''.  For flocks and herds found in nature, nearby could be determined by the individual agents through sensory mechanisms, such as sight, sound, smell (maybe pheromones), and touch.
+%
+For an engineered system, such natural sensory information could be determined from one agent to another by radar, laser radar, computer vision systems, etc.
+%
+Alternatively, agents could tell one another over a wireless network about where they believe they are located, such as sharing information from global positioning system (GPS) state or cellular triangulation.
+%
+Real systems would likely use a combination of these sensory mechanisms, but all interesting cases are dependent upon agents being physically near one another, so to this end, we consider a broad definition of nearby as agents being within some \textit{communications radius}, $r_{comm}$, of one another.
 
+Having defined nearby, the collision avoidance and flock centering rules of Reynolds necessitate some attractive and repulsive force between nearby agents that causes them to become equidistantly spaced.
+%
+There are a variety of such forces that arise in nature, such as the Lennard-Jones potential, which is a combination of the attractive van der Waals force and the repulsive Pauli force between molecules \cite{Jones1924} as seen in Figure~\ref{fig:lennardJonesPotential}.
+%
+Velocity consensus is also necessary to maintain flocking behavior over time, and in addition, it has been shown in \cite{os2006} that in a system without leaders, all nodes need to have a notion of what the goal or objective is to prevent regular fragmentation, as in their \textit{Algorithm 2} which we will analyze in detail in Section~\ref{sec:model}.
+
+\begin{figure}[!b]
+  \begin{center}
+    \includegraphics[width=3.5in]{lennardJonesPotential}
+  \end{center}
+
+  %\caption{\small Figure caption. To get a figure to span two columns, use the environment figure* rather than figure.}
+  \caption{\small Lennard-Jones Potential}
+  \label{fig:lennardJonesPotential}
+\end{figure}
+
+\section{System Model}
+\label{sec:model}
+For the system model, we are closely following the work of \cite{os2006}.
+%
+The system is composed of $N$ agents or nodes, each represented as a vertex in a set of vertices defined $V \subset \mathbb{N} = \{0 \ldots N \}$, of a graph $G := (V, \varepsilon)$, where the edges are defined as $\varepsilon \subseteq \{(i,j) : i,j \in V, j \neq i\}$.
+%
+The state-space representation of node $i \in V$ is $\dot{q}_i = p_i$, $\dot{p}_i = u_i$, where $q_i, p_i, u_i \in \mathbb{R}^m$, and $q_i$ represents position, $p_i$ represents velocity, and $u_i$ represents acceleration, or proportionally, force.
+%
+We denote the matrix of positions of all $N$ agents as $q \in \mathbb{R}^{m \times N}$, velocities as $p \in \mathbb{R}^{m \times N}$, and controls as $u \in \mathbb{R}^{m \times N}$.
+
+The notion of nearby as flockmates being within some communications radius of one another gives rise to a definition of the \textit{communications neighbors} of agent $i$ as $N_c(i, q) := \{ j \in V : \norm{q_j - q_i} < r_{comm}\}$.
+%
+Each agent computes its own set of communications neighbors.
+%
+Similarly, the definition of a flock as agents being equidistantly spaced gives rise to the definition of a flock as an \textit{$\alpha$-lattice} as the solutions of the set of constraints $\norm{q_j - q_i} = r_{lattice}, \forall j \in N_c(i, q)$.
+%
+Alternatively, we could define the set of \textit{$\alpha$-lattice neighbors} as $N_l(i, q) := \{ j \in N_c(i, q) :  \norm{q_j - q_i} = r_{lattice}\}$.
+%
+This $\alpha$-lattice definition of flocking is overly restrictive though and disallows any small perturbations in the system, so we consider a quasi $\alpha$-lattice as $-\delta \leq \norm{q_j - q_i} - r_{lattice} \leq \delta, \forall j \in N_c(i, q)$.
+
+We do not need to consider any deviation from a perfect $\alpha$-lattice in terms of some deviation energy, as this is required for stability proofs only, and is not used in the computation of an agent's control.
+%
+Similarly, for real-world implementations in software we would not have such rigorously defined functions as in \cite{os2006}, so we will depart to some extent from the work of Olfati-Saber at this point, as for analysis purposes and a proof of convergence to a flock, they carefully constructs a continuous control.
+%
+For simulations we can define the $\sigma$-norm ($\mathbb{R}^m \rightarrow \mathbb{R}_{\geq 0}$) simply as the Euclidean norm ($2$-norm), $\norm{z}_{\sigma} := \sqrt{z_1^2 + \ldots + z_m^2}$, instead of $\norm{z}_{\sigma} = \frac{1}{\epsilon}\left[\sqrt{1 + \epsilon\norm{z}^2} - 1\right]$, for $\epsilon > 0$.  The difference is highlighted in Figure~\ref{fig:oldSigmaNorm} and Figure~\ref{fig:newSigmaNorm}.
+%
+Note however that we do take the same values of $r_{\alpha}$ (here $r_{comm}^{\alpha}$) and $d_{\alpha}$ (here $r_{lattice}^{\alpha}$) as though they were computed using their $\sigma$-norm, as otherwise it would be hard to compare results; these specific values are given in Section~\ref{sec:simulations}.
+
+\begin{figure}[!htb]
+  \begin{center}
+    \includegraphics[width=3.5in]{sigmaNormOld}
+  \end{center}
+
+  %\caption{\small Figure caption. To get a figure to span two columns, use the environment figure* rather than figure.}
+  \caption{\small Old $\sigma$-Norm}
+  \label{fig:oldSigmaNorm}
+\end{figure}
+
+\begin{figure}[!b]
+  \begin{center}
+    \includegraphics[width=3.5in]{sigmaNormNew}
+  \end{center}
+
+  \caption{\small New $\sigma$-Norm}
+  \label{fig:newSigmaNorm}
+\end{figure}
 
 %
-Our understanding of real-world computing systems would be incomplete
-without understanding the effect of failures on such systems.
-Computers and communication channels failures are captured by failure models 
-such as crashes, omissions, and byzantine behavior, and their effect on 
-computing systems have been well studied in the literature. 
+The gradient of the $\sigma$-norm, $\sigma_{\epsilon}(z) := \nabla \norm{z}_{\sigma}$, is needed, and becomes $\sigma_{\epsilon}(z) := \frac{z}{\norm{z}}$ instead of $\sigma_{\epsilon}(z) = \frac{z}{\sqrt{1 + \epsilon||z||^2}} = \frac{z}{1 + \epsilon||z||_{\sigma}}$.
 %
-In fact, the central theme in the distributed computing research 
-is understanding the power and limitations of computing systems under 
-different types of failures. 
+This is no longer differentiable at $0$, but for simulations, this does not matter.
+
+Similarly, the $C^1$-smooth bump function $\rho_{h}$ can be redefined as 
+
+$\rho_{h}\left(z\right) = \left\{ \begin{array}{ll} 
+1 & \textrm{if } z \in \left[0, h\right) \\
+h - z & \textrm{if } z \in \left[h, 1\right] \\
+0 & \textrm{else} \end{array} \right. $
+instead of as 
+
+$\rho_{h}\left(z\right) = \left\{ \begin{array}{ll} 
+1 & \textrm{if } z \in \left[0, h\right) \\
+\frac{1}{2}\left[1 + cos\left(\pi\frac{\left(z - h\right)}{\left(1 - h\right)}\right)\right] & \textrm{if } z \in \left[h, 1\right] \\
+0 & \textrm{else} \end{array} \right. $.
+
+These differences are seen in Figure~\ref{fig:rhoHOld} and Figure~\ref{fig:rhoHNew}.
+
+\begin{figure}[!b]
+  \begin{center}
+    \includegraphics[width=3.5in]{rhoHOld}
+  \end{center}
+
+  \caption{\small Old $\rho_h$}
+  \label{fig:rhoHOld}
+\end{figure}
+
+\begin{figure}[!b]
+  \begin{center}
+    \includegraphics[width=3.5in]{rhoHNew}
+  \end{center}
+
+  \caption{\small New $\rho_h$}
+  \label{fig:rhoHNew}
+\end{figure}
+
+Using these new functions, we work with the same element-wise definition of the \textit{spatial adjacency matrix}, $A := [a_{ij}]$, as Olfati-Saber, $a_{ij}\left(q\right) = \rho_{h}\left(\frac{\norm{q_j - q_i}_{\sigma}}{r_{lattice}^{\alpha}}\right) \in \left[0, 1\right], j \neq i$.
 %
-Results in this area provide algorithms
-for solving canonical problems 
-such as consensus, leader election, and clock synchronization
-in the presence of certain types of failures, and also establish 
-lower bounds about impossibility of solving those 
-problems with certain resource constraints. 
+We also use the same $\phi$ and $\phi_{\alpha}$ functions, defined as $\phi(z) := \frac{1}{2}\left[(a+b)\sigma_1(z+c)+(a-b)\right]$ and $\phi_{\alpha}(z) := \rho_h(\frac{z}{r_{lattice}^{\alpha}})\phi(z - r_{comm}^{\alpha})$, where $\sigma_1(z) = \frac{z}{\sqrt{1 + z^2}}$, $0 < a \leq b$, and $c := \frac{\abs{a - b}}{\sqrt{4ab}}$.
 %
-Distributed control systems consist not only of computers, 
-but also the physical world which they interact with through 
-sensors and actuators. 
+Note that while these are defined the same, both have changed due to them being composed of other functions that have changed.
 %
-Thus, to understand the power and limitations of 
-real-world distributed control systems, in this paper, we 
-initiate the study of such systems in the face of computer, sensor, and actuator---failures. 
+The change to $\phi$ is seen in Figure~\ref{fig:oldPhi} and Figure~\ref{fig:newPhi} and to $\phi_{\alpha}$ in Figure~\ref{fig:oldPhiAlpha} and Figure~\ref{fig:newPhiAlpha}.
 
-Rough notes:
-New failure models and their physical manifestations.
-Sensors and actuators require completely new failure models.
-Crash, stuck-at, byzantine.
+\begin{figure}[!b]
+  \begin{center}
+    \includegraphics[width=3.5in]{phiOld}
+  \end{center}
+
+  \caption{\small Old $\phi$}
+  \label{fig:oldPhi}
+\end{figure}
+
+\begin{figure}[!b]
+  \begin{center}
+    \includegraphics[width=3.5in]{phiNew}
+  \end{center}
+
+  \caption{\small New $\phi$}
+  \label{fig:newPhi}
+\end{figure}
+
+\begin{figure}[!b]
+  \begin{center}
+    \includegraphics[width=3.5in]{phiAlphaOld}
+  \end{center}
+
+  \caption{\small Old $\phi_{\alpha}$}
+  \label{fig:oldPhiAlpha}
+\end{figure}
+
+\begin{figure}[!b]
+  \begin{center}
+    \includegraphics[width=3.5in]{phiAlphaNew}
+  \end{center}
+
+  \caption{\small New $\phi_{\alpha}$}
+  \label{fig:newPhiAlpha}
+\end{figure}
+
+We focus only on the control in the form of \textit{Algorithm 2} presented in \cite{os2006}, which is defined as $u_i := u_i^\alpha + u_i^\gamma$, where
+
+$u_i^\alpha = \displaystyle\sum_{j \in N_c(i,q)}{\phi_{\alpha}\left(\norm{q_j - q_i}_{\sigma}\right)n_{ij}} + \displaystyle\sum_{j \in N_c(i,q)}{a_{ij}(q)(p_j - p_i)}$
+
+and
 %
-Give examples.
+$u_i^\gamma = f_i^{\gamma}(q_i, p_i, q_r, p_r)$ with $q_r$ and $p_r$ representing the state of the goal, which may be changing, and where $n_{ij} := \frac{\left(q_j - q_i\right)}{\sqrt{1 + \epsilon \norm{q_j - q_i}^2}}$.
 %
-Also need to consider new failure models for computers, e.g.
-timing failures. 
+The goal's dynamic state is modeled as a double integrator also, with state-space representation $\dot{q}_r = p_r$ and $\dot{p}_r = f_r(q_r, p_r)$.
 %
-These failures now have physical manifestations, 
-directly challenging safety of the control system.
+Note that we have taken $f_r(q_r, p_r) \equiv 0$, although it could be any function (and despite this, we set different waypoints at discrete instants in time).
 
-Failure detection.
-In distributed computing failure detection is often very hard.
-E.g., we cannot tell differentiate between a slow and
-a crashed computer in an asynchronous system.
-In contrast, failure detection is often easy 
-for actuators. Give example.  
-Timing failures can be detected by runtime environment.
+\subsection{System Constraints}
+\label{sec:constraints}
 
-The above suggests new fault-tolerance strategies
-for distributed control systems.
-Mantra: 
-Combine fault detection with the model for physical manifestation
-of failure to avoid bad states. 
+\subsubsection{State and Actuator Saturation}
 
-Our approach (this is very rough):
-Middleware detects failures and presents a modified 
-world view to the controller. In this world view, faulty agents
-are ``obstacles''. Controller reacts to obstacles in the ``usual'' way.
-
-Case studies. Flocking. Coverage.
-
-Organization:
-
-\section{Background}
-\label{sec:basics}
-Brief description of HIOA.
-Executions, invariants, etc.
-
-This material is likely to be used by 
-both the flocking and the coverage 
-case studies.
-
+There exists $v_{max}$ and $a_{max}$, a maximum velocity and acceleration, respectively, such that, $\dot{q}_{i} \leq v_{max}$ and $\dot{p}_{i} \leq a_{max}$.
 %
-Let us describe the 
-physical world model of the two case studies here.
+The existence of a maximum acceleration is reasonable given that it would be produced by some actuator with limited operating range and power source.
 %
-The two physical worlds are similar in that
-they both model the channels (Communications radius: $r_{comm}$), 
-but they differ in the physics of agents. 
+Note that of course the existence of a maximum acceleration does not imply the existence of a maximum velocity.
+%
+However, the existence of a maximum force that can be applied as a control, which is proportional to the maximum acceleration, and in the presence of opposing forces proportional to the velocity such that $\sum{F}=0$ where $F \in \mathbb{R}^m$, does imply the existence of a maximum velocity, so this is a reasonable assumption.
+%
+On Earth the balancing forces could be aerodynamic resistance, whereas in space, relativistic limits could be imposed.
+
+For the simulations in Section~\ref{sec:simulations}, we separately present results with state and actuator saturation.
+%
+In general, actuator saturation is quite interesting, as it reduces any globally asymptotically stable system to a locally asymptotically stable system.
+%
+Coupled with state constraints though, the problem is even more interesting, as not all of $\mathbb{R}^m$ is accessible by the states anyway, so all reachable states may be asymptotically stable nonetheless.
+%
+These constraints were primarily motivated by previous work of ours on finding stabilizable regions by solving LMIs for an inverted pendulum system with limited actuator range, and with a limited set of safe states.
+
+\subsubsection{Synchronous and Asynchronous Communications with Delays}
+
+
+\section{Simulations}
+\label{sec:simulations}
+
+For all simulations, we work in $2$ dimensions ($m=2$) with $N=50$ agents.
+%
+We present one sample of $1$-dimensional and $3$-dimensional simulations in Figure~\ref{fig:simOneD} and Figure~\ref{fig:simThreeD}, as the control and simulation environment work for $m$-dimensional systems.
+%
+The sampling period is $T_c = 0.01$ seconds.  Other constants used in the above definition of the controls are $a=5$, $b=5$, $c=X$, 
+
+\subsection{Without Constraints}
+
+Before presenting results with constraints, we must first look at simulations without constraints for comparison.  Figures~\ref{fig:n50m2t00} to \ref{fig:n50m2t32} are a representative example, showing the system with 50 agents starting from random initial velocities in the range -100 to 100, at positions within 0 to 100, with a goal at qr=100, pr=20, c1=c2=0.1.
+%
+The control value, separated into components, of one node over time can be seen in Figure~\ref{fig:n50m2control}.
+%
+The position value of all nodes as a function of time can be seen in Figure~\ref{fig:n50m2position}; this plot can be particularly useful if one wants to verify more stringent properties, such as two agents never coming closer than some small amount within one another (of course this occurs with this control, but with a different setup, it may not).
+
+\begin{figure}[!p]
+  \begin{center}
+    \includegraphics[width=3.5in]{n50m2t00}
+  \end{center}
+
+  \caption{\small N=50, m=2, Time=0s}
+  \label{fig:n50m2t00}
+\end{figure}
+
+\begin{figure}[!p]
+  \begin{center}
+    \includegraphics[width=3.5in]{n50m2t04}
+  \end{center}
+
+  \caption{\small N=50, m=2, Time=4s}
+  \label{fig:n50m2t04}
+\end{figure}
+
+\begin{figure}[!p]
+  \begin{center}
+    \includegraphics[width=3.5in]{n50m2t08}
+  \end{center}
+
+  \caption{\small N=50, m=2, Time=8s}
+  \label{fig:n50m2t08}
+\end{figure}
+
+\begin{figure}[!p]
+  \begin{center}
+    \includegraphics[width=3.5in]{n50m2t12}
+  \end{center}
+
+  \caption{\small N=50, m=2, Time=12s}
+  \label{fig:n50m2t12}
+\end{figure}
+
+\begin{figure}[!p]
+  \begin{center}
+    \includegraphics[width=3.5in]{n50m2t16}
+  \end{center}
+
+  \caption{\small N=50, m=2, Time=16s}
+  \label{fig:n50m2t16}
+\end{figure}
+
+\begin{figure}[!p]
+  \begin{center}
+    \includegraphics[width=3.5in]{n50m2t20}
+  \end{center}
+
+  \caption{\small N=50, m=2, Time=20s}
+  \label{fig:n50m2t20}
+\end{figure}
+
+\begin{figure}[!p]
+  \begin{center}
+    \includegraphics[width=3.5in]{n50m2t24}
+  \end{center}
+
+  \caption{\small N=50, m=2, Time=24s}
+  \label{fig:n50m2t24}
+\end{figure}
+
+\begin{figure}[!p]
+  \begin{center}
+    \includegraphics[width=3.5in]{n50m2t28}
+  \end{center}
+
+  \caption{\small N=50, m=2, Time=28s}
+  \label{fig:n50m2t28}
+\end{figure}
+
+\begin{figure}[!p]
+  \begin{center}
+    \includegraphics[width=3.5in]{n50m2t32}
+  \end{center}
+
+  \caption{\small N=50, m=2, Time=32s}
+  \label{fig:n50m2t32}
+\end{figure}
+
+%\begin{figure}[!p]
+%  \begin{center}
+%    \includegraphics[width=3.5in]{n50m2t36}
+%  \end{center}
+%
+%  \caption{\small N=50, m=2, Time=36s}
+%  \label{fig:n50m2t36}
+%\end{figure}
+%
+%\begin{figure}[!p]
+%  \begin{center}
+%    \includegraphics[width=3.5in]{n50m2t40}
+%  \end{center}
+%
+%  \caption{\small N=50, m=2, Time=40s}
+%  \label{fig:n50m2t400}
+%\end{figure}
+
+\begin{figure}[!p]
+  \begin{center}
+    \includegraphics[width=3.5in]{n50m2control}
+  \end{center}
+
+  \caption{\small N=50, m=2, Control Value of One Node over Time}
+  \label{fig:n50m2control}
+\end{figure}
+
+\begin{figure}[!p]
+  \begin{center}
+    \includegraphics[width=3.5in]{n50m2position}
+  \end{center}
+
+  \caption{\small N=50, m=2, Position Values of All Nodes over Time}
+  \label{fig:n50m2position}
+\end{figure}
+
+
+\subsection{State Constraints}
+
+Many simulations with constrained state were run, but for sake of presentation we show a comparison of a low maximum velocity ($v_max \equiv 10m/s$) and a high maximum velocity ($v_max \equiv 1e^6m/s$).
 %
 
 
-We describe the failure models for sensors 
-and actuators here. These failure models are also 
-similar for the two case studies. 
+\subsection{Actuator Constraints}
+
+
+
+\subsection{Communications Constraints}
+
+
+\subsection{Combinations of Constraints}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{Future Work}
+\label{sec:future}
+This work presented simulations of the effects that constraints that would be seen in real-world implementations of distributed control systems.
+%
+However, our understanding of real-world distributed control systems would be incomplete without understanding the effect of failures on such systems.
+%
+Computers and communication channels failures are captured by failure models from distributed computing such as crashes, omissions, and byzantine behavior, and their effect on computing systems have been well studied in the literature. 
+%
+In fact, the central theme in the distributed computing research is understanding the power and limitations of computing systems under different types of failures. 
+%
+Results in this area provide algorithms for solving canonical problems such as consensus, leader election, and clock synchronization in the presence of certain types of failures, and also establish lower bounds about impossibility of solving those problems with certain resource constraints.
+%
+Distributed control systems consist not only of computers, but also the physical world which they interact with through sensors and actuators. 
+%
+Thus, to understand the power and limitations of real-world distributed control systems, we are initiating the study of such systems in the face of computer, communications, sensor, and actuator---failures. 
+%
+This will require new failure models, as sensors and actuators require completely new failure models, whereas crash, slow, and byzantine failure mitigation must be modified to ensure properties in the physical world.
+%
+In addition, we need to consider new failure models for computers, such as timing failures. 
+%
+All of these failures now have physical manifestations, directly challenging safety of the control system.
+
+In distributed computing, failure detection is often very hard, for example, one cannot tell differentiate between a slow and a crashed computer in an asynchronous system.
+%
+In contrast, failure detection is often easy for actuators, for instance, if an aileron on an airplane is stuck-at a value, a sensor as simple as a potentiometer could detect that it is not responding to control action as it is not changing position.
+%
+Timing failures can be analyzed offline through worst-case execution time (WCET) analysis, and also can be detected by runtime environment, such as in \cite{HenzingerGiotto2001}.
+%
+The prevalence of these classes of failures suggests new fault-tolerance strategies for distributed control systems.
+%
+The overall goal is to combine fault detection with the model for physical manifestation of failure to avoid bad states.
+
+Toward this goal, we are studying the hybrid system modeled as hybrid input/output automata (HIOA) \cite{lynchSV2003}.  The HIOA of the physical world and flocking algorithm are shown in the hybrid input/output automata language \cite{TODO} in Figure~\ref{fig:physicalWorld} and Figure~\ref{fig:agent_i}, respectively.
 
 \begin{figure}[h!]
 \centering
@@ -565,59 +880,13 @@ similar for the two case studies.
   \label{fig:physicalWorld}
 \end{figure}
 
-Denote the communication radius as $r_{comm}$, the initial radius to maintain safety as $r_{init}$, and the safety radius as $\mathit{r_{safety}}$.  To maintain safety, we must have that $r_{comm} > r_{init} > \mathit{r_{safety}}$.
 %
-Denote the time required to change a node's velocity from maximum to minimum (and vice-versa) as $t_a = \frac{2v_{max}}{a_{max}}$.  Denote the time required to travel between the communication radius and the safety radius as $t_v = \frac{r_{comm} - \mathit{r_{safety}}}{2v_{max}}$.  Then, $\Delta \leq \min(t_a, t_v)$.
-%
-Denote the distance covered while changing a node's velocity from one extrema to the other as $r_a = 2v_{max}t_a = \frac{4v_{max}^2}{a_{max}}$.  Denote the maximum distance traveled during the delay as $r_d = 2v_{max}\Delta$.
-%
-(Note that we must fix one of $r_{comm}$ or $\Delta$, as they are functions of one another.  We can then ensure the given $r_{comm}$ and computed $\Delta$ (or vice-versa) satisfy the initial conditions.)
-%
-Now explicitly, define $r_{init} \equiv \mathit{r_{safety}} + r_a + r_d$, and require $r_{comm} \geq r_{init} + r_d$.
-
-We assume the following of $S_0$:
-
-$ \begin{array}{ll}
-		1) & \vx.x_i > 0 \\
-		2) & \textrm{ if } j > i \Rightarrow \vx.x_j > \vx.x_i \\
-		3) & \abs{\vx.v_i - \vx.v_{j}} < 2v_{max} \\
-		4) & \abs{\vx.x_i - \vx.x_{j}} > r_{init} \\
-		5) & u_i = 0 \\
-		6) & x_g > x_i \\
-		7) & \Delta \leq \min(t_a, t_v)
-	\end{array} $
-$\forall i, j \in N$ and $i \neq j$.
-
-\section{System Constraints}
-\label{sec:constraints}
-
-\section{Simulations}
-\label{sec:simulations}
-
-\section{Flocking Analysis}
-\label{sec:flocking}
-
-In this section, we study a 
-distributed flocking algorithm under several
-failure models. 
-%
-Informally, the system consists of $N$ agents starting at arbitrary 
-locations on the real line, where $N \in \naturals, N > 1$
-with the goal of 
+Informally, the system consists of $N$ agents starting at arbitrary locations on the real line, where $N \in \naturals, N > 1$ with the goal of 
 \begin{inparaenum}[(a)]
-\item reaching a fixed waypoint $x^* \in \reals$, and 
+\item reaching a fixed waypoint $x_g \in \reals$, and 
 \item forming a {\em flock\/} or an equispaced formation on the way to $x^*$.
 \end{inparaenum}  
-The algorithm we shall study also works when a sequence of waypoints 
-are presented to the agents, but for simplicity of presentation, 
-we fix $x^*$.
-
-\subsection{Specification}
-\label{sec:flockspec}
-The flocking algorithm is specified by the HIOA $\auto{Agent_i}$ of 
-Figure~\ref{fig:agent_i}.
-
-Describe the code. State variables, actions, transitions, trajectories.
+The algorithm we shall study also works when a sequence of waypoints are presented to the agents, but for simplicity of presentation, we fix $x_g$.
 
 The transition $send_i$ occurs at every time $\vx.now = next_i$ and adds a message containing physical state measurements of $\auto{Agent_i}$ to a $Queue$ in $\auto{PhysicalWorld}$ for each of $\auto{Agent_i}$'s communication neighbors, to be delivered before $\vx.now = d$, such that the state measurements are available for computation at $\vx.now = \vx.next_i$.  Also, the control for $\auto{Agent_i}$ is set at this transition, based on the measurement values at the time $\vx.now - \Delta$.
 %
@@ -640,134 +909,14 @@ Each of the functions $\hat{x}$, $\hat{v}$, and $\hat{u}$ maps from the set of n
 
 The control, $ctrl(i, x_g, x_i, v_i, u_i, \hat{x}, \hat{v}, \hat{u}, nbrs_i)$, is defined as
 
-$ctrl\left(i, x_g, x_i, v_i, u_i, \hat{x}, \hat{v}, \hat{u}, nbrs_i \right) = \\
-	\left\{
-		\begin{array}{ll}
-			\sgn{x_g - x_i}a_{max} & \textrm{if } nbrs_i = \{\} \\
-				\left\{
-					\begin{array}{l}
-						\sgn{\tilde{v}}a_{max} \textrm{  if } \abs{x_i - \tilde{x}} \leq r_{init} \\
-						a\left(\tilde{x} - x_i\right - r_{init}) + b\left(\tilde{v} - v_i\right) \textrm{  else }
-					\end{array}
-				\right.
-			& \textrm{else} \\
-		\end{array}
-	\right. $
-
 where $\tilde{x} = \hat{x}(\tilde{i})$, $\tilde{v} = \hat{v}(\tilde{i})$, $\tilde{u} = \hat{u}(\tilde{i})$, $\tilde{i} = \argmin{\left(\hat{x}(j) - x_i\right)}{j \in nbrs_i}$, $a \in \mathbb{R}_+$, and $b \in \mathbb{R}_+$.
 
-Let $\A$ be the HIOA obtained by composing 
-$\auto{PhysicalWorld} \| \auto{Agent}_1 \| \ldots \auto{Agent}_N$.
-We denote a state of $\A$ by $\vx$ and individual 
-state components by $\vx.x_i$, $\vx.\mathit{next}_i$, etc.
+Let $\A$ be the HIOA obtained by composing $\auto{PhysicalWorld} \| \auto{Agent}_1 \| \ldots \auto{Agent}_N$.  We denote a state of $\A$ by $\vx$ and individual state components by $\vx.x_i$, $\vx.\mathit{next}_i$, etc.
 %
 
-\subsection{Analysis}
-\label{sec:flockana}
-
-
-
-We would like to show that the \textit{safety property}, that the distance between each node $i$ and $j$ is at least $\mathit{r_{safety}}$ is satisfied.  However, before we begin working toward the safety property, we must make some assumptions about communications and prove some simpler invariants.
-
-Assume that the network delay between nodes is bounded, such that a message sent by node $i$ is received by all its communication neighbors $j \in N_c(i, s)$ within time $d$.  This assumption immediately gives that all $recv_{ij}$ and $recv_{ji}$ actions will be correct, in that the necessary state information is delivered before the next period.
-
-%
-%Notes: while of course no nodes have knowledge of all of $S$ for the actual operation, for the proof we can assume we have all of this knowledge.  Basically, as long as all nodes start far enough apart, with bounded relative velocities, and a fast enough update period $\Delta$, and big enough $r_{comm}$, we can guarantee that all nodes receive messages between $\Delta$.
-
-Lets distinguish between state and physical location, velocity etc. Because the state of each agent includes other variables such as $nbrs_i$, etc.
-
-Recall from above that $d < \Delta$, that is, the \textit{communications delay} $d$ is such that messages are delivered before control updates that occur at $\Delta$.
+We would like to show that the \textit{safety property}, that the distance between each node $i$ and $j$ is at least $\mathit{r_{safety}}$ is satisfied.  Assume that the network delay between nodes is bounded, such that a message sent by node $i$ is received by all its communication neighbors within time $d$.  This assumption immediately gives that all $recv_{ij}$ and $recv_{ji}$ actions will be correct, in that the necessary state information is delivered before the next period.
 
 \begin{inv}
-\label{inv:now}
-$\forall i, j, \vx.now_i = \vx.now_j = \vx.now$.
-\end{inv}
-
-The next invariant follows from synchronous communication.
-All nodes receive messages about the state information from time $next - \Delta$ before time $next$.
-Define the time for the last send with respect to state $s$ as $start(s) = s.next - \Delta$.
-\begin{inv}
-\label{inv:send}
-
-$\vx.nbrs_i = N_c(i, \vx)(start(\vx))$
-
-$\I_{nbrs}\left(S\right) = \\
-	\left\{
-		\begin{array}{l}
-			\textrm{if } \vx.now - start(\vx) \geq d \\ \textrm{then } \vx.nbrs_i = N_c(i, \vx)(start(\vx))\\
-			\textrm{elseif } \vx.now - start(\vx) < d \\ \textrm{then } N_c(i, \vx)(start(\vx)) = \vx.nbrs_i \cup \{\vx.Channel_{ij}\}\\
-		\end{array}
-	\right.$
-\end{inv}
-\begin{proof}
-Fix a reachable state $s$.  Expanding $s.now - start(s) \geq d$ to $s.now - s.next + \Delta \geq d$, it is clear that if $s.now \geq start(s) + d$, all messages will have been delivered due to the stopping condition for the $recv_{ij}$ actions to occur in $PhysicalWorld$.  However, before that time in the other case, all messages may still be in the channel since no stopping condition has been reached (and all messages were put in the channel at time $start(s)$), or some messages may have been delivered already, so all messages are either in the channel or have been delivered, and thus, the set of neighbors of node $i$ is the union of these.  All closed trajectories $\tau$ that could violate this are excluded by the stopping condition.
-\end{proof}
-
-\begin{inv}
-
-$\I_{channelSize}\left(S\right) = size(\vx.Channel_{ij}) \leq 1$
-
-\end{inv}
-
-\begin{proof}
-This holds trivially since all messages will be delivered by time $start + d$, so they will be inserted and removed from the queue in $PhysicalWorld$ before the next $\Delta$.  The size when $\vx.now = start(\vx)$ is $1$, since all messages are in the channel after the $Send_i$ action occurs at time $start(\vx)$.  The size between $\vx.now = start(\vx)$ and $\vx.now = start(\vx) + d$ is either $0$ or $1$, since some messages may have been delivered, but some may not have.  The size between $\vx.now = start(\vx) + d$ and $\vx.next$ is $0$, since all messages must have been delivered by the stopping conditions and thus no closed trajectory $\tau$ could have crossed this boundary.
-\end{proof}
-
-\begin{inv}
-The set of \textit{communication neighbors} of node $i$ at time $next - \Delta$ is the same as the set of \textit{physical neighbors} at time $start + d$.
-
-Assume $S_0$ is given such that $\I_{recv}(S_0)$ is satisfied at time $t_0$, then $\I_{recv}(S)$ is satisfied, and thus the receive property is maintained $\forall t \geq t_0$.
-\end{inv}
-
-\begin{proof}
-
-This statement can be made more precise. But the property you want, I think, is the following invariant:
-Let $\vx$ be a reachable state of the complete system. 
-
-For every agent i, j, 
-if 
-(a) $\vx.now_i = \vx.next_i$ (i.e., process i is about to send), and
-(b) $\abs{\vx.x_i - \vx.x_j} <= r_{comm} - 2v_{max} * \Delta$ (i and j are "close") 
-then 
-$j \in \vx.nbrs_i$ (i knows about j).
-
-As usual, you may have to strengthen this invariant in order to make it inductive. This statement does not say anything about $\vx.now_i != \vx.next$, you'll probably need to say something about that.
-
-If $r_{comm} > r_{init}$, then nodes within at least $r_{comm}$ of one another get messages before their distance is less than $r_{init}$.  Nodes may then be within between $r_{init}$ and $\mathit{r_{safety}}$ of one another.
-
-We are given that $S_0$ is such that at the initial time $t_0$ the invariant $\I_{recv}(S_0)$ is satisfied.  This gives us the following
-
-$\forall S \xrightarrow{a} S^{\prime} : \I_{recv}\left(S\right) \Rightarrow \I_{recv}\left(S^{\prime}\right)$
-
-We consider each action separately in cases:
-
-i) $send_i$
-
-ii) $recv_ij$
-If the delay $d$ between messages is less than the period of synchronous communication $\Delta$, then all $Recv$ actions will have occurred before the next period.
-
-$\forall \tau,\textrm{ if } \forall S \xrightarrow{\tau} S^{\prime} : \I_{recv}\left(S\right) \Rightarrow \I_{recv}\left(S^{\prime}\right)$
-
-While it is tempting to say that the worst scenario for $Recv$ is when two neighbors $i$ and $j$ are moving away from one another with maximum velocity and acceleration, this is actually not the case if we only care about the safety property defined as no nodes come within $\mathit{r_{safety}}$ of one another.  The worst case is still when these two nodes are coming together with maximum acceleration and velocity, and that they are \textbf{not} yet within $r_{comm}$.  If they can cover their distance $\abs{x_i - x_j}$ before the next $\Delta$, plus some details on the velocity and number of cycles required to change direction, then they may collide.  What we want is an upper bound of $\Delta$ to guarantee everything, such as the following:
-
-Note that we really should not have to talk about $u_i > 0$ as different to the $a_{max}$ case, since the worst affect on $\mathit{r_{safety}}$ comes from $v_i$, which if bounded by $v_{max}$ is already done.  Any time we have acceleration and the particles are moving at less than $v_{max}$, as long as we know we work for $v_{max}$, we will work for anything less than $v_{max}$, regardless of the rate of change of $v_i$.
-
-However, when two nodes are moving away from one another with maximum acceleration and velocity is the worst case for flocking.  If we enforce an initial condition about all nodes being within $r_{comm}$, and that their initial velocities are not such that they can leave $r_{comm}$ before the first control update, then we should be able to guarantee flocking for all time.  This gives us both an upper and lower bound on $r_{comm}$.  (Note: We should check to see if this definition on initial conditions is basically what Olfati-Saber is referring to in the previous work for Algorithm 1 to maintain flocking instead of segmentation.)
-
-\end{proof}
-
-\begin{inv}
-$I_{reorder}(S) = \vx.x_i < \vx.x_j \forall i < j$
-\end{inv}
-
-\begin{proof}
-The base case is satisfied by assumption on the initial conditions that $\vx.x_i < \vx.x_j$.
-
-The inductive case requires using the assumptions on the initial conditions are such that using the specified control maintains this ordering property.
-\end{proof}
-
-\begin{inv}
-
 $\I_{safety}\left(S\right) = \\
 	\left\{ \begin{array}{l}
 		\textrm{if } \left( \vx.now = \vx.next_i \right) \wedge \neg \vx.Send \Rightarrow \\
@@ -778,94 +927,15 @@ $\I_{safety}\left(S\right) = \\
 \right.$ where $t_{Rem} \equiv \left(\vx.next_i - \vx.now\right)$.
 \end{inv}
 
-\begin{proof}
-There are three possible cases that can arise for the controls at $\vx.next_i$, assuming at $start(\vx, i)$ the state is okay:
-%
-There are three interesting cases, two of which are when nodes can now communicate when they could not before, and the other is when nodes are still communicating.  If nodes are not communicating, everything is boring as they just apply the go-to-goal control.
-%
-\begin{itemize}
-\item First, when nodes are still more than $r_{init}$ apart, they apply
-%
-$r_{comm} \geq \abs{x_i - x_j} \geq r_{init} > \mathit{r_{safety}}$
-%
-$u_i = a\left(\tilde{x} - x_i\right - r_{init}) + b\left(\tilde{v} - v_i\right)$
 
-\item Second, when nodes are less than $r_{init}$ apart, they apply the collision avoidance control
-%
-$r_{comm} \geq r_{init} > \abs{x_i - x_j} > \mathit{r_{safety}}$
-%
-$u_i = \sgn{v_j}a_{max}$
-%
-The only time this situation arises (as in, this is the only time we can recover from it) is as follows:
-%
-$r_{comm} \geq r_{init} > \abs{x_i - x_j} > r_{init} - r_d > \mathit{r_{safety}}$
-%
-that is, the nodes must still be separated by almost the radius required to recover safety, $r_{init}$, but can tolerate the distance covered over the delay.
 
-\item If nodes could previously communicate and still can, it is an interesting case, as they could be in either of the above cases.
-%
-If $r_{comm} \geq \abs{x_i - x_j} \geq r_{init} > \mathit{r_{safety}}$, then
-$u_i = a\left(\tilde{x} - x_i\right - r_{init}) + b\left(\tilde{v} - v_i\right)$.
-%
-Otherwise, if $r_{comm} \geq r_{init} > \abs{x_i - x_j} > \mathit{r_{safety}}$
-%
-$u_i = \sgn{v_j}a_{max}$
-
-\item The most boring case is when nodes are still not communications neighbors, they just go towards the goal.
-%
-$\abs{x_i - x_j} > r_{comm} > r_{init} > \mathit{r_{safety}}$
-%
-$u_i = \sgn{x_g - x_i}*a_{max}$
-
-\end{itemize}
-
-Assume $S_0$ is given such that $\I_{safety}(S_0)$ is satisfied.  If $\I_{safety}(S_0)$ is satisfied, then $\I_{safety}(S)$ is satisfied, and thus the safety property is maintained.
-
-We are given that $S_0$ is such that at the initial time $0$ the invariant $\I_{safety}(S_0)$ is satisfied.  This gives us the following
-
-$\forall S \xrightarrow{a} S^{\prime} : \I\left(S\right) \Rightarrow \I\left(S^{\prime}\right)$
-
-We consider each action separately in cases:
-i) $send_i$
-Send does not affect the state of node $j$, and it does not affect the state of node $i$ until $next$, so it is vacuously true in both cases.
-
-ii) $recv_ij$
-Trivially from the $I_{recv}$ invariant.
-
-$\forall \tau, if \forall S \xrightarrow{\tau} S^{\prime} : \I\left(S\right) \Rightarrow \I\left(S^{\prime}\right)$
-
-For the trajectories, it is sufficient to consider the worst possible trajectory affecting the safety condition, that is, when particles are coming towards one another with maximum acceleration.  Given the assumption that $\abs{x_i - x_j} < C_1$, we see that the relative velocities of any particles are bounded, and we will be immediately finished.
-
-In reality, given a large enough $r_{comm}$ (or small enough $\Delta$), this is overly conservative, as the control law would prohibit nodes from moving towards one another with acceleration $a_{max}$.
-\end{proof}
-
-\begin{inv}Progress
-
-All nodes reach the goal.
-\end{inv}
-
-\begin{proof}
-Show that if $x_g > x_i$, then $v_i > 0 \forall i$ eventually and for long enough time to reach goal.  Symmetrically, if $x_g < x_i$, then $v_i < 0 \forall i$ eventually and for long enough time to reach goal.  That is, we must show that $\exists t_g$ such that $v_i t_g \geq x_g \forall i$.  (Slightly more complicated than this, integral of velocity over time?)
-
-Is it useful to do this proof as a stability proof, showing that eventually, $\forall i, v_i = v_max$, in the direction of the goal?
-
-Or equivalently, showing that $x_i - x_g = 0$, to say that the node eventually reaches the goal by stability.
-\end{proof}
-
-\begin{inv}Flocking
-
-This is not possible in general here without a different control.
-\end{inv}
-
-\section{Future Work}
-\label{sec:future}
 
 \section{Conclusions}
 \label{sec:conclusion}
 
-\section{References}
-\label{sec:references}
 
+
+\label{sec:references}
 \bibliographystyle{IEEEtran}
 \bibliography{IEEEabrv,flocking}
 
@@ -888,72 +958,6 @@ This is not possible in general here without a different control.
 
 
 
-%\section{Flocking}
-%\label{sec:flocking}
-%%$\dot{q}_i = p_i$
-%%
-%%$\dot{p}_i = u_i$
-%%
-%%$q_i, p_i, u_i \in \mathbb{R}^m$
-%%
-%%Neighbors
-%%
-%%$N_c(i) = \left\{ j \in V : ||q_j - q_i|| < r\right\}$
-%%
-%%$\alpha$-lattice if:
-%%$||q_j - q_i|| = d, \forall j \in N_c(i)\left(q\right)$
-%%
-%%quasi $\alpha$-lattice if:
-%%$-\delta \leq ||q_j - q_i|| -d \leq \delta, \forall \left(i,j\right) \in \varepsilon\left(q\right)$
-%%
-%%$\sigma$-norm ($\mathbb{R}^m \rightarrow \mathbb{R}_{\geq 0}$)
-%
-%%$||z||_{\sigma}=\frac{1}{\epsilon}\left[\sqrt{1 + \epsilon||z||^2} - 1\right]$
-%%
-%%for $\epsilon > 0$ and gradient $\sigma_{\epsilon}\left(z\right) = \nabla ||z||_{\sigma}$ where
-%%
-%%$\sigma_{\epsilon}\left(z\right) = \frac{z}{\sqrt{1 + \epsilon||z||^2}} = \frac{z}{1 + \epsilon||z||_{\sigma}}$
-%%
-%%bump function:
-%%
-%%$\rho_{h}\left(z\right) = \left\{ 1, z \in \left[0, h\right)
-%%\frac{1}{2}\left[1 + cos\left(\pi\frac{\left(z - h\right)}{\left(1 - h\right)}\right)\right], z \in \left[h, 1\right] 0, else$
-%%
-%%spatial adjacency matrix:
-%%
-%%$a_{ij}\left(q\right) = \rho_{h}\left(\frac{||q_j - q_i||_{\sigma}}{||r||_{\sigma}}\right) \in \left[0, 1\right], j \neq i$
-%%
-%%$n_{ij}=\frac{\left(q_j - q_i\right)}{\sqrt{1 + \epsilon ||q_j - q_i||^2}}$
-%%
-%%
-%
-%%% SAYANstart:
-%
-%
-%
-%%% SAYANend:
-%
-%Consider a system of $N$ agents in one dimension along the $\mathbb{R}$ line, with dynamics described by the double integrator model $\dot{x}_{i} = v_{i}$ and $\dot{v}_{i} = a_i = u_i$, where $x_i$, $v_i$, $u_i$ $\in \mathbb{R}$.  The set of indices of the agents is defined $[N] \subset \mathbb{N} = \{0 \ldots N \}$.  All agents are trying to reach a goal position $x_g \in \mathbb{R}$.  Note that $\exists v_{max}, a_{max}$, a maximum velocity and acceleration, respectively, such that, $\dot{x}_{i} \leq v_{max} \wedge \dot{v}_{i} \leq a_{max} \forall t$.  The existence of a maximum acceleration is reasonable given that it would be produced by some actuator with limited operating range and power source.  Note that of course the existence of a maximum acceleration does not imply the existence of a maximum velocity.  However, the existence of a maximum force that can be applied as a control, which is proportional to the maximum acceleration, and in the presence of opposing forces proportional to the velocity such that $\sum{F}=0$ where $F \in \mathbb{R}$, does imply the existence of a maximum velocity, so this is a reasonable assumption.  On Earth the balancing forces could be aerodynamic resistance, whereas in space, relativistic limits could be imposed.  We consider the overall state space $S \subset \mathbb{R}^{3n}=\cup_i\left(x_i \cup v_i \cup a_i \right)$ (notation here?) where the initial state space is denoted $S_{0}$, which corresponds to time $t_0$ (notation again, $t_0 = 0$ since we start $now=0$?).
-%
-%We model the agents as HIOA in ~\ref{fig:agent_i} and the physical world the agents interact through as in ~\ref{fig:physicalWorld}.
-%
-%\begin{figure}[h!]
-%\centering
-%  \hrule
-%  {\lstinputlisting[language=ioa,firstline=1]{Agent_i.hioa}}
-%  \hrule
-%  \caption{HIOA Model of $Agent_i$}
-%  \label{fig:agent_i}
-%\end{figure}
-%
-%\begin{figure}[h!]
-%\centering
-%  \hrule
-%  {\lstinputlisting[language=ioa,firstline=1]{PhysicalWorld.hioa}}
-%  \hrule
-%  \caption{HIOA Model Physical World}
-%  \label{fig:physicalWorld}
-%\end{figure}
 %
 %First, consider a model of communication where all agents synchronously send messages to all other nodes within a communication radius $r_{comm}$ of their current position every $\Delta$ time.  The set of nodes within the communication radius of a node $i$ is called the \textit{communication neighbors} of $i$ and is defined as $N_c(i) = N(i, r_{comm}) \equiv \left\{ j \in [N] : \abs{x_i - x_j} \leq r_{comm}\right\}$.  Also at every $\Delta$ time, each node $i$ updates its own control law, $u_i$.  This scenario is that every node $i$ is updating its control $u_i$ using the states of all of its neighbors from time $start = next - \Delta$.
 %
