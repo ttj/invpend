@@ -1,6 +1,6 @@
 function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lattice, r_safety, tdiv, tmax, updates, plotControls, tswitch)
     %close all;
-%UNTITLED Summary of this function goes here
+%Flocking Problem
 %   Detailed explanation goes here
 %       tdiv:       minimum is 1 (1 division per control cycle, same as 
 %                   only looking at control cycle)
@@ -24,7 +24,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     
     %c1=1.75;
     %c2=25;
-    c1gamma=0.25;
+    c1gamma=0.1;
     c2gamma=0.1;
     c1beta=0.25;
     c2beta=0.1;
@@ -41,10 +41,13 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         Tc = 0.01;
         r_init = r_comm;
 
+        delay = 0;
         constrain = 0;
         v_max = 100;     %maximum velocity
-        a_max = 100;     %maximum acceleration
+        %a_max = 1000;     %maximum acceleration
+        %a_max = inf;
     elseif framework == 1
+        delay = 1;
         constrain = 1;
         v_max = 5;      %maximum velocity
         a_max = 10;     %maximum acceleration
@@ -61,6 +64,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
 
         %Tc = min([t_a, t_v, t_r])
         Tc = min([t_a, t_v])
+        Tc = 0.01;
         r_a = 2*v_max * t_a %distance covered while fixing velocity
         r_v = 2*v_max * t_v %distance covered
         %r_r = 2*v_max * t_r
@@ -75,7 +79,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         r_lattice=r_init + r_d;
     end
     
-    delta=r_safety/5;
+    delta=r_lattice/5
     
     r_lattice_prime = 0.6 * r_lattice;
     r_comm_prime = 1.2 * r_lattice_prime;
@@ -104,9 +108,9 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                 if i ~= j
                     %ensure no vertices start as neighbors, that is 
                     %(norm(q_i,q_j,2) < r) != true
-                    while size(neighborsSpatial(i, q(i,:), q, r_init, r_init),1) > 0
-                        q(i,:) = coord_max + (coord_min - coord_max).*rand(1, m);
-                    end
+                    %while size(neighborsSpatial(i, q(i,:), q, r_init, r_init),1) > 0
+                    %    q(i,:) = coord_max + (coord_min - coord_max).*rand(1, m);
+                    %end
                 end
             end
         end
@@ -124,7 +128,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
             end
         end
     end
-    
+
     %q=[0:(r_lattice-delta):(r_lattice-delta)*(N-1)]';
     
     %q = [5; 50; 90; 120; 150; 180; 210; 230; 250; 260]
@@ -159,34 +163,36 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     uBetaConsensus = zeros(N, m);
     uNew = zeros(N, m);
 
-    %generate an equally spaced (by r_lattice) rectangular grid goal
-    %TODO: generalize for m-dimensional (use cat and m-th root of N [need m loops?])
-    if m == 1
-        for i=1:N
-            qd(i,:) = ((i-1)*r_lattice) + coord_max;
-        end
-        %scatter(qd(:,1),zeros(N,1),[1:N]');
-    elseif m == 2
-        for i=1:ceil(sqrt(N))
-            for j=1:ceil(sqrt(N))
-                qd((i-1)*ceil(sqrt(N))+j,:) = [((i-1)*r_lattice) ((j-1)*r_lattice)] + [coord_max coord_max];
-            end
-        end
-        %scatter(qd(:,1),qd(:,2));
-    elseif m == 3
-        for i=1:ceil(N^(1/3))
-            for j=1:ceil(N^(1/3))
-                for k=1:ceil(N^(1/3))
-                    qd((i-1)*ceil(N^(2/3))+(j-1)*ceil(N^(1/3))+k,:) = [((i-1)*r_lattice) ((j-1)*r_lattice) ((k-1)*r_lattice)] + [coord_max coord_max coord_max];
-                end
-            end
-        end
-        %scatter(qd(:,1),qd(:,2),qd(:,3));
-    end
-    qd=qd(1:N,:); %shrink to maximum N
+%     %generate an equally spaced (by r_lattice) rectangular grid goal
+%     %TODO: generalize for m-dimensional (use cat and m-th root of N [need m loops?])
+%     if m == 1
+%         for i=1:N
+%             qd(i,:) = ((i-1)*r_lattice) + coord_max;
+%         end
+%         %scatter(qd(:,1),zeros(N,1),[1:N]');
+%     elseif m == 2
+%         for i=1:ceil(sqrt(N))
+%             for j=1:ceil(sqrt(N))
+%                 qd((i-1)*ceil(sqrt(N))+j,:) = [((i-1)*r_lattice) ((j-1)*r_lattice)] + [coord_max coord_max];
+%             end
+%         end
+%         %scatter(qd(:,1),qd(:,2));
+%     elseif m == 3
+%         for i=1:ceil(N^(1/3))
+%             for j=1:ceil(N^(1/3))
+%                 for k=1:ceil(N^(1/3))
+%                     qd((i-1)*ceil(N^(2/3))+(j-1)*ceil(N^(1/3))+k,:) = [((i-1)*r_lattice) ((j-1)*r_lattice) ((k-1)*r_lattice)] + [coord_max coord_max coord_max];
+%                 end
+%             end
+%         end
+%         %scatter(qd(:,1),qd(:,2),qd(:,3));
+%     end
+%     qd=qd(1:N,:); %shrink to maximum N
 
-    qd=ones(N,m).*coord_max*(2+N);
-    pd=zeros(N,m);
+    %qd=ones(N,m).*coord_max*(2+N);
+    qd=ones(N,m).*coord_max;
+    pd=ones(N,m).*(v_max/5);
+    %pd=zeros(N,m)
     
     qr=qd;
     pr=pd;
@@ -224,7 +230,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     pr_history = zeros([round(steps), N, m]);
     %de_history = zeros([round(steps), N, m]);
     
-    %uPeriod = (1:N)'.*0.01 %different update periods for all particles
+    %uPeriod = (1:N)'.*Tc %different update periods for all particles
     uPeriod = ones(N,1)*Tc %same update period for all particles
     %uPeriod(1) = Tc*5; %make one node update its control slowly
 
@@ -360,20 +366,22 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
 %                 %subplot(subplotRows,subplotCols,subplotCount), scatter(q(:,1),zeros(N,1),'b'); 
 %                 scatter(qr(:,1),zeros(N,1),'g'); %plot goal
                 %subplot(subplotRows,subplotCols,subplotCount), scatter(q(:,1),zeros(N,1),'b');
-                scatter(q(:,1),zeros(N,1),'b');
-                quiver(q(:,1),zeros(N,1),p(:,1),zeros(N,1),'b');
-                scatter(qr(:,1),zeros(N,1),'g'); %plot goal
+                scatter(q(:,1),zeros(N,1),'g');
+                quiver(q(:,1),zeros(N,1),p(:,1),zeros(N,1),'g');
+                scatter(qr(:,1),zeros(N,1),'r'); %plot goal
             elseif m == 2
-                quiver(q(:,1),q(:,2),p(:,1),p(:,2))
-                subplot(subplotRows,subplotCols,subplotCount), scatter(q(:,1),q(:,2));
+                quiver(q(:,1),q(:,2),p(:,1),p(:,2),'g')
+                subplot(subplotRows,subplotCols,subplotCount), scatter(q(:,1),q(:,2),'g');
+                quiver(qr(:,1),qr(:,2),pr(:,1),pr(:,2),'r')
                 subplot(subplotRows,subplotCols,subplotCount), scatter(qr(:,1),qr(:,2),'r');
                 %out=[[qd(:,1) (qd(:,1)+pd(:,1))] [qd(:,2) (qd(:,2)+pd(:,2))]];
                 %subplot(subplotRows,subplotCols,subplotCount), plot([qd(:,1) (qd(:,1)+pd(:,1))],[qd(:,2) (qd(:,2)+pd(:,2))],'g')
                 %subplot(subplotRows,subplotCols,subplotCount), plot([qd(:,1) (qd(:,1)+pd(:,1))],[qd(:,2) (qd(:,2)+pd(:,2))],'g')
                 %subplotCount = subplotCount + 1;
             elseif m == 3
-                quiver3(q(:,1),q(:,2),q(:,3),p(:,1),p(:,2),p(:,3));
-                subplot(subplotRows,subplotCols,subplotCount), scatter3(q(:,1),q(:,2),q(:,3));
+                quiver3(q(:,1),q(:,2),q(:,3),p(:,1),p(:,2),p(:,3),'g');
+                subplot(subplotRows,subplotCols,subplotCount), scatter3(q(:,1),q(:,2),q(:,3),'g');
+                quiver3(qr(:,1),qr(:,2),qr(:,3),pr(:,1),pr(:,2),pr(:,3),'r');
                 subplot(subplotRows,subplotCols,subplotCount), scatter3(qr(:,1),qr(:,2),qr(:,3),'r');
                 %subplotCount = subplotCount + 1;
             end
@@ -449,43 +457,68 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                     uBetaConsensus(i,:) = zeros(1,m);
                     uGamma(i,:) = zeros(1,m);
                     uNew(i,:) = zeros(1,m);
-
-                    js = neighborsSpatial(i, q(i,:), q, r_comm, r_lattice);
-                    betas = neighborsSpatial(i, q(i,:), q, r_comm_prime, r_lattice_prime);
-                    %js = neighborsSpatialLattice(i, q(i,:), q, r_comm, r_lattice, delta);
-        %            if size(js,1) > -1
-                        for j=1:size(js,1)
-                            %TODO: verify equations and all functions
-                            %u(i,:) = u(i,:) + phi_a(sig_norm ( q(j,:) - q(i,:), epsilon ), r_comm_sig, r_lattice_sig, ha, a, b) * (((q(j,:) - q(i,:)) ) / (sqrt(1 + epsilon * ((norm(q(j,:) - q(i,:), 2))^2))));
-                            %u(i,:) = u(i,:) + (a_ij(q(i,:), q(j,:), r_comm_sig, ha,epsilon) * ((p(j,:) - p(i,:))));
-                            %old: uGradient(i,:) = uGradient(i,:) + phi_a(sig_norm ( q(js(j),:) - q(i,:), epsilon ), r_comm_sig, r_lattice_sig, ha, a, b) * n_ij(q(i,:), q(js(j),:), epsilon);
-                            %old: uConsensus(i,:) = uConsensus(i,:) + (a_ij(q(i,:), q(js(j),:), r_comm_sig, ha, epsilon) * ((p(js(j),:) - p(i,:))));
-                            uGradient(i,:) = uGradient(i,:) + phi_a(sig_norm ( q(js(j),:) - q(i,:), epsilon ), r_comm_sig, r_lattice_sig, ha, a, b) * n_ij(q(i,:), q(js(j),:), epsilon);
-                            uConsensus(i,:) = uConsensus(i,:) + (a_ij(q(i,:), q(js(j),:), r_comm_sig, ha, epsilon) * ((p(js(j),:) - p(i,:))));
+                    
+                    %delayed state messages
+                    if delay == 0
+                        q_delay = q;
+                        p_delay = p;
+                    else
+                        if framework == 0
+                            q_delay_tmp = q_history(round(t_j - (uPeriod(i) + uOffset(i)*tdiv)/Tc + 1),:,:);
+                            p_delay_tmp = p_history(round(t_j - (uPeriod(i) + uOffset(i)*tdiv)/Tc + 1),:,:);
+                        elseif framework == 1
+                            q_delay_tmp = q_history(t_j - tdiv + 1,:,:);
+                            p_delay_tmp = p_history(t_j - tdiv + 1,:,:);
+                            u_delay_tmp = u_history(t_i,:,:);
                         end
-                        
-                        for j=1:size(betas,1)
-                            uBetaGradient(i,:) = uBetaGradient(i,:) + phi_a(sig_norm ( q(betas(j),:) - q(i,:), epsilon ), r_comm_prime, r_lattice_prime, ha, a, b) * n_ij(q(i,:), q(betas(j),:), epsilon);
-                            uBetaConsensus(i,:) = uBetaConsensus(i,:) + (a_ij(q(i,:), q(betas(j),:), r_comm_prime, ha, epsilon) * ((p(betas(j),:) - p(i,:))));
+
+                        if m == 1
+                            q_delay(1:N,:) = q_delay_tmp';
+                            p_delay(1:N,:) = p_delay_tmp';
+                            u_delay(1:N,:) = u_delay_tmp';
+                        else
+                            q_delay(1:N,:) = q_delay_tmp(:,1:N,:);
+                            p_delay(1:N,:) = p_delay_tmp(:,1:N,:);
                         end
-        %             else
-        %                 %no neighbors yet: have to compute something
-        %                 %TODO: fix, not right (always 0 obviously)
-        %                 u(i,:) = u(i,:) + phi_a(sig_norm ( q(i,:) - q(i,:), epsilon ), r_comm_sig, r_lattice_sig, ha, a, b) * (((q(i,:) - q(i,:)) ) / (sqrt(1 + epsilon * norm(q(i,:) - q(i,:), 2))^2));
-        %                 u(i,:) = u(i,:) + (a_ij(q(i,:), q(i,:), r_comm_sig, ha, epsilon) * ((p(i,:) - p(i,:))));
-        %             end
-
-                    %add gamma goal term
-                    %u(i,:) = u(i,:) - c1*(q(i,:) - qr(i,:)) - c2*(p(i,:) - pr(i,:));
-                    %old: uGamma(i,:) = -c1*(q(i,:) - qr(i,:)) - c2*(p(i,:) - pr(i,:));
-
-                    %uGamma(i,:) = -c1gamma*sigma_1((q(i,:) - qr(i,:))) - c2gamma*(p(i,:) - pr(i,:));
-                    uGamma(i,:) = -c1gamma*((q(i,:) - qr(i,:))) - c2gamma*(p(i,:) - pr(i,:));
+                    end
 
                     if framework == 0 %olfati-saber control
+                        js = neighborsSpatial(i, q(i,:), q, r_comm, r_lattice);
+                        %betas = neighborsSpatial(i, q(i,:), q, r_comm_prime, r_lattice_prime);
+                        %js = neighborsSpatialLattice(i, q(i,:), q, r_comm, r_lattice, delta);
+                        %if size(js,1) > -1
+                            for j=1:size(js,1)
+                                %TODO: verify equations and all functions
+                                %u(i,:) = u(i,:) + phi_a(sig_norm ( q(j,:) - q(i,:), epsilon ), r_comm_sig, r_lattice_sig, ha, a, b) * (((q(j,:) - q(i,:)) ) / (sqrt(1 + epsilon * ((norm(q(j,:) - q(i,:), 2))^2))));
+                                %u(i,:) = u(i,:) + (a_ij(q(i,:), q(j,:), r_comm_sig, ha,epsilon) * ((p(j,:) - p(i,:))));
+                                %old: uGradient(i,:) = uGradient(i,:) + phi_a(sig_norm ( q(js(j),:) - q(i,:), epsilon ), r_comm_sig, r_lattice_sig, ha, a, b) * n_ij(q(i,:), q(js(j),:), epsilon);
+                                %old: uConsensus(i,:) = uConsensus(i,:) + (a_ij(q(i,:), q(js(j),:), r_comm_sig, ha, epsilon) * ((p(js(j),:) - p(i,:))));
+                                uGradient(i,:) = uGradient(i,:) + phi_a(sig_norm ( q_delay(js(j),:) - q_delay(i,:), epsilon ), r_comm_sig, r_lattice_sig, ha, a, b) * n_ij(q_delay(i,:), q_delay(js(j),:), epsilon);
+                                uConsensus(i,:) = uConsensus(i,:) + (a_ij(q_delay(i,:), q_delay(js(j),:), r_comm_sig, ha, epsilon) * ((p_delay(js(j),:) - p_delay(i,:))));
+                            end
+
+                         %obstacles
+                         %   for j=1:size(betas,1)
+                         %       uBetaGradient(i,:) = uBetaGradient(i,:) + phi_a(sig_norm ( q_delay(betas(j),:) - q_delay(i,:), epsilon ), r_comm_prime, r_lattice_prime, ha, a, b) * n_ij(q_delay(i,:), q_delay(betas(j),:), epsilon);
+                         %       uBetaConsensus(i,:) = uBetaConsensus(i,:) + (a_ij(q_delay(i,:), q_delay(betas(j),:), r_comm_prime, ha, epsilon) * ((p_delay(betas(j),:) - p_delay(i,:))));
+                         %   end
+            %             else
+            %                 %no neighbors yet: have to compute something
+            %                 %TODO: fix, not right (always 0 obviously)
+            %                 u(i,:) = u(i,:) + phi_a(sig_norm ( q(i,:) - q(i,:), epsilon ), r_comm_sig, r_lattice_sig, ha, a, b) * (((q(i,:) - q(i,:)) ) / (sqrt(1 + epsilon * norm(q(i,:) - q(i,:), 2))^2));
+            %                 u(i,:) = u(i,:) + (a_ij(q(i,:), q(i,:), r_comm_sig, ha, epsilon) * ((p(i,:) - p(i,:))));
+            %             end
+
+                        %add gamma goal term
+                        %u(i,:) = u(i,:) - c1*(q(i,:) - qr(i,:)) - c2*(p(i,:) - pr(i,:));
+                        %old: uGamma(i,:) = -c1*(q(i,:) - qr(i,:)) - c2*(p(i,:) - pr(i,:));
+
+                        %uGamma(i,:) = -c1gamma*sigma_1((q_delay(i,:) - qr(i,:))) - c2gamma*(p_delay(i,:) - pr(i,:));
+                        uGamma(i,:) = -c1gamma*((q_delay(i,:) - qr(i,:))) - c2gamma*(p_delay(i,:) - pr(i,:));
+                        
                         %sum all forces
-                        %uGamma(:,:) = zeros(N,m);
-                        u(i,:) = uGradient(i,:) + uConsensus(i,:) + uGamma(i,:) + c1beta*uBetaGradient(i,:) + c2beta*uBetaConsensus(i,:);
+                        %u(i,:) = uGradient(i,:) + uConsensus(i,:) + uGamma(i,:) + c1beta*uBetaGradient(i,:) + c2beta*uBetaConsensus(i,:);
+                        u(i,:) = uGradient(i,:) + uConsensus(i,:) + uGamma(i,:);
                     elseif framework == 1
                         %1: check all nodes to see if they see anyone on their
                         %   right, then have them go to goal with max
@@ -496,13 +529,11 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                         %   u_i = a * (xhat_i - x_i - s) + b * (vhat_i - v_i)
                         %   where s is lattice separation (r_lattice)
 
-                        %uNew(i,:) = ((qd(i,:) - q(i,:)) / norm(qd(i,:) -
-                        %q(i,:), 2)) * a_max; %not delayed (can read own state at any time)
-                        q_delay = q_history(t_j-tdiv+1,:,:)'; %(all nodes)
-                        p_delay = p_history(t_j-tdiv+1,:,:)'; %(all nodes)
-                        uNew(i,:) = ((qd(i,:) - q_delay(i,:)) / norm(qd(i,:) - q_delay(i,:), 2)) * a_max; %delayed (can only read own state at sends)
+                        %uNew(i,:) = ((qd(i,:) - q(i,:)) / norm(qd(i,:) - q(i,:), 2)) * a_max; %not delayed (can read own state at any time)
+                        uNew(i,:) = ((qr(i,:) - q_delay(i,:)) / norm(qr(i,:) - q_delay(i,:), 2)) * a_max; %delayed (can only read own state at sends)
                         dist_min_right = inf;
                         dist_min_left = inf;
+                        min_j = -1;
 
                         %overwrite control if necessary
                         for j=1:N
@@ -516,6 +547,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                                 if norm(q_delay(j) - q_delay(i),2) <= r_init
                                     uNew(i,:) = -a_max;
                                 end
+                                min_j = j; %update each time until last it is set properly
     %                         elseif (norm(q_delay(j) - q_delay(i),2) <= r_comm) && ((q_delay(j)) < (q_delay(i))) && (j ~= i) && (norm(q_delay(j) - q_delay(i),2) <= dist_min_left)
     %                             %slow the lead node down to form flocking
     %                             dist_min_left = norm(q_delay(j) - q_delay(i),2);
@@ -542,6 +574,15 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                         end
                         
                         u(i,:) = uNew(i,:);
+                        
+                        if (min_j > 0) && (a_max <= (2*r_safety)/(Tc^2) + (4*v_max^2)/(a_max * Tc^2) + (6*v_max)/Tc + u_delay(min_j))
+                            'Insatisfiable condition'
+                            (2*r_safety)/(Tc^2) + (4*v_max^2)/(a_max * Tc^2) + (6*v_max)/Tc + u_delay(min_j)
+                            (2*r_safety)/(Tc^2)
+                            (4*v_max^2)/(a_max * Tc^2)
+                            (6*v_max)/Tc
+                            u_delay(min_j)
+                        end
 
                         if constrain ~= 0
                             if (p_delay(i) >= v_max)
@@ -577,7 +618,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
             %solution is:
             %  expm(A*(t-t0))*x0+int(expm(A*(t-t0))*B*u,tau,t0,t)
             %for
-            %  syms q p q0 p0 tau t t0
+            %  syms q p q0 p0 tau t t0 u
             %  x = [q;p]
             %  x0 = [q0; p0]
             %  A = [0 1; 0 0]
@@ -595,23 +636,34 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
 
             q = q + p.*(tcyc/tdiv) + u.*((tcyc/tdiv)^2);
             p = p + u.*(tcyc/tdiv);
-            
-            p = sign(p).*(min(abs(p),v_max));
-            u = sign(u).*(min(abs(u),a_max));
+
+            if constrain ~= 0
+                p = sign(p).*(min(abs(p),v_max));
+                u = sign(u).*(min(abs(u),a_max));
+            end
             %de = deviationEnergy(q,r_comm,r_lattice,delta);
-            
+
             %gamma agent
-            qr=qr + pr.*(tcyc/tdiv) + fr(qr, pr).*((tcyc/tdiv)^2);
-            pr=pr + fr(qr, pr).*(tcyc/tdiv);
+            frv = fr(qr, pr);
+            if constrain ~= 0
+                frvs = sign(frv).*(min(abs(frv),a_max));
+            else
+                frvs=frv;
+            end
+
+            qr=qr + pr.*(tcyc/tdiv) + frvs.*((tcyc/tdiv)^2);
+            pr=pr + frvs.*(tcyc/tdiv);
+            
+            pr = sign(pr).*(min(abs(pr),v_max));
             
             %check for safety violations
-            for xyz=1:N
-                N_safety = neighborsSpatial(xyz, q(xyz), q, r_safety, r_safety);
-                if (size(N_safety) > 0)
-                    %'Bad safety'
-                    %N_safety
-                end
-            end
+%             for xyz=1:N
+%                 N_safety = neighborsSpatial(xyz, q(xyz), q, r_safety, r_safety);
+%                 if (size(N_safety) > 0)
+%                     %'Bad safety'
+%                     %N_safety
+%                 end
+%             end
             
             %beta agent
             %mu = R_k / norm(q_i - y_k, 2);
@@ -630,30 +682,36 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
             %plot distance of each node so we can see how their lattice evolves
             figure;
             hold on;
-            for i=1:N
-                if mod(i,2)==0
-                    plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1),'c','LineWidth',r_comm);
-                    plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1),'r','LineWidth',r_safety);
-                    %plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1)+(r_safety/2),'k--');
-                    %plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1)-(r_safety/2),'k--');
-                    %plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1)+(r_comm/2),'c');
-                    %plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1)-(r_comm/2),'c');
-                else
-                    plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1),'m','LineWidth',r_comm);
-                    plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1),'b','LineWidth',r_safety);
-                    %plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1)+(r_safety/2),'g--');
-                    %plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1)-(r_safety/2),'g--');
-                    %plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1)+(r_comm/2),'m');
-                    %plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1)-(r_comm/2),'m');
-                end
-            end
-            legend('q1');
-
-            if m >= 2
-                figure;
-                hold on;
+            if m == 1
                 for i=1:N
-                    plot(time_traj,q_history(:,i,2),'m-.');
+                    if mod(i,2)==0
+                        %plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1),'c');
+                        plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1),'r');
+                        %plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1),'c','LineWidth',r_comm);
+                        %plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1),'r','LineWidth',r_safety);
+                        %plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1)+(r_safety/2),'k--');
+                        %plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1)-(r_safety/2),'k--');
+                        %plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1)+(r_comm/2),'c');
+                        %plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1)-(r_comm/2),'c');
+                    else
+                        %plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1),'m');
+                        plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1),'b');
+                        %plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1),'m','LineWidth',r_comm);
+                        %plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1),'b','LineWidth',r_safety);
+                        %plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1)+(r_safety/2),'g--');
+                        %plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1)-(r_safety/2),'g--');
+                        %plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1)+(r_comm/2),'m');
+                        %plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1)-(r_comm/2),'m');
+                    end
+                end
+                legend('q1');
+            elseif m == 2
+                for i=1:N
+                    if mod(i,2)==0
+                        plot(time_traj,(q_history(:,i,1).^2 + q_history(:,i,2).^2).^(1/2),'r');
+                    else
+                        plot(time_traj,(q_history(:,i,1).^2 + q_history(:,i,2).^2).^(1/2),'b');
+                    end
                     legend('q2');
                 end
             end
@@ -698,7 +756,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                         plot3(time_ctrl,uGradient_history(:,i,1),uGradient_history(:,i,2),'r--');
                         plot3(time_ctrl,uConsensus_history(:,i,1),uConsensus_history(:,i,2),'k--');
                         plot3(time_ctrl,uGamma_history(:,i,1),uGamma_history(:,i,2),'g--');
-                        plot3(time_traj,q_history(:,i,1) - qd(i,1),q_history(:,i,2) - qd(i,2),'r:');
+                        plot3(time_traj,q_history(:,i,1) - qr(i,1),q_history(:,i,2) - qr(i,2),'r:');
                         plot3(time_traj,p_history(:,i,1),p_history(:,i,2),'k:');
                         legend('u', 'uGradient', 'uConsensus', 'uGamma', 'q - qd', 'p');
                     end
@@ -718,7 +776,9 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     q
     p
     qd
+    qr
     pd
+    pr
     %de
     qc=Ave(q)
     pc=Ave(p)
