@@ -9,12 +9,15 @@ automaton $\auto{PhysicalWorld}(d:\Real^+, r_{comm}:\Real^+, r_{init}:\Real^+ )$
 		input  $u_i:\Real \forall i \in [N]$;
 		internal $Channel_{ij} : Queue[[<msg : \Real^3, dl : \Real^+>]] := empty$; 
 						 $now :\Real := 0$;
+						 $\mathit{nbrs} : [N] \mapsto 2^{[N]}$;
 		initially $\abs{x_i - x_j} \geq r_{init} \forall i, j \in [N], i \neq j$;
-              $x_g = +\infty$;
+              $x_g >> \maxel{x_i}{i \in N}$;
 
 	transitions
 		input $\act{send_i}(x, v, u)$
-			eff: $Channel_{ij} := append(Channel_{ij}, <<x, v, u>, now + \Delta_{delay}),$
+			eff: $Channel_{ij} := append(Channel_{ij}, <<x, v, u>, now + \Delta_{delay})$, 
+                            $\forall j : \abs{x_i - x_j} \leq r_{comm}$;
+                            $\mathit{nbrs}(i) = \mathit{nbrs}(i) \cup \{j\}$, 
                             $\forall j : \abs{x_i - x_j} \leq r_{comm}$;
 					
 		output $\act{recv_{ij}}(x, v, u)$

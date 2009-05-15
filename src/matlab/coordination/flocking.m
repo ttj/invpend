@@ -42,9 +42,9 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         r_init = r_comm;
 
         delay = 0;
-        constrain = 0;
+        constrain = 1;
         v_max = 100;     %maximum velocity
-        %a_max = 1000;     %maximum acceleration
+        a_max = 1000;     %maximum acceleration
         %a_max = inf;
     elseif framework == 1
         delay = 1;
@@ -96,6 +96,9 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     p = zeros(N, m)
     
     p = v_max + (-v_max - v_max).*rand(N, m)
+    if constrain ~= 0
+        p = sign(p).*(min(abs(p),v_max));
+    end
     
     q=zeros(N, m);
     
@@ -233,18 +236,26 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     %uPeriod = (1:N)'.*Tc %different update periods for all particles
     uPeriod = ones(N,1)*Tc %same update period for all particles
     %uPeriod(1) = Tc*5; %make one node update its control slowly
-
-    %add arbitrary delay to each control update
-    %uOffset = delay_max + (delay_min - delay_max).*rand(N, 1)
-    tadd = tcyc / tdiv;
     uOffset = zeros(N,1);
-    for i=1:N
-        to=round(rand(1,1)*tdiv);
-        for j=1:to
-            %uOffset(i) = uOffset(i) + tadd;
+
+    if delay ~= 0
+        %uOffset = delay_max + (delay_min - delay_max).*rand(N, 1) %add arbitrary delay to each control update
+        tadd = tcyc / tdiv;
+        for i=1:N
+            to=round(rand(1,1)*tdiv);
+            for j=1:to
+                uOffset(i) = uOffset(i) + tadd;
+            end
         end
+        
+        for i=1:N
+            if uOffset(i) <= 0
+                uOffset(i) = Tc
+            end
+        end
+        
+        uOffset
     end
-    uOffset
 
     switches = 0; %initialize to 0 (before any goal updates occur)
 
