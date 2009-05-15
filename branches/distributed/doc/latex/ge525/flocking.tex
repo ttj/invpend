@@ -63,7 +63,8 @@
 % should be used if it is desired that the figures are to be displayed in
 % draft mode.
 %
-\documentclass[10pt, conference, compsocconf]{IEEEtran}
+%\documentclass[10pt, conference, compsocconf]{IEEEtran}
+\documentclass[10pt, conference]{IEEEtran}
 % Add the compsocconf option for Computer Society conferences.
 %
 % If IEEEtran.cls has not been installed into the LaTeX system files,
@@ -162,7 +163,7 @@
 
 \usepackage[pdftex]{hyperref}
 \hypersetup{
-  pdftitle={Simulations of Multi-Waypoint Flocking Problem with Delays and Saturation},
+  pdftitle={Simulations of Flocking Problem with Saturation and Feedback Delays},
   pdfauthor={Taylor Johnson},
   colorlinks={true},
   citecolor={blue},
@@ -403,7 +404,7 @@
 %
 % paper title
 % can use linebreaks \\ within to get better formatting as desired
-\title{Simulations of Multi-Waypoint Flocking Problem with Delays and Saturation}
+\title{Simulations of Flocking Problem with Saturation and Feedback Delays}
 
 \def\titleName{{\title}}
 \def\authorName{{Taylor Johnson}}
@@ -451,7 +452,7 @@ May 15, 2009
 
 
 \begin{abstract}
-The flocking problem has been studied for some time, and is thought to be a good way to perform distributed control for swarms of multi-agent systems, such as UAVs.  The majority of these studies have not placed real-world limitations on the distributed system that would be experienced.  For example, delays and asynchrony due to wireless network transmission of state information and limited actuator operating range are infrequently analyzed.  This project studies through simulation the flocking problem as a group of particles with double integrator dynamics moving from some initial condition towards multiple waypoints (one objective at a time), analyzing stability (convergence to a flock and convergence to the waypoints) while comparing a variety of real-world constraints: \begin{inparaenum}[\itshape a\upshape)] \item with and without state (velocity) saturation, \item with and without actuator saturation, \item synchronous versus asynchronous (with bounded delay) state feedback, and \item combinations of these. \end{inparaenum}  The future work section presents a hybrid system model being investigated for the formal analysis of these systems in the presence of another real-world constraint, failures.
+The flocking problem has been studied for some time, and is thought to be a good way to perform distributed control for swarms of multi-agent systems, such as UAVs.  The majority of these studies have not placed real-world limitations on the distributed system that would be experienced.  For example, delays and asynchrony due to wireless network transmission of state information and limited actuator operating range are infrequently analyzed.  This project studies through simulation the flocking problem as a group of particles with double integrator dynamics moving from some initial condition towards a non-stationary objective, analyzing stability (convergence to a flock and convergence to the waypoint) while comparing a variety of real-world constraints: \begin{inparaenum}[\itshape a\upshape)] \item with and without state (velocity) saturation, \item with and without actuator saturation, \item delayed state feedback, and \item combinations of these. \end{inparaenum}  The future work section presents a hybrid system model being investigated for the formal analysis of these systems in the presence of another real-world constraint, failures.
 \end{abstract}
 
 %\begin{IEEEkeywords}
@@ -485,7 +486,7 @@ Velocity consensus is also necessary to maintain flocking behavior over time, an
 
 \begin{figure}[!b]
   \begin{center}
-    \includegraphics[width=3.5in]{lennardJonesPotential}
+    \includegraphics[width=3.45in]{lennardJonesPotential}
   \end{center}
 
   %\caption{\small Figure caption. To get a figure to span two columns, use the environment figure* rather than figure.}
@@ -515,7 +516,9 @@ This $\alpha$-lattice definition of flocking is overly restrictive though and di
 
 We do not need to consider any deviation from a perfect $\alpha$-lattice in terms of some deviation energy, as this is required for stability proofs only, and is not used in the computation of an agent's control.
 %
-Similarly, for real-world implementations in software we would not have such rigorously defined functions as in \cite{os2006}, so we will depart to some extent from the work of Olfati-Saber at this point, as for analysis purposes and a proof of convergence to a flock, they carefully constructs a continuous control.
+Similarly, for real-world implementations in software we would not have such rigorously defined functions as in \cite{os2006}, so we will depart to some extent from the work of Olfati-Saber at this point.
+%
+For analysis purposes and a proof of convergence to a flock, they carefully construct a continuous control.
 %
 For simulations we can define the $\sigma$-norm ($\mathbb{R}^m \rightarrow \mathbb{R}_{\geq 0}$) simply as the Euclidean norm ($2$-norm), $\norm{z}_{\sigma} := \sqrt{z_1^2 + \ldots + z_m^2}$, instead of $\norm{z}_{\sigma} = \frac{1}{\epsilon}\left[\sqrt{1 + \epsilon\norm{z}^2} - 1\right]$, for $\epsilon > 0$.  The difference is highlighted in Figure~\ref{fig:oldSigmaNorm} and Figure~\ref{fig:newSigmaNorm}.
 %
@@ -523,7 +526,7 @@ Note however that we do take the same values of $r_{\alpha}$ (here $r_{comm}^{\a
 
 \begin{figure}[!htb]
   \begin{center}
-    \includegraphics[width=3.5in]{sigmaNormOld}
+    \includegraphics[width=3.45in]{sigmaNormOld}
   \end{center}
 
   %\caption{\small Figure caption. To get a figure to span two columns, use the environment figure* rather than figure.}
@@ -533,7 +536,7 @@ Note however that we do take the same values of $r_{\alpha}$ (here $r_{comm}^{\a
 
 \begin{figure}[!b]
   \begin{center}
-    \includegraphics[width=3.5in]{sigmaNormNew}
+    \includegraphics[width=3.45in]{sigmaNormNew}
   \end{center}
 
   \caption{\small New $\sigma$-Norm}
@@ -549,20 +552,19 @@ Similarly, the $C^1$-smooth bump function $\rho_{h}$ can be redefined as
 
 $\rho_{h}\left(z\right) = \left\{ \begin{array}{ll} 
 1 & \textrm{if } z \in \left[0, h\right) \\
-h - z & \textrm{if } z \in \left[h, 1\right] \\
-0 & \textrm{else} \end{array} \right. $
+1 - z & \textrm{if } z \in \left[h, 1\right] \\
+0 & \textrm{else} \end{array} \right. $\\
 instead of as 
 
 $\rho_{h}\left(z\right) = \left\{ \begin{array}{ll} 
 1 & \textrm{if } z \in \left[0, h\right) \\
 \frac{1}{2}\left[1 + cos\left(\pi\frac{\left(z - h\right)}{\left(1 - h\right)}\right)\right] & \textrm{if } z \in \left[h, 1\right] \\
-0 & \textrm{else} \end{array} \right. $.
-
+0 & \textrm{else} \end{array} \right. $.\\
 These differences are seen in Figure~\ref{fig:rhoHOld} and Figure~\ref{fig:rhoHNew}.
 
 \begin{figure}[!b]
   \begin{center}
-    \includegraphics[width=3.5in]{rhoHOld}
+    \includegraphics[width=3.45in]{rhoHOld}
   \end{center}
 
   \caption{\small Old $\rho_h$}
@@ -571,7 +573,7 @@ These differences are seen in Figure~\ref{fig:rhoHOld} and Figure~\ref{fig:rhoHN
 
 \begin{figure}[!b]
   \begin{center}
-    \includegraphics[width=3.5in]{rhoHNew}
+    \includegraphics[width=3.45in]{rhoHNew}
   \end{center}
 
   \caption{\small New $\rho_h$}
@@ -588,7 +590,7 @@ The change to $\phi$ is seen in Figure~\ref{fig:oldPhi} and Figure~\ref{fig:newP
 
 \begin{figure}[!b]
   \begin{center}
-    \includegraphics[width=3.5in]{phiOld}
+    \includegraphics[width=3.45in]{phiOld}
   \end{center}
 
   \caption{\small Old $\phi$}
@@ -597,7 +599,7 @@ The change to $\phi$ is seen in Figure~\ref{fig:oldPhi} and Figure~\ref{fig:newP
 
 \begin{figure}[!b]
   \begin{center}
-    \includegraphics[width=3.5in]{phiNew}
+    \includegraphics[width=3.45in]{phiNew}
   \end{center}
 
   \caption{\small New $\phi$}
@@ -606,7 +608,7 @@ The change to $\phi$ is seen in Figure~\ref{fig:oldPhi} and Figure~\ref{fig:newP
 
 \begin{figure}[!b]
   \begin{center}
-    \includegraphics[width=3.5in]{phiAlphaOld}
+    \includegraphics[width=3.45in]{phiAlphaOld}
   \end{center}
 
   \caption{\small Old $\phi_{\alpha}$}
@@ -615,31 +617,29 @@ The change to $\phi$ is seen in Figure~\ref{fig:oldPhi} and Figure~\ref{fig:newP
 
 \begin{figure}[!b]
   \begin{center}
-    \includegraphics[width=3.5in]{phiAlphaNew}
+    \includegraphics[width=3.45in]{phiAlphaNew}
   \end{center}
 
   \caption{\small New $\phi_{\alpha}$}
   \label{fig:newPhiAlpha}
 \end{figure}
 
-We focus only on the control in the form of \textit{Algorithm 2} presented in \cite{os2006}, which is defined as $u_i := u_i^\alpha + u_i^\gamma$, where
-
-$u_i^\alpha = \displaystyle\sum_{j \in N_c(i,q)}{\phi_{\alpha}\left(\norm{q_j - q_i}_{\sigma}\right)n_{ij}} + \displaystyle\sum_{j \in N_c(i,q)}{a_{ij}(q)(p_j - p_i)}$
-
+We focus only on the control in the form of \textit{Algorithm 2} presented in \cite{os2006}, which is defined as $u_i := u_i^\alpha + u_i^\gamma$, where\\
+$u_i^\alpha = \displaystyle\sum_{j \in N_c(i,q)}\phi_{\alpha}\left(\norm{q_j - q_i}_{\sigma}\right)n_{ij} + \displaystyle\sum_{j \in N_c(i,q)}a_{ij}(q)(p_j - p_i)$\\
 and
 %
-$u_i^\gamma = f_i^{\gamma}(q_i, p_i, q_r, p_r)$ with $q_r$ and $p_r$ representing the state of the goal, which may be changing, and where $n_{ij} := \frac{\left(q_j - q_i\right)}{\sqrt{1 + \epsilon \norm{q_j - q_i}^2}}$.
+$u_i^\gamma = f_i^{\gamma}(q_i, p_i, q_r, p_r)=-c_1(q_i - q_r) - c_2(p_i - p_r)$ with $q_r$ and $p_r$ representing the state of the goal, which may be changing, and where $n_{ij} := \frac{\left(q_j - q_i\right)}{\sqrt{1 + \epsilon \norm{q_j - q_i}^2}}$, $c_1 > 0$, and $c_2 > 0$.
 %
 The goal's dynamic state is modeled as a double integrator also, with state-space representation $\dot{q}_r = p_r$ and $\dot{p}_r = f_r(q_r, p_r)$.
 %
-Note that we have taken $f_r(q_r, p_r) \equiv 0$, although it could be any function (and despite this, we set different waypoints at discrete instants in time).
+Note that we have taken $f_r(q_r, p_r) \equiv 0$, although it could be any function, such as one that sets different objectives at discrete points in time.
 
 \subsection{System Constraints}
 \label{sec:constraints}
 
 \subsubsection{State and Actuator Saturation}
 
-There exists $v_{max}$ and $a_{max}$, a maximum velocity and acceleration, respectively, such that, $\dot{q}_{i} \leq v_{max}$ and $\dot{p}_{i} \leq a_{max}$.
+There exists $v_{max}$ and $a_{max}$, a maximum velocity and acceleration, respectively, such that, $\norm{\dot{q}_{i}} \leq v_{max}$ and $\norm{\dot{p}_{i}} \leq a_{max}$.
 %
 The existence of a maximum acceleration is reasonable given that it would be produced by some actuator with limited operating range and power source.
 %
@@ -651,35 +651,105 @@ On Earth the balancing forces could be aerodynamic resistance, whereas in space,
 
 For the simulations in Section~\ref{sec:simulations}, we separately present results with state and actuator saturation.
 %
-In general, actuator saturation is quite interesting, as it reduces any globally asymptotically stable system to a locally asymptotically stable system.
+In general, actuator saturation is quite interesting, as it reduces any globally asymptotically stable system to (at best) a locally asymptotically stable system.
 %
-Coupled with state constraints though, the problem is even more interesting, as not all of $\mathbb{R}^m$ is accessible by the states anyway, so all reachable states may be asymptotically stable nonetheless.
+Coupled with state constraints though, the problem is even more interesting, as not all of $\mathbb{R}^m$ is accessible by the states anyway, so all \textit{reachable states} may be asymptotically stable nonetheless.
 %
 These constraints were primarily motivated by previous work of ours on finding stabilizable regions by solving LMIs for an inverted pendulum system with limited actuator range, and with a limited set of safe states.
 
-\subsubsection{Synchronous and Asynchronous Communications with Delays}
+\subsubsection{Delayed State Feedback}
 
+No communications in the real world can occur instantaneously, so we consider delayed feedback of state information, such as that which would be experienced by nodes transmitting their positions over a wireless network, or, of the delay necessary for local sensory information to become available.
+%
+As each node computes its own control based on the positions and velocities of nodes around it at an instant of time, the control update must utilize old state information of the agents within the communications radius.
+%
+There are many results in this area, but we are most familiar with the theoretical foundation in \cite{LiberzonQuantDelay2006}, where a small-gain criteria is established to prove asymptotic stability for sufficiently small delays and quantization errors.
 
 \section{Simulations}
 \label{sec:simulations}
 
-For all simulations, we work in $2$ dimensions ($m=2$) with $N=50$ agents.
+We created a simulation framework based around the \textit{Algorithm 2} of Olfati-Saber, with the control and simulation environment designed for $m$-dimensional systems.
 %
-We present one sample of $1$-dimensional and $3$-dimensional simulations in Figure~\ref{fig:simOneD} and Figure~\ref{fig:simThreeD}, as the control and simulation environment work for $m$-dimensional systems.
+We present a few samples of $1$-dimensional and $3$-dimensional simulations in Figures~\ref{fig:simOneDt00} to \ref{fig:simOneDt32} and Figures~\ref{fig:simThreeDt00} to \ref{fig:simThreeDt36}, respectively.
 %
-The sampling period is $T_c = 0.01$ seconds.  Other constants used in the above definition of the controls are $a=5$, $b=5$, $c=X$, 
+For all other simulations, we work in $2$ dimensions ($m=2$) with $N=50$ agents.
+%
+For all simulations except where otherwise noted, the sampling period (the time between control updates for a node) is $T_c = 0.01$ seconds.
+%
+Other constants used in the above definition of the controls are $a=5$, $b=5$, $c=0$, $\epsilon=0.1$, $h=h_a = 0.2$, and $h_b = 0.9$.
+%
+The communications radius is set at $r_{comm}=8.4m$ and the lattice distance is set at $r_{lattice}=7m$ with the quasi-$\alpha$ lattice constant set at $\delta=1.4m$.
+%
+The constants used to weight the importance of the goal position and velocity in the $u_i^{\gamma}$ term are $c_1=c_2=0.1$; these are not listed in the \cite{os2006} paper, but have a drastic impact on the results of simulation.
+%
+All nodes start from random initial positions, $q_0$, located in the box $[0m, 100m]$ for each dimension, and each is represented as a \textit{green} circle from a scatter plot with a \textit{green} arrow representing the velocity vector from a quiver plot.
+%
+If nodes are in a quasi-$\alpha$ lattice, the lattice will be drawn in \textit{blue}.
+%
+The objective is $q_r=[100m, 100m]$, $p_r=[\frac{v_{max}m/s}{5} \frac{v_{max}}{5}m/s]$, so it is moving over time; it is represented in \textit{red} in the plots.
+%
+There is a small errata note here: we recently found a bug in the way maximum acceleration and velocity were limited--rather than the norm being limited, each dimension is limited to the maximum value, so all the results hold, just by an increase of a norm of the $v_{max}$ and $a_{max}$ from the values given; this also explains why the red objective arrow is often differently sized than the individual nodes.
 
 \subsection{Without Constraints}
 
-Before presenting results with constraints, we must first look at simulations without constraints for comparison.  Figures~\ref{fig:n50m2t00} to \ref{fig:n50m2t32} are a representative example, showing the system with 50 agents starting from random initial velocities in the range -100 to 100, at positions within 0 to 100, with a goal at qr=100, pr=20, c1=c2=0.1.
+Before presenting results with constraints, we must first look at simulations without constraints for comparison.  Figures~\ref{fig:n50m2t00} to \ref{fig:n50m2t32} are a representative example, showing the system with $50$ agents starting from random initial positions as described above, and with velocities in the range $-100m/s$ to $100m/s$.
 %
 The control value, separated into components, of one node over time can be seen in Figure~\ref{fig:n50m2control}.
 %
-The position value of all nodes as a function of time can be seen in Figure~\ref{fig:n50m2position}; this plot can be particularly useful if one wants to verify more stringent properties, such as two agents never coming closer than some small amount within one another (of course this occurs with this control, but with a different setup, it may not).
+The norm of the position value of all nodes as a function of time can be seen in Figure~\ref{fig:n50m2position}; this plot can be particularly useful if one wants to verify more stringent properties, such as two agents never coming closer than some small amount within one another (of course this occurs with this control, but with a different setup, it may not).
+%
+It is also useful to look at this plot for simple convergence of nodes to the moving goal, as they form a regular spacing if they are properly in a flock.
+
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics[width=3.45in]{simOneDt00}
+  \end{center}
+
+  \caption{\small N=10, m=1, Time=0s}
+  \label{fig:simOneDt00}
+\end{figure}
 
 \begin{figure}[!p]
   \begin{center}
-    \includegraphics[width=3.5in]{n50m2t00}
+    \includegraphics[width=3.45in]{simOneDt32}
+  \end{center}
+
+  \caption{\small N=10, m=1, Time=32s}
+  \label{fig:simOneDt32}
+\end{figure}
+
+\begin{figure}[!p]
+  \begin{center}
+    \includegraphics[width=3.45in]{simThreeDt00}
+  \end{center}
+
+  \caption{\small N=64, m=3, Time=0s}
+  \label{fig:simThreeDt00}
+\end{figure}
+
+\begin{figure}[!p]
+  \begin{center}
+    \includegraphics[width=3.45in]{simThreeDt24}
+  \end{center}
+
+  \caption{\small N=64, m=3, Time=24s}
+  \label{fig:simThreeDt24}
+\end{figure}
+
+\begin{figure}[!p]
+  \begin{center}
+    \includegraphics[width=3.45in]{simThreeDt36}
+  \end{center}
+
+  \caption{\small N=64, m=3, Time=36s}
+  \label{fig:simThreeDt36}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[!p]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2t00}
   \end{center}
 
   \caption{\small N=50, m=2, Time=0s}
@@ -688,7 +758,7 @@ The position value of all nodes as a function of time can be seen in Figure~\ref
 
 \begin{figure}[!p]
   \begin{center}
-    \includegraphics[width=3.5in]{n50m2t04}
+    \includegraphics[width=3.45in]{n50m2t04}
   \end{center}
 
   \caption{\small N=50, m=2, Time=4s}
@@ -697,7 +767,7 @@ The position value of all nodes as a function of time can be seen in Figure~\ref
 
 \begin{figure}[!p]
   \begin{center}
-    \includegraphics[width=3.5in]{n50m2t08}
+    \includegraphics[width=3.45in]{n50m2t08}
   \end{center}
 
   \caption{\small N=50, m=2, Time=8s}
@@ -706,7 +776,7 @@ The position value of all nodes as a function of time can be seen in Figure~\ref
 
 \begin{figure}[!p]
   \begin{center}
-    \includegraphics[width=3.5in]{n50m2t12}
+    \includegraphics[width=3.45in]{n50m2t12}
   \end{center}
 
   \caption{\small N=50, m=2, Time=12s}
@@ -715,7 +785,7 @@ The position value of all nodes as a function of time can be seen in Figure~\ref
 
 \begin{figure}[!p]
   \begin{center}
-    \includegraphics[width=3.5in]{n50m2t16}
+    \includegraphics[width=3.45in]{n50m2t16}
   \end{center}
 
   \caption{\small N=50, m=2, Time=16s}
@@ -724,7 +794,7 @@ The position value of all nodes as a function of time can be seen in Figure~\ref
 
 \begin{figure}[!p]
   \begin{center}
-    \includegraphics[width=3.5in]{n50m2t20}
+    \includegraphics[width=3.45in]{n50m2t20}
   \end{center}
 
   \caption{\small N=50, m=2, Time=20s}
@@ -733,7 +803,7 @@ The position value of all nodes as a function of time can be seen in Figure~\ref
 
 \begin{figure}[!p]
   \begin{center}
-    \includegraphics[width=3.5in]{n50m2t24}
+    \includegraphics[width=3.45in]{n50m2t24}
   \end{center}
 
   \caption{\small N=50, m=2, Time=24s}
@@ -742,7 +812,7 @@ The position value of all nodes as a function of time can be seen in Figure~\ref
 
 \begin{figure}[!p]
   \begin{center}
-    \includegraphics[width=3.5in]{n50m2t28}
+    \includegraphics[width=3.45in]{n50m2t28}
   \end{center}
 
   \caption{\small N=50, m=2, Time=28s}
@@ -751,34 +821,16 @@ The position value of all nodes as a function of time can be seen in Figure~\ref
 
 \begin{figure}[!p]
   \begin{center}
-    \includegraphics[width=3.5in]{n50m2t32}
+    \includegraphics[width=3.45in]{n50m2t32}
   \end{center}
 
   \caption{\small N=50, m=2, Time=32s}
   \label{fig:n50m2t32}
 \end{figure}
 
-%\begin{figure}[!p]
-%  \begin{center}
-%    \includegraphics[width=3.5in]{n50m2t36}
-%  \end{center}
-%
-%  \caption{\small N=50, m=2, Time=36s}
-%  \label{fig:n50m2t36}
-%\end{figure}
-%
-%\begin{figure}[!p]
-%  \begin{center}
-%    \includegraphics[width=3.5in]{n50m2t40}
-%  \end{center}
-%
-%  \caption{\small N=50, m=2, Time=40s}
-%  \label{fig:n50m2t400}
-%\end{figure}
-
 \begin{figure}[!p]
   \begin{center}
-    \includegraphics[width=3.5in]{n50m2control}
+    \includegraphics[width=3.45in]{n50m2control}
   \end{center}
 
   \caption{\small N=50, m=2, Control Value of One Node over Time}
@@ -787,55 +839,300 @@ The position value of all nodes as a function of time can be seen in Figure~\ref
 
 \begin{figure}[!p]
   \begin{center}
-    \includegraphics[width=3.5in]{n50m2position}
+    \includegraphics[width=3.45in]{n50m2position}
   \end{center}
 
   \caption{\small N=50, m=2, Position Values of All Nodes over Time}
   \label{fig:n50m2position}
 \end{figure}
 
+\clearpage
 
-\subsection{State Constraints}
+\subsection{State and Actuator Constraints}
 
-Many simulations with constrained state were run, but for sake of presentation we show a comparison of a low maximum velocity ($v_max \equiv 10m/s$) and a high maximum velocity ($v_max \equiv 1e^6m/s$).
+Many simulations with constrained state were run, but for sake of presentation we show a comparison of a low maximum velocity ($v_{max} \equiv 1m/s$) in Figures~\ref{fig:n50m2vmax1t00} to \ref{fig:n50m2vmax1t32}, and the control can be seen in Figure~\ref{fig:n50m2vmax1control}.
 %
+Actuator constraint simulation with $a_{max} \equiv 1m/s^2$ can be seen in Figures~\ref{fig:n50m2vmax1000amax1t00} to \ref{fig:n50m2vmax1000amax1t32}.
 
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax1t00}
+  \end{center}
 
-\subsection{Actuator Constraints}
+  \caption{\small N=50, m=2, Time=0s, $v_{max}=1m/s$}
+  \label{fig:n50m2vmax1t00}
+\end{figure}
 
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax1t16}
+  \end{center}
 
+  \caption{\small N=50, m=2, Time=16s, $v_{max}=1m/s$}
+  \label{fig:n50m2vmax1t16}
+\end{figure}
 
-\subsection{Communications Constraints}
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax1t32}
+  \end{center}
 
+  \caption{\small N=50, m=2, Time=32s, $v_{max}=1m/s$}
+  \label{fig:n50m2vmax1t32}
+\end{figure}
+
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax1control}
+  \end{center}
+
+  \caption{\small N=50, m=2, Control Value of One Node over Time, $v_{max}=1m/s$}
+  \label{fig:n50m2vmax1control}
+\end{figure}
+
+%state and actuator
+
+\clearpage
+
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax1000amax1t00}
+  \end{center}
+
+  \caption{\small N=50, m=2, Time=0s, $a_{max}=1m/s^2$}
+  \label{fig:n50m2vmax1000amax1t00}
+\end{figure}
+
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax1000amax1t16}
+  \end{center}
+
+  \caption{\small N=50, m=2, Time=16s, $a_{max}=1m/s^2$}
+  \label{fig:n50m2vmax1000amax1t16}
+\end{figure}
+
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax1000amax1t32}
+  \end{center}
+
+  \caption{\small N=50, m=2, Time=32s, $a_{max}=1m/s^2$}
+  \label{fig:n50m2vmax1000amax1t32}
+\end{figure}
+
+\clearpage
+
+\subsection{Delayed State Feedback}
+
+Simulations with delayed state feedback, where nodes are using old state information of neighbors, is presented in Figures~\ref{fig:n50m2vmax100amax1000t00delay} to \ref{fig:n50m2vmax100amax1000t32delay}.
+%
+Actuator and velocity values were constrained, although to a very reasonable set, $v_{max}=100m/s$ and $a_{max}=1000m/s^2$, so that the actuator could quickly respond to any state changes.
+%
+The amount of delay experienced was always between one and two sampling periods ($T_c$ to $2T_c$, where $T_c = 0.1s$).
+
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax100amax1000t00delay}
+  \end{center}
+
+  \caption{\small N=50, m=2, Time=0s, Delayed}
+  \label{fig:n50m2vmax100amax1000t00delay}
+\end{figure}
+
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax100amax1000t04delay}
+  \end{center}
+
+  \caption{\small N=50, m=2, Time=4s, Delayed}
+  \label{fig:n50m2vmax100amax1000t04delay}
+\end{figure}
+
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax100amax1000t08delay}
+  \end{center}
+
+  \caption{\small N=50, m=2, Time=8s, Delayed}
+  \label{fig:n50m2vmax100amax1000t08delay}
+\end{figure}
+
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax100amax1000t12delay}
+  \end{center}
+
+  \caption{\small N=50, m=2, Time=12s, Delayed}
+  \label{fig:n50m2vmax100amax1000t12delay}
+\end{figure}
+
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax100amax1000t16delay}
+  \end{center}
+
+  \caption{\small N=50, m=2, Time=16s, Delayed}
+  \label{fig:n50m2vmax100amax1000t16delay}
+\end{figure}
+
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax100amax1000t20delay}
+  \end{center}
+
+  \caption{\small N=50, m=2, Time=20s, Delayed}
+  \label{fig:n50m2vmax100amax1000t20delay}
+\end{figure}
+
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax100amax1000t28delay}
+  \end{center}
+
+  \caption{\small N=50, m=2, Time=28s, Delayed}
+  \label{fig:n50m2vmax100amax1000t28delay}
+\end{figure}
+
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax100amax1000t32delay}
+  \end{center}
+
+  \caption{\small N=50, m=2, Time=32s, Delayed}
+  \label{fig:n50m2vmax100amax1000t32delay}
+\end{figure}
+
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax100amax1000delayControl}
+  \end{center}
+
+  \caption{\small N=50, m=2, Delayed, Control of One Node over Time}
+  \label{fig:n50m2vmax100amax1000delayControl}
+\end{figure}
+
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax100amax1000delayPosition}
+  \end{center}
+
+  \caption{\small N=50, m=2, Delayed, Position of All Nodes over Time}
+  \label{fig:n50m2vmax100amax1000delayPosition}
+\end{figure}
+
+\clearpage
 
 \subsection{Combinations of Constraints}
 
+Simulation with $v_{max}=100m/s$ and $a_{max}=100m/s^2$ can be seen in Figures~\ref{fig:n50m2vmax100amax100t00} to ~\ref{fig:n50m2vmax100amax100t32}, with the control in Figure~\ref{fig:n50m2vmax100amax100control}.
 
+Finally, simulation with $v_{max}=100m/s$, $a_{max}=100m/s^2$, in the presence of delays and asynchronous control updates (each node updates at a different time with a different sampling time, $T_c$ in the range $0.1s$ to $0.2s$, using values of other nodes in the past, from $0.1s$ old to $0.2s$) can be seen in Figures~\ref{fig:n50m2vmax100amax10000t08delayAsync} to ~\ref{fig:n50m2vmax100amax10000t32delayAsync}, with a detail of the final time in \ref{fig:n50m2vmax100amax10000t32delayAsyncZoom}, with the control in Figure~\ref{fig:n50m2vmax100amax10000delayAsyncControl}, and the position of all nodes over time in Figure~\ref{fig:n50m2vmax100amax10000delayAsyncPosition}.
 
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax100amax100t00}
+  \end{center}
 
+  \caption{\small N=50, m=2, Time=0s, $v_{max}=100m/s$, $a_{max}=100m/s^2$}
+  \label{fig:n50m2vmax100amax100t00}
+\end{figure}
 
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax100amax100t12}
+  \end{center}
 
+  \caption{\small N=50, m=2, Time=12s, $v_{max}=100m/s$, $a_{max}=100m/s^2$}
+  \label{fig:n50m2vmax100amax100t12}
+\end{figure}
 
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax100amax100t16}
+  \end{center}
 
+  \caption{\small N=50, m=2, Time=16s, $v_{max}=100m/s$, $a_{max}=100m/s^2$}
+  \label{fig:n50m2vmax100amax100t16}
+\end{figure}
 
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax100amax100t20}
+  \end{center}
 
+  \caption{\small N=50, m=2, Time=20s, $v_{max}=100m/s$, $a_{max}=100m/s^2$}
+  \label{fig:n50m2vmax100amax100t20}
+\end{figure}
 
+\clearpage
 
+\begin{figure}[!p]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax100amax100t32}
+  \end{center}
 
+  \caption{\small N=50, m=2, Time=32s, $v_{max}=100m/s$, $a_{max}=100m/s^2$}
+  \label{fig:n50m2vmax100amax100t32}
+\end{figure}
 
+\begin{figure}[!p]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax100amax100control}
+  \end{center}
 
+  \caption{\small N=50, m=2, Control Value of One Node over Time, $v_{max}=100m/s$, $a_{max}=100m/s^2$}
+  \label{fig:n50m2vmax100amax100control}
+\end{figure}
 
+\begin{figure}[!p]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax100amax10000t08delayAsync}
+  \end{center}
 
+  \caption{\small N=50, m=2, Time=8s, $v_{max}=100m/s$, $a_{max}=100m/s^2$, Delayed, Asynchronous}
+  \label{fig:n50m2vmax100amax10000t08delayAsync}
+\end{figure}
 
+\begin{figure}[!p]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax100amax10000t32delayAsync}
+  \end{center}
 
+  \caption{\small N=50, m=2, Time=32s, $v_{max}=100m/s$, $a_{max}=100m/s^2$, Delayed, Asynchronous}
+  \label{fig:n50m2vmax100amax10000t32delayAsync}
+\end{figure}
 
+\clearpage
 
+\begin{figure}[!p]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax100amax10000t32delayAsyncZoom}
+  \end{center}
 
+  \caption{\small N=50, m=2, Time=32s, $v_{max}=100m/s$, $a_{max}=100m/s^2$, Delayed, Asynchronous (Detail)}
+  \label{fig:n50m2vmax100amax10000t32delayAsyncZoom}
+\end{figure}
 
+\begin{figure}[!p]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax100amax10000delayAsyncControl}
+  \end{center}
 
+  \caption{\small N=50, m=2, Control Value of One Node over Time, $v_{max}=100m/s$, $a_{max}=100m/s^2$, Delayed, Asynchronous}
+  \label{fig:n50m2vmax100amax10000delayAsyncControl}
+\end{figure}
 
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics[width=3.45in]{n50m2vmax100amax10000delayAsyncPosition}
+  \end{center}
 
+  \caption{\small N=50, m=2, Position Values of All Nodes over Time, $v_{max}=100m/s$, $a_{max}=100m/s^2$, Delayed, Asynchronous}
+  \label{fig:n50m2vmax100amax10000delayAsyncPosition}
+\end{figure}
 
+\clearpage
 
 \section{Future Work}
 \label{sec:future}
@@ -869,7 +1166,7 @@ The prevalence of these classes of failures suggests new fault-tolerance strateg
 %
 The overall goal is to combine fault detection with the model for physical manifestation of failure to avoid bad states.
 
-Toward this goal, we are studying the hybrid system modeled as hybrid input/output automata (HIOA) \cite{lynchSV2003}.  The HIOA of the physical world and flocking algorithm are shown in the hybrid input/output automata language \cite{TODO} in Figure~\ref{fig:physicalWorld} and Figure~\ref{fig:agent_i}, respectively.
+Toward this goal, we are studying the hybrid system modeled as hybrid input/output automata (HIOA) \cite{lynchSV2003}.  The HIOA of the physical world and flocking algorithm are shown in the hybrid input/output automata language \cite{mitra01masters} in Figure~\ref{fig:physicalWorld} and Figure~\ref{fig:agent_i}, respectively.
 
 \begin{figure}[h!]
 \centering
@@ -896,7 +1193,7 @@ Thus, each $\auto{Agent_i}$ receives knowledge of all nearby neighbors in time.
 
 This state knowledge of neighbors is stored in a $\mathit{buffer}$ which maps from the set of indices of nodes, $[N]$ to $(\mathbb{R} \cup \{\perp\})^3$.  That is, if an $\auto{Agent_i}$ has not received a message from $\auto{Agent_j}$ yet, then $j \notin nbrs_i$, and thus the mapping with $j$ will yield triple of $\{\perp\}$s.
 %
-Each of the functions $\hat{x}$, $\hat{v}$, and $\hat{u}$ maps from the set of neighbors of $\auto{Agent_i}$, $nbrs_i$ to triples of physical state variables in $\math{R}$.  This achieves the same result as accessing the $\mathit{buffer}$, we should clarify this, as it should be the case that $\hat{x}(j)=\mathit{buffer}(j)=x_j$ from time $\vx.next_i - \Delta$.  We are using the $\mathit{buffer}$ behind the scenes to actually store the message values, and then just use the functions $\hat{x}$, $\hat{v}$, and $\hat{u}$ as a convenient notation. TODO: There is some confusion here--why are we setting the buffer and hat functions separately?
+Each of the functions $\hat{x}$, $\hat{v}$, and $\hat{u}$ maps from the set of neighbors of $\auto{Agent_i}$, $nbrs_i$ to triples of physical state variables in $\math{R}$.  This achieves the same result as accessing the $\mathit{buffer}$, we should clarify this, as it should be the case that $\hat{x}(j)=\mathit{buffer}(j)=x_j$ from time $\vx.next_i - \Delta$.  We are using the $\mathit{buffer}$ behind the scenes to actually store the message values, and then just use the functions $\hat{x}$, $\hat{v}$, and $\hat{u}$ as a convenient notation.
 
 \begin{figure}[h!]
 \centering
@@ -907,10 +1204,8 @@ Each of the functions $\hat{x}$, $\hat{v}$, and $\hat{u}$ maps from the set of n
   \label{fig:agent_i}
 \end{figure}
 
-The control, $ctrl(i, x_g, x_i, v_i, u_i, \hat{x}, \hat{v}, \hat{u}, nbrs_i)$, is defined as
-
-where $\tilde{x} = \hat{x}(\tilde{i})$, $\tilde{v} = \hat{v}(\tilde{i})$, $\tilde{u} = \hat{u}(\tilde{i})$, $\tilde{i} = \argmin{\left(\hat{x}(j) - x_i\right)}{j \in nbrs_i}$, $a \in \mathbb{R}_+$, and $b \in \mathbb{R}_+$.
-
+The control, $ctrl(i, x_g, x_i, v_i, u_i, \hat{x}, \hat{v}, \hat{u}, nbrs_i)$, is still being defined.
+%
 Let $\A$ be the HIOA obtained by composing $\auto{PhysicalWorld} \| \auto{Agent}_1 \| \ldots \auto{Agent}_N$.  We denote a state of $\A$ by $\vx$ and individual state components by $\vx.x_i$, $\vx.\mathit{next}_i$, etc.
 %
 
@@ -927,11 +1222,24 @@ $\I_{safety}\left(S\right) = \\
 \right.$ where $t_{Rem} \equiv \left(\vx.next_i - \vx.now\right)$.
 \end{inv}
 
-
-
+We are working on a proof of this presently and eventually would like to consider the same proof with faults also in the system.
 
 \section{Conclusions}
 \label{sec:conclusion}
+
+This paper presented simulation results arising from the implementation of the flocking problem formalized in Olfati-Saber's paper \cite{os2006}.
+%
+Without constraints, the system reached the goal state and formed a flock (see Figure~\ref{fig:n50m2t32}.
+%
+With only velocity constraints, the system easily reached the goal state and formed a flock, as the actuator magnitude easily compensated for any velocity and position problems, although due to the limitation in velocity, it would take a very long time for the system to globally achieve this result (see Figure~\ref{fig:n50m2vmax1t32}.
+%
+Not surprisingly, in the face of actuator constraints, it was not always possible to achieve either of the objectives, that of forming a flock and reaching the goal, as the saturated control value was not enough to overcome the initial velocities, so the system actually globally diverges (see Figure~\ref{fig:n50m2vmax1000amax1t32}.
+%
+When considering delay with reasonable state and actuator constraints, the system achieved the desired goals as well (see Figure~\ref{fig:n50m2vmax100amax1000t32delay}.
+%
+With equal actuator and velocity constraints, the system achieved the desired goals (see Figure~\ref{fig:n50m2vmax100amax100t32}).
+%
+However, when considering both delay and asynchronous control updates with reasonable actuator and state constraints, the system did not globally achieve the objectives (see Figure~\ref{fig:n50m2vmax100amax10000t32delayAsync}), although subsets of it (see Figure~\ref{fig:n50m2vmax100amax10000t32delayAsyncZoom}).
 
 
 
