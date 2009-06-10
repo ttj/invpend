@@ -29,6 +29,10 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     c1beta=0.25;
     c2beta=0.1;
     
+    alp = 0.9;
+    eps = 1;
+    dist = 50;
+    
     epsilon = 0.1;
     a=5;
     b=5;
@@ -36,6 +40,8 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     hb=0.9;
 
     kappa = r_comm / r_lattice;
+    
+    system_type = 1; %0 continuous, 1 discrete-event system
     
     if framework == 0
         Tc = 0.01;
@@ -77,6 +83,17 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         %                control can stop [diff eq]) + (distance traveled
         %                during communications delay)
         r_lattice=r_init + r_d;
+        
+    elseif framework == 2
+        Tc = 2;
+        
+        delay = 0;
+        constrain = 0;
+        
+        v_max = 1000;
+        a_max = 1000;
+        
+        r_init = 5;
     end
     
     delta=r_lattice/5
@@ -95,7 +112,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     %p = ones(N, m); %start from 1 velocity
     p = zeros(N, m)
     
-    p = v_max + (-v_max - v_max).*rand(N, m)
+    %p = v_max + (-v_max - v_max).*rand(N, m)
     if constrain ~= 0
         p = sign(p).*(min(abs(p),v_max));
     end
@@ -130,6 +147,11 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                 end
             end
         end
+    elseif framework == 2
+        q(1:N) = [1:N]'*(dist*10*eps)
+        %q(1:N/3) = [1:N/3]'*(r_init)
+        %q(N/3:2*N/3) = [N/3:2*N/3]'*(r_init+2) + 25
+        %q(2*N/3:N) = [2*N/3:N]'*(1) + 25
     end
 
     %q=[0:(r_lattice-delta):(r_lattice-delta)*(N-1)]';
@@ -236,7 +258,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     %uPeriod = (1:N)'.*Tc %different update periods for all particles
     uPeriod = ones(N,1)*Tc %same update period for all particles
     %uPeriod(1) = Tc*5; %make one node update its control slowly
-    uOffset = zeros(N,1);
+    uOffset = zeros(N,1)
 
     if delay ~= 0
         %uOffset = delay_max + (delay_min - delay_max).*rand(N, 1) %add arbitrary delay to each control update
@@ -481,6 +503,10 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                             q_delay_tmp = q_history(t_j - tdiv + 1,:,:);
                             p_delay_tmp = p_history(t_j - tdiv + 1,:,:);
                             u_delay_tmp = u_history(t_i,:,:);
+                        elseif framework == 2
+                            q_delay_tmp = q_history(t_j - tdiv + 1,:,:);
+                            p_delay_tmp = p_history(t_j - tdiv + 1,:,:);
+                            u_delay_tmp = u_history(t_i,:,:);
                         end
 
                         if m == 1
@@ -604,6 +630,30 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                             
                             u = sign(u).*(min(abs(u),a_max)); %saturate control
                         end
+                    elseif framework == 2
+                        dist_min_right = inf;
+                        dist_min_left = inf;
+                        min_j_right = -1;
+                        min_j_left = -1;
+
+                        %overwrite control if necessary
+                        for j=1:N
+                            if (norm(q_delay(j) - q_delay(i),2) <= r_comm) && ((q_delay(j)) > (q_delay(i))) && (j ~= i) && (norm(q_delay(j) - q_delay(i),2) <= dist_min_right)
+                                dist_min_right = norm(q_delay(j) - q_delay(i),2);
+                                min_j_right = j; %update each time until last it is set properly
+                            elseif (norm(q_delay(j) - q_delay(i),2) <= r_comm) && ((q_delay(j)) < (q_delay(i))) && (j ~= i) && (norm(q_delay(j) - q_delay(i),2) <= dist_min_left)
+                                dist_min_left = norm(q_delay(j) - q_delay(i),2);
+                                min_j_left = j;
+                            end
+                        end
+                        
+                        if i == 1
+                            u(i,:) = q_delay(i); %update to same location
+                        elseif i == N
+                            u(i,:) = max(q_delay(N - 1) + eps, q_delay(N) - alp * (q_delay(N) - (q_delay(N - 1) + dist)));
+                        else %2...N-1
+                            u(i,:) = max(q_delay(i - 1) + eps, min(q_delay(i) - alp * (q_delay(i) - (1/2)*(q_delay(i - 1) + q_delay(i + 1))), q_delay(i + 1) - eps));
+                        end
                     end
                 end
             end
@@ -645,8 +695,13 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
             pr_history(t_j,:,:) = pr(:,:);
             %de_history(t_j,:,:) = de(:,:);
 
-            q = q + p.*(tcyc/tdiv) + u.*((tcyc/tdiv)^2);
-            p = p + u.*(tcyc/tdiv);
+            if system_type == 0
+                q = q + p.*(tcyc/tdiv) + u.*((tcyc/tdiv)^2);
+                p = p + u.*(tcyc/tdiv);
+            elseif system_type == 1
+                %no velocity, next position is directly computed
+                q = u;
+            end
 
             if constrain ~= 0
                 p = sign(p).*(min(abs(p),v_max));
@@ -661,11 +716,17 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
             else
                 frvs=frv;
             end
-
-            qr=qr + pr.*(tcyc/tdiv) + frvs.*((tcyc/tdiv)^2);
-            pr=pr + frvs.*(tcyc/tdiv);
             
-            pr = sign(pr).*(min(abs(pr),v_max));
+            if system_type == 0
+                qr=qr + pr.*(tcyc/tdiv) + frvs.*((tcyc/tdiv)^2);
+                pr=pr + frvs.*(tcyc/tdiv);
+            elseif system_type == 1
+                qr = frvs;
+            end
+            
+            if constrain ~= 0
+                pr = sign(pr).*(min(abs(pr),v_max));
+            end
             
             %check for safety violations
 %             for xyz=1:N
