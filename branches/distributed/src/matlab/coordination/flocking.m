@@ -29,10 +29,6 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     c1beta=0.25;
     c2beta=0.1;
     
-    alp = 0.9;
-    eps = 1;
-    dist = 50;
-    
     epsilon = 0.1;
     a=5;
     b=5;
@@ -52,6 +48,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         v_max = 100;     %maximum velocity
         a_max = 1000;     %maximum acceleration
         %a_max = inf;
+        delta=r_lattice/5
     elseif framework == 1
         delay = 1;
         constrain = 1;
@@ -83,11 +80,19 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         %                control can stop [diff eq]) + (distance traveled
         %                during communications delay)
         r_lattice=r_init + r_d;
-        
+        delta=r_lattice/5
     elseif framework == 2
-        Tc = 2;
+        Tc = 1;
         
-        delay = 0;
+        alp = 0.5;
+        eps = 1;
+        dist = 10;
+        r_lattice = dist;
+        delta=r_lattice/10;
+        
+        step_max = 5;
+        
+        delay = 1;
         constrain = 0;
         
         v_max = 1000;
@@ -95,8 +100,6 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         
         r_init = 5;
     end
-    
-    delta=r_lattice/5
     
     r_lattice_prime = 0.6 * r_lattice;
     r_comm_prime = 1.2 * r_lattice_prime;
@@ -148,7 +151,17 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
             end
         end
     elseif framework == 2
-        q(1:N) = [1:N]'*(dist*10*eps)
+        for a = 1 : N
+            if a == 1
+                q(a) = 0;
+            else
+                q(a) = q(a - 1) + rand(1,1)*(dist * 2);
+            end
+        end
+        
+        %q(1:N) = [1:N]'*(dist*3)
+        
+        
         %q(1:N/3) = [1:N/3]'*(r_init)
         %q(N/3:2*N/3) = [N/3:2*N/3]'*(r_init+2) + 25
         %q(2*N/3:N) = [2*N/3:N]'*(1) + 25
@@ -180,7 +193,11 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     
     %initial control value
     %u = (a_max + (-a_max - a_max).*rand(N, m));
-    u = zeros(N, m);
+    if framework ~= 2
+        u = zeros(N, m);
+    else
+        u = q;
+    end
     uGradient = zeros(N, m);
     uConsensus = zeros(N, m);
     uGamma = zeros(N, m);
@@ -284,6 +301,10 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     %system evolution
     for t=0:tcyc:tmax-tcyc
         t_i=round(t/tcyc)+1;
+        
+%         if delay == 1 && t < Tc
+%             continue;
+%         end
 
         %update goals after some time
         %TODO: change to make new goals after reaching current goal (allows
@@ -451,6 +472,13 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
 
         for t_j=(t_i-1)*tdiv+1 : 1 : tdiv+(t_i-1)*tdiv+1
             tt=t_j*(tcyc/tdiv);
+            
+            %store all state variables over time
+            q_history(t_j,:,:) = q(:,:);
+            p_history(t_j,:,:) = p(:,:);
+            qr_history(t_j,:,:) = qr(:,:);
+            pr_history(t_j,:,:) = pr(:,:);
+            %de_history(t_j,:,:) = de(:,:);
 
             %compute control (based on state vector, possibly delayed, etc)
             for i=1:N
@@ -483,7 +511,11 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                     uNew_history(t_i,:,:) = uNew(:,:);
 
                     %reinitialze this nodes controls (not dependent upon past control value)
-                    u(i,:) = zeros(1,m);
+                    if framework ~= 2
+                        u(i,:) = zeros(1,m);
+                    else
+                        u(i,:) = q(i,:);
+                    end
                     uGradient(i,:) = zeros(1,m);
                     uConsensus(i,:) = zeros(1,m);
                     uBetaGradient(i,:) = zeros(1,m);
@@ -504,8 +536,9 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                             p_delay_tmp = p_history(t_j - tdiv + 1,:,:);
                             u_delay_tmp = u_history(t_i,:,:);
                         elseif framework == 2
-                            q_delay_tmp = q_history(t_j - tdiv + 1,:,:);
-                            p_delay_tmp = p_history(t_j - tdiv + 1,:,:);
+                            %round(t_j - ((uPeriod(i) + uOffset(i)*tdiv))/Tc - tdiv + 2)
+                            q_delay_tmp = q_history(round(t_j - ((uPeriod(i) + uOffset(i)*tdiv))/Tc - tdiv + 2),:,:);
+                            p_delay_tmp = p_history(round(t_j - ((uPeriod(i) + uOffset(i)*tdiv))/Tc - tdiv + 2),:,:);
                             u_delay_tmp = u_history(t_i,:,:);
                         end
 
@@ -648,11 +681,50 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                         end
                         
                         if i == 1
-                            u(i,:) = q_delay(i); %update to same location
+                            q_goal = -50;
+                            
+                            max_sep = 0;
+                            
+                            for asdf=2:N
+                                sep = norm(q_delay(asdf) - q_delay(asdf - 1) - dist,2);
+                                if (sep > max_sep)
+                                    max_sep = sep;
+                                end
+                            end
+                            
+                            if max_sep <= delta/2
+                                uchange = q_delay(i) - (1/2) * (q_delay(i) - q_goal);
+                                
+                                if abs(q_delay(i) - uchange) < delta/4
+                                    u(i,:) = uchange;
+                                else
+                                    u(i,:) = q_delay(i) + sign(uchange) * delta/4;
+                                end
+                            else
+                                u(i,:) = q_delay(i);
+                            end
+                            
+                            %if norm(q_delay(1) - q_delay(2), 2) <= (dist + eps)
+                            %    u(i,:) = q_delay(i);
+                            %else
+                            %    u(i,:) = q_delay(i); %update to same location
+                            %end
                         elseif i == N
-                            u(i,:) = max(q_delay(N - 1) + eps, q_delay(N) - alp * (q_delay(N) - (q_delay(N - 1) + dist)));
+                            %u(i,:) = q_delay(N) - alp * (q_delay(N) - (q_delay(N - 1) + dist));
+                            uchange = max(q_delay(N - 1) + eps, q_delay(N) - alp * (q_delay(N) - (q_delay(N - 1) + dist)));
+                            if abs(q_delay(i) - uchange) < step_max
+                                u(i,:) = uchange;
+                            else
+                                u(i,:) = q_delay(i) + sign(uchange) * step_max;
+                            end
                         else %2...N-1
-                            u(i,:) = max(q_delay(i - 1) + eps, min(q_delay(i) - alp * (q_delay(i) - (1/2)*(q_delay(i - 1) + q_delay(i + 1))), q_delay(i + 1) - eps));
+                            %u(i,:) = q_delay(i) - alp * (q_delay(i) - (1/2)*(q_delay(i - 1) + q_delay(i + 1)));
+                            uchange = max(q_delay(i - 1) + eps, min(q_delay(i) - alp * (q_delay(i) - (1/2)*(q_delay(i - 1) + q_delay(i + 1))), q_delay(i + 1) - eps));
+                            if abs(q_delay(i) - uchange) < step_max
+                                u(i,:) = uchange;
+                            else
+                                u(i,:) = q_delay(i) + sign(uchange) * step_max;
+                            end
                         end
                     end
                 end
@@ -687,13 +759,6 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
             %which expands to
             %  [x]=[q;= [q0 + p0*(t - t0) + u*(t - t0)^2;
             %       p]   p0 + u*(t - t0)]
-            
-            %store all state variables over time
-            q_history(t_j,:,:) = q(:,:);
-            p_history(t_j,:,:) = p(:,:);
-            qr_history(t_j,:,:) = qr(:,:);
-            pr_history(t_j,:,:) = pr(:,:);
-            %de_history(t_j,:,:) = de(:,:);
 
             if system_type == 0
                 q = q + p.*(tcyc/tdiv) + u.*((tcyc/tdiv)^2);
