@@ -37,9 +37,9 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
 
     kappa = r_comm / r_lattice;
     
-    system_type = 1; %0 continuous, 1 discrete-event system
-    
     if framework == 0
+        system_type = 0; %0 continuous, 1 discrete-event system
+        
         Tc = 0.01;
         r_init = r_comm;
 
@@ -50,6 +50,8 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         %a_max = inf;
         delta=r_lattice/5
     elseif framework == 1
+        system_type = 0; %0 continuous, 1 discrete-event system
+        
         delay = 1;
         constrain = 1;
         v_max = 5;      %maximum velocity
@@ -82,6 +84,8 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         r_lattice=r_init + r_d;
         delta=r_lattice/5
     elseif framework == 2
+        system_type = 1; %0 continuous, 1 discrete-event system
+        
         Tc = 1;
         
         alp = 0.5;
