@@ -1,4 +1,4 @@
-function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lattice, r_safety, tdiv, tmax, updates, plotControls, tswitch)
+function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lattice, r_safety, tdiv, tmax, updates, plotControls, tswitch, delay, constrain)
     %close all;
 %Flocking Problem
 %   Detailed explanation goes here
@@ -43,17 +43,13 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         Tc = 0.01;
         r_init = r_comm;
 
-        delay = 0;
-        constrain = 1;
         v_max = 100;     %maximum velocity
         a_max = 1000;     %maximum acceleration
         %a_max = inf;
         delta=r_lattice/5
     elseif framework == 1
         system_type = 0; %0 continuous, 1 discrete-event system
-        
-        delay = 1;
-        constrain = 1;
+
         v_max = 5;      %maximum velocity
         a_max = 10;     %maximum acceleration
         
@@ -88,16 +84,13 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         
         Tc = 1;
         
-        alp = 0.5;
+        alp_min = 0.001;
+        alp_max = 0.999;
         eps = 1;
-        dist = 10;
-        r_lattice = dist;
-        delta=r_lattice/10;
+        dist = r_lattice;
+        delta=1;
         
-        step_max = 5;
-        
-        delay = 1;
-        constrain = 0;
+        step_max = 10;
         
         v_max = 1000;
         a_max = 1000;
@@ -155,20 +148,25 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
             end
         end
     elseif framework == 2
-        for a = 1 : N
-            if a == 1
-                q(a) = 0;
-            else
-                q(a) = q(a - 1) + rand(1,1)*(dist * 2);
+        for c0 = 1 : N
+            for c1 = 1 : m
+                if c0 == 1
+                    q(c0,c1) = 0;
+                else
+                    q(c0,c1) = q(c0 - 1) + rand(1,1)*(dist * 2);
+                end
             end
         end
         
         %q(1:N) = [1:N]'*(dist*3)
-        
-        
+
         %q(1:N/3) = [1:N/3]'*(r_init)
         %q(N/3:2*N/3) = [N/3:2*N/3]'*(r_init+2) + 25
         %q(2*N/3:N) = [2*N/3:N]'*(1) + 25
+        
+        for c0 = 1:m
+            q_goal(:,c0) = -50 + [0:N-1]'.*r_lattice
+        end
     end
 
     %q=[0:(r_lattice-delta):(r_lattice-delta)*(N-1)]';
@@ -257,7 +255,8 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     %    end
     %end
     
-    %de = deviationEnergy(q,r_comm,r_lattice,delta)
+    de = deviationEnergy(q, q_goal, r_comm, r_lattice, delta)
+    de_norm = de / norm(de, 2)
     %pne = proximityNetEdges(q,r_comm,r_lattice)
     
     subplotRows=1;%ceil(sqrt(updates));
@@ -271,10 +270,13 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     uGamma_history = zeros([round(u_steps), N, m]);
     uNew_history = zeros([round(u_steps), N, m]);
     q_history = zeros([round(steps), N, m]);
+    e_history = zeros([round(steps), N, m]);
+    alp_history = zeros([round(steps), N, m]);
     p_history = zeros([round(steps), N, m]);
     qr_history = zeros([round(steps), N, m]);
     pr_history = zeros([round(steps), N, m]);
-    %de_history = zeros([round(steps), N, m]);
+    de_history = zeros([round(steps), N, m]);
+    de_norm_history = zeros([round(steps), N, m]);
     
     %uPeriod = (1:N)'.*Tc %different update periods for all particles
     uPeriod = ones(N,1)*Tc %same update period for all particles
@@ -477,12 +479,17 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         for t_j=(t_i-1)*tdiv+1 : 1 : tdiv+(t_i-1)*tdiv+1
             tt=t_j*(tcyc/tdiv);
             
+            alp(:,:) = max(alp_min, min(rand(N,m), alp_max)); %cool effect: any alpha between 0 and 1 works
+            
             %store all state variables over time
             q_history(t_j,:,:) = q(:,:);
+            e_history(t_j,:,:) = errorTransform(q, r_lattice, q_goal(1,:));
+            alp_history(t_j,:,:) = alp(:,:);
             p_history(t_j,:,:) = p(:,:);
             qr_history(t_j,:,:) = qr(:,:);
             pr_history(t_j,:,:) = pr(:,:);
-            %de_history(t_j,:,:) = de(:,:);
+            de_history(t_j,:,:) = de(:,:);
+            de_norm_history(t_j,:,:) = de_norm(:,:);
 
             %compute control (based on state vector, possibly delayed, etc)
             for i=1:N
@@ -685,8 +692,6 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                         end
                         
                         if i == 1
-                            q_goal = -50;
-                            
                             max_sep = 0;
                             
                             for asdf=2:N
@@ -697,7 +702,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                             end
                             
                             if max_sep <= delta/2
-                                uchange = q_delay(i) - (1/2) * (q_delay(i) - q_goal);
+                                uchange = q_delay(i) - (1/2) * (q_delay(i) - q_goal(1,:));
                                 
                                 if abs(q_delay(i) - uchange) < delta/4
                                     u(i,:) = uchange;
@@ -714,16 +719,16 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                             %    u(i,:) = q_delay(i); %update to same location
                             %end
                         elseif i == N
-                            %u(i,:) = q_delay(N) - alp * (q_delay(N) - (q_delay(N - 1) + dist));
-                            uchange = max(q_delay(N - 1) + eps, q_delay(N) - alp * (q_delay(N) - (q_delay(N - 1) + dist)));
+                            %u(i,:) = q_delay(N) - alp(i,:) * (q_delay(N) - (q_delay(N - 1) + dist));
+                            uchange = max(q_delay(N - 1) + eps, q_delay(N) - alp(i,:) * (q_delay(N) - (q_delay(N - 1) + dist)));
                             if abs(q_delay(i) - uchange) < step_max
                                 u(i,:) = uchange;
                             else
                                 u(i,:) = q_delay(i) + sign(uchange) * step_max;
                             end
                         else %2...N-1
-                            %u(i,:) = q_delay(i) - alp * (q_delay(i) - (1/2)*(q_delay(i - 1) + q_delay(i + 1)));
-                            uchange = max(q_delay(i - 1) + eps, min(q_delay(i) - alp * (q_delay(i) - (1/2)*(q_delay(i - 1) + q_delay(i + 1))), q_delay(i + 1) - eps));
+                            %u(i,:) = q_delay(i) - alp(i,:) * (q_delay(i) - (1/2)*(q_delay(i - 1) + q_delay(i + 1)));
+                            uchange = max(q_delay(i - 1) + eps, min(q_delay(i) - alp(i,:) * (q_delay(i) - (1/2)*(q_delay(i - 1) + q_delay(i + 1))), q_delay(i + 1) - eps));
                             if abs(q_delay(i) - uchange) < step_max
                                 u(i,:) = uchange;
                             else
@@ -776,7 +781,9 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                 p = sign(p).*(min(abs(p),v_max));
                 u = sign(u).*(min(abs(u),a_max));
             end
-            %de = deviationEnergy(q,r_comm,r_lattice,delta);
+            
+            de = deviationEnergy(q, q_goal, r_comm, r_lattice, delta);
+            de_norm = de / norm(de,2);
 
             %gamma agent
             frv = fr(qr, pr);
@@ -846,6 +853,40 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                     end
                 end
                 legend('q1');
+                
+                figure;
+                hold on;
+                for i=1:N
+                    if mod(i,2)==0
+                        plot(time_traj(1:size(q_history(:,i,1))),de_history(:,i,1),'r');
+                    else
+                        plot(time_traj(1:size(q_history(:,i,1))),de_history(:,i,1),'b');
+                    end
+                end
+                plot(time_traj(1:size(q_history(:,i,1))),de_norm_history(:,1),'k');
+                legend('de1');
+                
+                figure;
+                hold on;
+                for i=1:N
+                    if mod(i,2)==0
+                        plot(time_traj(1:size(q_history(:,i,1))),e_history(:,i,1),'r');
+                    else
+                        plot(time_traj(1:size(q_history(:,i,1))),e_history(:,i,1),'b');
+                    end
+                end
+                legend('e1');
+                
+                figure;
+                hold on;
+                for i=1:N
+                    if mod(i,2)==0
+                        plot(time_traj(1:size(q_history(:,i,1))),alp_history(:,i,1),'r');
+                    else
+                        plot(time_traj(1:size(q_history(:,i,1))),alp_history(:,i,1),'b');
+                    end
+                end
+                legend('alp1');
             elseif m == 2
                 for i=1:N
                     if mod(i,2)==0
@@ -876,7 +917,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                     %plot(time_traj,de_history(:,i,1),'c');
                     %legend('u', 'uGradient', 'uConsensus', 'uGamma', 'q-qr', 'p-pr');
                     %legend('u', 'uGradient', 'uConsensus', 'uGamma', 'de');
-                    legend('u', 'uNew', 'q', 'p');
+                    legend('u', 'uNew', 'q', 'p', 'de');
                 elseif m == 2
                     %plot(time_ctrl,u_history(:,i,1),'b--');
                     %plot(time_ctrl,u_history(:,i,2),'c--');
@@ -920,7 +961,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     qr
     pd
     pr
-    %de
+    de
     qc=Ave(q)
     pc=Ave(p)
 end
@@ -950,7 +991,7 @@ end
 %it as an obstacle: growing larger and larger obstacle as uncertainty is
 %compounded over and over again
 
-%john sicyclis: most general necessary and sufficient: on asynchronous
+%john tsitsiklis: most general necessary and sufficient: on asynchronous
 %iterated systems
 
 %mani chandy's paper was like this going towards message passing systems
