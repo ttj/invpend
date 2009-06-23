@@ -153,7 +153,8 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                 if c0 == 1
                     q(c0,c1) = 0;
                 else
-                    q(c0,c1) = q(c0 - 1) + rand(1,1)*(dist * 2);
+                    %q(c0,c1) = q(c0 - 1) + rand(1,1)*(dist * 2);
+                    q(c0,c1) = q(c0 - 1) + (5*dist);
                 end
             end
         end
@@ -271,6 +272,12 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     uNew_history = zeros([round(u_steps), N, m]);
     q_history = zeros([round(steps), N, m]);
     e_history = zeros([round(steps), N, m]);
+    v_history = zeros([round(steps), N, m]);
+    vdot_history = zeros([round(steps), N, m]);
+    v2_history = zeros([round(steps), N, m]);
+    v2dot_history = zeros([round(steps), N, m]);
+    v3_history = zeros([round(steps), N, m]);
+    v3dot_history = zeros([round(steps), N, m]);
     alp_history = zeros([round(steps), N, m]);
     p_history = zeros([round(steps), N, m]);
     qr_history = zeros([round(steps), N, m]);
@@ -483,7 +490,20 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
             
             %store all state variables over time
             q_history(t_j,:,:) = q(:,:);
-            e_history(t_j,:,:) = errorTransform(q, r_lattice, q_goal(1,:));
+            et = errorTransform(q, r_lattice, q_goal(1,:));
+            e_history(t_j,:,:) = et;
+            v_history(t_j,:,:) = sum(et.^2)/N;
+            v2_history(t_j,:,:) = sum(abs(et));
+            v3_history(t_j,:,:) = sum(et.^2)/2;
+            if t_j <= 1
+                vdot_history(t_j,:,:) =  -v_history(t_j, :, :);
+                v2dot_history(t_j,:,:) = -v2_history(t_j, :, :);
+                v3dot_history(t_j,:,:) = -v3_history(t_j, :, :);
+            else
+                vdot_history(t_j,:,:) = v_history(t_j, :, :) - v_history(t_j - 1, :, :);
+                v2dot_history(t_j,:,:) = v2_history(t_j, :, :) - v2_history(t_j - 1, :, :);
+                v3dot_history(t_j,:,:) = v3_history(t_j, :, :) - v3_history(t_j - 1, :, :);
+            end
             alp_history(t_j,:,:) = alp(:,:);
             p_history(t_j,:,:) = p(:,:);
             qr_history(t_j,:,:) = qr(:,:);
@@ -702,13 +722,16 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                             end
                             
                             if max_sep <= delta/2
-                                uchange = q_delay(i) - (1/2) * (q_delay(i) - q_goal(1,:));
+                                %uchange = q_delay(i) - alp(i,:) * (q_delay(i) - q_goal(1,:));
+                                %uchange = q_delay(i) - alp(i,:) * (q_delay(i) - q_goal(1,:));
                                 
-                                if abs(q_delay(i) - uchange) < delta/4
-                                    u(i,:) = uchange;
-                                else
-                                    u(i,:) = q_delay(i) + sign(uchange) * delta/4;
-                                end
+                                uchange = min(q_delay(i) - alp(i,:)*(q_delay(i) - q_goal(1,:)), q_delay(i + 1) - eps);
+                                
+                                 if abs(q_delay(i) - uchange) < delta/4
+                                     u(i,:) = uchange;
+                                 else
+                                     u(i,:) = q_delay(i) + sign(uchange) * delta/4;
+                                 end
                             else
                                 u(i,:) = q_delay(i);
                             end
@@ -873,6 +896,44 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                         plot(time_traj(1:size(q_history(:,i,1))),e_history(:,i,1),'r');
                     else
                         plot(time_traj(1:size(q_history(:,i,1))),e_history(:,i,1),'b');
+                    end
+                end
+                plot(time_traj(1:size(q_history(:,i,1))),v_history(:,1),'c');
+                plot(time_traj(1:size(q_history(:,i,1))),vdot_history(:,1),'c.');
+                plot(time_traj(1:size(q_history(:,i,1))),v2_history(:,1),'k');
+                plot(time_traj(1:size(q_history(:,i,1))),v2dot_history(:,1),'k.');
+                plot(time_traj(1:size(q_history(:,i,1))),v3_history(:,1),'g');
+                plot(time_traj(1:size(q_history(:,i,1))),v3dot_history(:,1),'g.');
+                max(vdot_history)
+                max(v2dot_history)
+                max(v3dot_history)
+                
+                vlast = inf;
+                v2last = inf;
+                v3last = inf;
+                for asdf = 1 : size(time_traj(1:size(q_history(:,i,1))))
+                    if v_history(asdf,1) > vlast
+                        'Error: increasing Lyapunov function'
+                        vlast
+                        v_history(asdf,1)
+                    else
+                        vlast = v_history(asdf,1);
+                    end
+                    
+                    if v2_history(asdf,1) > v2last
+                        'Error: increasing Lyapunov function'
+                        v2last
+                        v2_history(asdf,1)
+                    else
+                        v2last = v2_history(asdf,1);
+                    end
+                    
+                    if v3_history(asdf,1) > v3last
+                        'Error: increasing Lyapunov function'
+                        v3last
+                        v3_history(asdf,1)
+                    else
+                        v3last = v3_history(asdf,1);
                     end
                 end
                 legend('e1');
