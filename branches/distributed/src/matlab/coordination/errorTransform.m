@@ -5,6 +5,7 @@ function [error] = errorTransform(q, r_lattice, goal)
 
     for i = 1 : n
         if i == 1
+            %error(i) = 0;
             error(i) = q(i,:) - goal;
         else
             error(i) = q(i,:) - (q(i-1,:) + r_lattice);
