@@ -1,12 +1,38 @@
 function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lattice, r_safety, tdiv, tmax, updates, plotControls, tswitch, delay, constrain)
-    %close all;
-%Flocking Problem
-%   Detailed explanation goes here
-%       tdiv:       minimum is 1 (1 division per control cycle, same as 
-%                   only looking at control cycle)
+%Flocking and Consensus Problem Simulations
+%
+%Taylor Johnson
+%johnso99@NOSPAM-illinois.edu
+%University of Illinois at Urbana-Champaign
+%Coordinated Science Laboratory
+%Department of Electrical and Computer Engineering
+%
+%       framework:  selects which model (controls, discrete-time vs.
+%                   continuous time, etc.) to use
+%                   0: model from Olfati-Saber, 2005
+%                   1: new model based on Olfati-Saber
+%                   2: model from Gazi and Passino, 2005
+%       N:          number of agents/nodes/flock-members (>=1)
+%       m:          number of dimensions (>=1)
+%       coord_min:  will be removed, set to 0
+%       coord_max:  will be removed, set to 1000 for example
+%       r_comm:     communications radius (try 8.4)
+%       r_lattice:  flocking/lattice/comfortable distance (try 7.0)
+%       r_safety:   minimum distance to maintain safety (try 7.0)
+%       tdiv:       number of times to allow the system to evolve between 
+%                   control cycle updates (>= 1; for example, =1 is one
+%                   division per control cycle is the same as only looking 
+%                   at control cycle)
 %       tmax:       time to run the system for (t_final)
-%       updates:    number of times to update the plots
+%                   frameworks 0, 1: try ~20
+%                   framework 2: try >= 1000
+%       updates:    number of times to update the plots (>=1)
 %       plotControls:   if 1, plots all controls as functions of time
+%       tswitch:    used for multiple goals
+%       delay:      enable asynchronism? 0 synchronous, 1 asynchronous
+%       constrain:  enable control (and state) saturation constraints? 0 
+%                   allows infinite valued controls and states, 1 
+%                   constrains/saturates controls and states
 
     %original sim:
     %d=7
@@ -153,11 +179,18 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                 if c0 == 1
                     q(c0,c1) = 0;
                 else
-                    %q(c0,c1) = q(c0 - 1) + rand(1,1)*(dist * 2);
-                    q(c0,c1) = q(c0 - 1) + (5*dist);
+                    %q(c0,c1) = q(c0 - 1,c1) + rand(1,1)*(dist*3);
+                    q(c0,c1) = q(c0 - 1,c1) + eps;
+                    
+                    %q(c0,c1) = q(c0 - 1) + (dist);
+                    
+                    if (norm(q(c0,c1) - q(c0 - 1,c1), 2)) < eps
+                        q(c0,c1) = eps;
+                    end
                 end
             end
         end
+        q
         
         %q(1:N) = [1:N]'*(dist*3)
 
@@ -166,8 +199,9 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         %q(2*N/3:N) = [2*N/3:N]'*(1) + 25
         
         for c0 = 1:m
-            q_goal(:,c0) = -50 + [0:N-1]'.*r_lattice
+            q_goal(:,c0) = -25 + [0:N-1]'.*r_lattice;
         end
+        q_goal
     end
 
     %q=[0:(r_lattice-delta):(r_lattice-delta)*(N-1)]';
@@ -492,13 +526,14 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
             q_history(t_j,:,:) = q(:,:);
             et = errorTransform(q, r_lattice, q_goal(1,:));
             e_history(t_j,:,:) = et;
-            v_history(t_j,:,:) = sum(et.^2)/N;
-            v2_history(t_j,:,:) = sum(abs(et));
-            v3_history(t_j,:,:) = sum(et.^2)/2;
+            v_history(t_j,:,:) = sum(abs(et(1)).*abs(et(2:N).^2));
+            v2_history(t_j,:,:) = sum(abs(et)*abs(et)');
+            %v3_history(t_j,:,:) = (abs(et(1)).^(N + mod(N,2)) + sum(et(2:N).^2))/2; %force to be even power
+            v3_history(t_j,:,:) = sum(abs(et));
             if t_j <= 1
-                vdot_history(t_j,:,:) =  -v_history(t_j, :, :);
-                v2dot_history(t_j,:,:) = -v2_history(t_j, :, :);
-                v3dot_history(t_j,:,:) = -v3_history(t_j, :, :);
+                vdot_history(t_j,:,:) =  0;
+                v2dot_history(t_j,:,:) = 0;
+                v3dot_history(t_j,:,:) = 0;
             else
                 vdot_history(t_j,:,:) = v_history(t_j, :, :) - v_history(t_j - 1, :, :);
                 v2dot_history(t_j,:,:) = v2_history(t_j, :, :) - v2_history(t_j - 1, :, :);
@@ -727,10 +762,10 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                                 
                                 uchange = min(q_delay(i) - alp(i,:)*(q_delay(i) - q_goal(1,:)), q_delay(i + 1) - eps);
                                 
-                                 if abs(q_delay(i) - uchange) < delta/4
+                                 if abs(q_delay(i) - uchange) < delta/2
                                      u(i,:) = uchange;
                                  else
-                                     u(i,:) = q_delay(i) + sign(uchange) * delta/4;
+                                     u(i,:) = q_delay(i) + sign(uchange) * delta/2;
                                  end
                             else
                                 u(i,:) = q_delay(i);
@@ -898,12 +933,13 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                         plot(time_traj(1:size(q_history(:,i,1))),e_history(:,i,1),'b');
                     end
                 end
-                plot(time_traj(1:size(q_history(:,i,1))),v_history(:,1),'c');
-                plot(time_traj(1:size(q_history(:,i,1))),vdot_history(:,1),'c.');
-                plot(time_traj(1:size(q_history(:,i,1))),v2_history(:,1),'k');
-                plot(time_traj(1:size(q_history(:,i,1))),v2dot_history(:,1),'k.');
-                plot(time_traj(1:size(q_history(:,i,1))),v3_history(:,1),'g');
-                plot(time_traj(1:size(q_history(:,i,1))),v3dot_history(:,1),'g.');
+                v=plot(time_traj(1:size(q_history(:,i,1))),v_history(:,1),'c');
+                vd=plot(time_traj(1:size(q_history(:,i,1))),vdot_history(:,1),'c.');
+                v2=plot(time_traj(1:size(q_history(:,i,1))),v2_history(:,1),'k');
+                v2d=plot(time_traj(1:size(q_history(:,i,1))),v2dot_history(:,1),'k.');
+                v3=plot(time_traj(1:size(q_history(:,i,1))),v3_history(:,1),'g');
+                v3d=plot(time_traj(1:size(q_history(:,i,1))),v3dot_history(:,1),'g.');
+                legend([v,vd,v2,v2d,v3,v3d],'v', 'vd', 'v2', 'v2d', 'v3', 'v3d');
                 max(vdot_history)
                 max(v2dot_history)
                 max(v3dot_history)
@@ -913,30 +949,29 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                 v3last = inf;
                 for asdf = 1 : size(time_traj(1:size(q_history(:,i,1))))
                     if v_history(asdf,1) > vlast
-                        'Error: increasing Lyapunov function'
-                        vlast
-                        v_history(asdf,1)
-                    else
-                        vlast = v_history(asdf,1);
+                        %'Error: increasing Lyapunov function'
+                        %vlast
+                        %v_history(asdf,1)
+                        plot([asdf - 1, asdf], [v_history(asdf-1,1), v_history(asdf,1)], '*c');
                     end
+                    vlast = v_history(asdf,1);
                     
                     if v2_history(asdf,1) > v2last
-                        'Error: increasing Lyapunov function'
-                        v2last
-                        v2_history(asdf,1)
-                    else
-                        v2last = v2_history(asdf,1);
+                        %'Error: increasing Lyapunov function'
+                        %v2last
+                        %v2_history(asdf,1)
+                        plot([asdf - 1, asdf], [v2_history(asdf-1,1), v2_history(asdf,1)], '*k');
                     end
+                    v2last = v2_history(asdf,1);
                     
                     if v3_history(asdf,1) > v3last
-                        'Error: increasing Lyapunov function'
-                        v3last
-                        v3_history(asdf,1)
-                    else
-                        v3last = v3_history(asdf,1);
+                        %'Error: increasing Lyapunov function'
+                        %v3last
+                        %v3_history(asdf,1)
+                        plot([asdf - 1, asdf], [v3_history(asdf-1,1), v3_history(asdf,1)], '*g');
                     end
+                    v3last = v3_history(asdf,1);
                 end
-                legend('e1');
                 
                 figure;
                 hold on;
@@ -1028,83 +1063,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
 end
 
 
-%1: fix lattice: goals independently in grid with multiple objectives
-
-%2: 2 particle set up with one goal: how are these aligned? simplify
-%functions enough for proofs
-
-%3: obstacles
-
-%crash failure: not moving, just obstacle
-
-%stuck at failure: moving and growing in size: nodes know where it is and
-%how fast it is going
-
-%    => what is periodicity with which a node has to be able to update its
-%       neighbors in order to be able to do mitigation in time
-
-%   what if neighbor fails at max acc? can never go over it: how to handle
-%   this?  when to overtake node and when to just follow it?
-
-%4: failure with stuck value, starting in lattice
-
-%5: one node slowly updating, everyone else ignores eventually and treats
-%it as an obstacle: growing larger and larger obstacle as uncertainty is
-%compounded over and over again
-
-%john tsitsiklis: most general necessary and sufficient: on asynchronous
-%iterated systems
-
-%mani chandy's paper was like this going towards message passing systems
-
-
-
-
-%when have we reached the goal?
-%node is said to reach a goal if it's \alpha-lattice has reached the goal
-%  may have to fine tune this definition
-
-
-
-%1.a obstacles
-%first: one obstacle
-
-%1.b delayed updates?
-
-%detection of failures: assume taking care of (node knows when it is going
-%   over obstacle)
-%avoidance: mitigation of failures
-
-%2 piecewise psi function with 3-segments: 
-
-
-%3 safety (minimum gap) and liveness/progress (convergence to goal): we do
-%want to prove this
-
-
-%4 work with their convergence (hard) and prove safety from there?
-%problems arising from their synchronous assumptions?
-
-%5 simplify everything and prove safety (easy) and convergence (hard)
-
-
-%their algorithm may work for our model, but our model is inherently
-%different
-
-%how to define our energy function? tuple of distance-to-goal and deviation
-%energy from \alpha-lattice?
-
-%need velocity in goal term? oscillations? do oscillations provide a
-%problem?
-
-%relax condition such that nodes reach goal, maybe in formation, maybe not
-
-
-
-
-
-
-
+%Obstacle notes
 
 %split rejoin setup
 %q0: [-40, 80]^2
@@ -1131,7 +1090,6 @@ end
 
 %obstacles:
 %Ms = [150 150; 30 100; 25 25]
-
 
 %Ms is defined as:
 %The set of l spherical obstacles is specified as the

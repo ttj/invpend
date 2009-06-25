@@ -11,5 +11,7 @@ function E = deviationEnergy(q, q_goal, r_comm, r_lattice, delta)
 %     end
     %E = E .* (1/(norm(proximityNetEdges(q, r, d),1) + 1));
 
-    E = abs(q(:,:) - q_goal(:,:));
+    %E = abs(q(:,:) - q_goal(:,:));
+    
+    E = q(:,:) - q_goal(:,:);
 end
