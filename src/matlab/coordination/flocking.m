@@ -524,18 +524,40 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         for t_j=(t_i-1)*tdiv+1 : 1 : tdiv+(t_i-1)*tdiv+1
             tt=t_j*(tcyc/tdiv);
             
-            %alp(:,:) = max(alp_min, min(rand(N,m), alp_max)); %cool effect: any alpha between 0 and 1 works
-            alp(:,:) = ones(N,m)*0.9;
+            alp(:,:) = max(alp_min, min(rand(N,m), alp_max)); %cool effect: any alpha between 0 and 1 works
+            %alp(:,:) = ones(N,m)*0.9;
+            %A = diag(1 - alp(:,:));
+            A = zeros(N);
+            %make the diagonal matrix
+            for z = 1 : N
+                if z == 1
+                    A(z, z) = 1 - alp(1)/2;
+                elseif z > 1 && z < N
+                    A(z, z) = 1 - alp(z+1)/2 - alp(z)/2;
+                else
+                    A(z, z) = 1 - alp(z) - alp(z - 1)/2;
+                end
+                A(z+1, z) = alp(z)/2;
+                A(z, z+1) = alp(z)/2;
+            end
+            A = A(1:N, 1:N);
+            size(A);
+            alp/2;
+            Q = eye(N);
+            P = dlyap(A', Q);
             
             %store all state variables over time
             q_history(t_j,:,:) = q(:,:);
-            et = errorTransform(q, r_lattice, q_goal(1,:));
+            %et = errorTransform(q, r_lattice, q_goal(1,:));
+            et = q - q_goal;
             e_history(t_j,:,:) = et;
             %e_history(t_j,:,:) = q - q_goal;
             v_history(t_j,:,:) = sum(et*et');
             %v_history(t_j,:,:) = sum((q - q_goal).^2);
             %v_history(t_j,:,:) = sum(abs(et(1)).*abs(et(2:N).^2));
-            v2_history(t_j,:,:) = sum(abs(et)*abs(et)');
+            %v2_history(t_j,:,:) = q'*P*q;
+            v2_history(t_j,:,:) = et'*P*et;
+            %sum(abs(et)*abs(et)');
             %v3_history(t_j,:,:) = (abs(et(1)).^(N + mod(N,2)) + sum(et(2:N).^2))/2; %force to be even power
             %v3_history(t_j,:,:) = sum(abs(et));
             v3_history(t_j,:,:) = ((et(1)).^(2) + sum(et(2:N).^2)/N); %force to be even power
@@ -546,6 +568,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
             else
                 vdot_history(t_j,:,:) = v_history(t_j, :, :) - v_history(t_j - 1, :, :);
                 v2dot_history(t_j,:,:) = v2_history(t_j, :, :) - v2_history(t_j - 1, :, :);
+                %v2dot_history(t_j,:,:) = q'*(A'*P + P*A)*q;
                 v3dot_history(t_j,:,:) = v3_history(t_j, :, :) - v3_history(t_j - 1, :, :);
             end
             alp_history(t_j,:,:) = alp(:,:);
@@ -949,8 +972,8 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                 end
                 v=plot(time_traj(1:size(q_history(:,i,1))),v_history(:,1),'c');
                 vd=plot(time_traj(1:size(q_history(:,i,1))),vdot_history(:,1),'c.');
-                %v2=plot(time_traj(1:size(q_history(:,i,1))),v2_history(:,1),'k');
-                %v2d=plot(time_traj(1:size(q_history(:,i,1))),v2dot_history(:,1),'k.');
+                v2=plot(time_traj(1:size(q_history(:,i,1))),v2_history(:,1),'k');
+                v2d=plot(time_traj(1:size(q_history(:,i,1))),v2dot_history(:,1),'k.');
                 %v3=plot(time_traj(1:size(q_history(:,i,1))),v3_history(:,1),'g');
                 %v3d=plot(time_traj(1:size(q_history(:,i,1))),v3dot_history(:,1),'g.');
                 %legend([v,vd,v2,v2d,v3,v3d],'v', 'vd', 'v2', 'v2d', 'v3', 'v3d');
