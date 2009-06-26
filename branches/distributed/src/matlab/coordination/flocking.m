@@ -112,11 +112,14 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         
         alp_min = 0.001;
         alp_max = 0.999;
-        eps = 1;
+        eps = 0.25;
         dist = r_lattice;
-        delta=1;
+        delta = r_lattice/5;
         
-        step_max = 10;
+        step_max = 100000; %note, if we constrain the states like this, there will arrise a 
+                           %stronger condition on the initial states: there must be a lower
+                           %(safety) and upper (communications? kind of) bound on the 
+                           %starting positions
         
         v_max = 1000;
         a_max = 1000;
@@ -179,13 +182,14 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                 if c0 == 1
                     q(c0,c1) = 0;
                 else
-                    %q(c0,c1) = q(c0 - 1,c1) + rand(1,1)*(dist*3);
-                    q(c0,c1) = q(c0 - 1,c1) + eps;
+                    q(c0,c1) = q(c0 - 1,c1) + eps + rand(1,1)*(dist*2.5 - eps);
+                    %q(c0,c1) = q(c0 - 1,c1) + eps;
                     
                     %q(c0,c1) = q(c0 - 1) + (dist);
                     
-                    if (norm(q(c0,c1) - q(c0 - 1,c1), 2)) < eps
-                        q(c0,c1) = eps;
+                    if (abs(q(c0,c1) - q(c0 - 1,c1))) < 2*eps
+                        'bad safety initial condition'
+                        q(c0,c1) = q(c0 - 1, c1) + 2.01*eps; %needs to be above eps
                     end
                 end
             end
@@ -199,7 +203,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         %q(2*N/3:N) = [2*N/3:N]'*(1) + 25
         
         for c0 = 1:m
-            q_goal(:,c0) = -25 + [0:N-1]'.*r_lattice;
+            q_goal(:,c0) = -100 + [0:N-1]'.*r_lattice;
         end
         q_goal
     end
@@ -520,16 +524,21 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         for t_j=(t_i-1)*tdiv+1 : 1 : tdiv+(t_i-1)*tdiv+1
             tt=t_j*(tcyc/tdiv);
             
-            alp(:,:) = max(alp_min, min(rand(N,m), alp_max)); %cool effect: any alpha between 0 and 1 works
+            %alp(:,:) = max(alp_min, min(rand(N,m), alp_max)); %cool effect: any alpha between 0 and 1 works
+            alp(:,:) = ones(N,m)*0.9;
             
             %store all state variables over time
             q_history(t_j,:,:) = q(:,:);
             et = errorTransform(q, r_lattice, q_goal(1,:));
             e_history(t_j,:,:) = et;
-            v_history(t_j,:,:) = sum(abs(et(1)).*abs(et(2:N).^2));
+            %e_history(t_j,:,:) = q - q_goal;
+            v_history(t_j,:,:) = sum(et*et');
+            %v_history(t_j,:,:) = sum((q - q_goal).^2);
+            %v_history(t_j,:,:) = sum(abs(et(1)).*abs(et(2:N).^2));
             v2_history(t_j,:,:) = sum(abs(et)*abs(et)');
             %v3_history(t_j,:,:) = (abs(et(1)).^(N + mod(N,2)) + sum(et(2:N).^2))/2; %force to be even power
-            v3_history(t_j,:,:) = sum(abs(et));
+            %v3_history(t_j,:,:) = sum(abs(et));
+            v3_history(t_j,:,:) = ((et(1)).^(2) + sum(et(2:N).^2)/N); %force to be even power
             if t_j <= 1
                 vdot_history(t_j,:,:) =  0;
                 v2dot_history(t_j,:,:) = 0;
@@ -750,22 +759,27 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                             max_sep = 0;
                             
                             for asdf=2:N
-                                sep = norm(q_delay(asdf) - q_delay(asdf - 1) - dist,2);
-                                if (sep > max_sep)
-                                    max_sep = sep;
+                                %error = q_delay(asdf) - (q_delay(asdf - 1) + dist);%this is an optimized control, allowing the first node to go ahead
+                                                                                   %and move before StrongFlock, if the flock is just squished, which results
+                                                                                   %in faster convergence;
+                                                                                   %the absolute version forces the flock to expand first, then move, 
+                                                                                   %NOTE: this is necessary to use the sum of squares common Lyapunov function
+                                error = abs(q_delay(asdf) - (q_delay(asdf - 1) + dist));%resulting in slower convergence
+                                if (error > max_sep)
+                                    max_sep = error;
                                 end
                             end
                             
-                            if max_sep <= delta/2
+                            if max_sep <= delta / 2
                                 %uchange = q_delay(i) - alp(i,:) * (q_delay(i) - q_goal(1,:));
                                 %uchange = q_delay(i) - alp(i,:) * (q_delay(i) - q_goal(1,:));
                                 
                                 uchange = min(q_delay(i) - alp(i,:)*(q_delay(i) - q_goal(1,:)), q_delay(i + 1) - eps);
                                 
-                                 if abs(q_delay(i) - uchange) < delta/2
+                                 if abs(q_delay(i) - uchange) < delta/4
                                      u(i,:) = uchange;
                                  else
-                                     u(i,:) = q_delay(i) + sign(uchange) * delta/2;
+                                     u(i,:) = q_delay(i) + sign(uchange) * delta/4;
                                  end
                             else
                                 u(i,:) = q_delay(i);
@@ -935,11 +949,12 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                 end
                 v=plot(time_traj(1:size(q_history(:,i,1))),v_history(:,1),'c');
                 vd=plot(time_traj(1:size(q_history(:,i,1))),vdot_history(:,1),'c.');
-                v2=plot(time_traj(1:size(q_history(:,i,1))),v2_history(:,1),'k');
-                v2d=plot(time_traj(1:size(q_history(:,i,1))),v2dot_history(:,1),'k.');
-                v3=plot(time_traj(1:size(q_history(:,i,1))),v3_history(:,1),'g');
-                v3d=plot(time_traj(1:size(q_history(:,i,1))),v3dot_history(:,1),'g.');
-                legend([v,vd,v2,v2d,v3,v3d],'v', 'vd', 'v2', 'v2d', 'v3', 'v3d');
+                %v2=plot(time_traj(1:size(q_history(:,i,1))),v2_history(:,1),'k');
+                %v2d=plot(time_traj(1:size(q_history(:,i,1))),v2dot_history(:,1),'k.');
+                %v3=plot(time_traj(1:size(q_history(:,i,1))),v3_history(:,1),'g');
+                %v3d=plot(time_traj(1:size(q_history(:,i,1))),v3dot_history(:,1),'g.');
+                %legend([v,vd,v2,v2d,v3,v3d],'v', 'vd', 'v2', 'v2d', 'v3', 'v3d');
+                legend([v,vd],'v', 'vd', 'v2', 'v2d', 'v3', 'v3d');
                 max(vdot_history)
                 max(v2dot_history)
                 max(v3dot_history)
@@ -947,12 +962,18 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                 vlast = inf;
                 v2last = inf;
                 v3last = inf;
+                ibad = 1;
+                i2bad = 1;
+                i3bad = 1;
                 for asdf = 1 : size(time_traj(1:size(q_history(:,i,1))))
                     if v_history(asdf,1) > vlast
                         %'Error: increasing Lyapunov function'
                         %vlast
                         %v_history(asdf,1)
-                        plot([asdf - 1, asdf], [v_history(asdf-1,1), v_history(asdf,1)], '*c');
+                        vbad(ibad,:) = [asdf - 2, v_history(asdf-1,1)]; %asdf - 2 since time is 0 indexed
+                        ibad = ibad + 1;
+                        vbad(ibad,:) = [asdf - 1, v_history(asdf,1)];
+                        ibad = ibad + 1;
                     end
                     vlast = v_history(asdf,1);
                     
@@ -960,7 +981,10 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                         %'Error: increasing Lyapunov function'
                         %v2last
                         %v2_history(asdf,1)
-                        plot([asdf - 1, asdf], [v2_history(asdf-1,1), v2_history(asdf,1)], '*k');
+                        v2bad(i2bad,:) = [asdf - 2, v2_history(asdf-1,1)]; %asdf - 2 since time is 0 indexed
+                        i2bad = i2bad + 1;
+                        v2bad(i2bad,:) = [asdf - 1, v2_history(asdf,1)];
+                        i2bad = i2bad + 1;
                     end
                     v2last = v2_history(asdf,1);
                     
@@ -968,9 +992,24 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                         %'Error: increasing Lyapunov function'
                         %v3last
                         %v3_history(asdf,1)
-                        plot([asdf - 1, asdf], [v3_history(asdf-1,1), v3_history(asdf,1)], '*g');
+                        v3bad(i3bad,:) = [asdf - 2, v3_history(asdf-1,1)]; %asdf - 2 since time is 0 indexed
+                        i3bad = i3bad + 1;
+                        v3bad(i3bad,:) = [asdf - 1, v3_history(asdf,1)];
+                        i3bad = i3bad + 1;
                     end
                     v3last = v3_history(asdf,1);
+                end
+                
+                if ibad > 1
+                    plot(vbad(:,1), vbad(:,2), 'xr');
+                end
+                
+                if i2bad > 1
+                    plot(v2bad(:,1), v2bad(:,2), 'xr');
+                end
+                
+                if i3bad > 1
+                    plot(v3bad(:,1), v3bad(:,2), 'xr');
                 end
                 
                 figure;
