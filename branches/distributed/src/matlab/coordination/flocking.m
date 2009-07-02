@@ -116,6 +116,8 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         dist = r_lattice;
         delta = r_lattice/5;
         
+        jumpError = delta/2; %max error between any node before node 1 jumps
+        
         step_max = 100000; %note, if we constrain the states like this, there will arrise a 
                            %stronger condition on the initial states: there must be a lower
                            %(safety) and upper (communications? kind of) bound on the 
@@ -125,6 +127,10 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         a_max = 1000;
         
         r_init = 5;
+        
+        flocking_weak_count = 0;
+        
+        kjump = 1;
     end
     
     r_lattice_prime = 0.6 * r_lattice;
@@ -182,14 +188,14 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                 if c0 == 1
                     q(c0,c1) = 0;
                 else
-                    q(c0,c1) = q(c0 - 1,c1) + eps + rand(1,1)*(dist*2.5 - eps);
-                    %q(c0,c1) = q(c0 - 1,c1) + eps;
+                    %q(c0,c1) = q(c0 - 1,c1) + eps + rand(1,1)*(dist*2.5 - eps);
+                    q(c0,c1) = q(c0 - 1,c1) + eps;
                     
                     %q(c0,c1) = q(c0 - 1) + (dist);
                     
-                    if (abs(q(c0,c1) - q(c0 - 1,c1))) < 2*eps
+                    if (abs(q(c0,c1) - q(c0 - 1,c1))) < eps
                         'bad safety initial condition'
-                        q(c0,c1) = q(c0 - 1, c1) + 2.01*eps; %needs to be above eps
+                        q(c0,c1) = q(c0 - 1, c1) + eps; %needs to be above eps
                     end
                 end
             end
@@ -310,12 +316,12 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     uNew_history = zeros([round(u_steps), N, m]);
     q_history = zeros([round(steps), N, m]);
     e_history = zeros([round(steps), N, m]);
-    v_history = zeros([round(steps), N, m]);
-    vdot_history = zeros([round(steps), N, m]);
-    v2_history = zeros([round(steps), N, m]);
-    v2dot_history = zeros([round(steps), N, m]);
-    v3_history = zeros([round(steps), N, m]);
-    v3dot_history = zeros([round(steps), N, m]);
+    v_history = zeros([round(steps), 1, m]);
+    vdot_history = zeros([round(steps), 1, m]);
+    v2_history = zeros([round(steps), 1, m]);
+    v2dot_history = zeros([round(steps), 1, m]);
+    v3_history = zeros([round(steps), 1, m]);
+    v3dot_history = zeros([round(steps), 1, m]);
     alp_history = zeros([round(steps), N, m]);
     p_history = zeros([round(steps), N, m]);
     qr_history = zeros([round(steps), N, m]);
@@ -529,9 +535,10 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
             %A = diag(1 - alp(:,:));
             A = zeros(N);
             %make the diagonal matrix
-            for z = 1 : N
+            for z = 2 : N
                 if z == 1
-                    A(z, z) = 1 - alp(1)/2;
+                    %A(z, z) = 1 - alp(1)/2;
+                    %A(z, z) = 0;
                 elseif z > 1 && z < N
                     A(z, z) = 1 - alp(z+1)/2 - alp(z)/2;
                 else
@@ -540,27 +547,68 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                 A(z+1, z) = alp(z)/2;
                 A(z, z+1) = alp(z)/2;
             end
-            A = A(1:N, 1:N);
+            A = A(2:N, 2:N);
+            
+            %expm(A)
+            
+            %logm(expm(A))
+            
+            %logm(A)
+            
+            %rhobar = max(abs(eig(A)));
+            rhobar = norm(eig(A), inf);
+            if rhobar > 1
+                'A unstable';
+            end
+            
             size(A);
             alp/2;
-            Q = eye(N);
+            Q = eye(size(A));
             P = dlyap(A', Q);
+            if min(eig(P), 0) < 0
+                'P not positive definite'
+            end
             
             %store all state variables over time
             q_history(t_j,:,:) = q(:,:);
-            %et = errorTransform(q, r_lattice, q_goal(1,:));
-            et = q - q_goal;
+            et = errorTransform(q, r_lattice, q_goal(1,:));
+            %et = et(2:N);
+            %et = 1000*(errorTransform(q, r_lattice, q_goal(1,:)).^2) + 0.1*((q - q_goal).^2);
+            %et = 1000*errorTransform(q, r_lattice, q_goal(1,:)) + 0.1*((q - q_goal));
+            %et = 10000*errorTransform(q, r_lattice, q_goal(1,:)) + 0.01*((q - q_goal));
+            %e_history(t_j,:,:) = [0; et];
             e_history(t_j,:,:) = et;
+
+            %calculate the next time to jump for node 1 (requires fixed alpha k)
+            if t_i == 1
+                %jumpError
+                %norm(e_history(1,:,:), inf)
+                %rhobar
+                %A
+                kjump = ceil(log( jumpError / norm(et(2:N), inf))/log(rhobar));
+                %return
+            elseif t_i > kjump
+            %if norm(et, inf) <= jumpError
+                %t_i
+                %kjump
+                %norm(e_history(kjump,:,:), inf)
+                %log( jumpError / norm(e_history(kjump,:,:), inf))
+                kjump = kjump + ceil(log( jumpError / norm(e_history(t_i,2:N,:), inf))/log(rhobar)) + 1;
+                %return
+            end
+            
             %e_history(t_j,:,:) = q - q_goal;
-            v_history(t_j,:,:) = sum(et*et');
+            v_history(t_j,:,:) = sum(et'*et);
             %v_history(t_j,:,:) = sum((q - q_goal).^2);
             %v_history(t_j,:,:) = sum(abs(et(1)).*abs(et(2:N).^2));
             %v2_history(t_j,:,:) = q'*P*q;
-            v2_history(t_j,:,:) = et'*P*et;
+            %v2_history(t_j,:,:) = et'*P*et;
+            v2_history(t_j,:,:) = et(2:N)'*P*et(2:N);
             %sum(abs(et)*abs(et)');
             %v3_history(t_j,:,:) = (abs(et(1)).^(N + mod(N,2)) + sum(et(2:N).^2))/2; %force to be even power
             %v3_history(t_j,:,:) = sum(abs(et));
-            v3_history(t_j,:,:) = ((et(1)).^(2) + sum(et(2:N).^2)/N); %force to be even power
+            %v3_history(t_j,:,:) = ((et(1)).^(2) + sum(et(2:N).^2)/N);
+            v3_history(t_j,:,:) = sum(et.^2);
             if t_j <= 1
                 vdot_history(t_j,:,:) =  0;
                 v2dot_history(t_j,:,:) = 0;
@@ -779,31 +827,48 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                         end
                         
                         if i == 1
-                            max_sep = 0;
+                            %max_sep = 0;
+                            max_sep = norm(et(2:N), inf);
                             
-                            for asdf=2:N
-                                %error = q_delay(asdf) - (q_delay(asdf - 1) + dist);%this is an optimized control, allowing the first node to go ahead
-                                                                                   %and move before StrongFlock, if the flock is just squished, which results
-                                                                                   %in faster convergence;
-                                                                                   %the absolute version forces the flock to expand first, then move, 
-                                                                                   %NOTE: this is necessary to use the sum of squares common Lyapunov function
-                                error = abs(q_delay(asdf) - (q_delay(asdf - 1) + dist));%resulting in slower convergence
-                                if (error > max_sep)
-                                    max_sep = error;
-                                end
-                            end
-                            
-                            if max_sep <= delta / 2
-                                %uchange = q_delay(i) - alp(i,:) * (q_delay(i) - q_goal(1,:));
-                                %uchange = q_delay(i) - alp(i,:) * (q_delay(i) - q_goal(1,:));
+%                             for asdf=2:N
+%                                 %error = q_delay(asdf) - (q_delay(asdf - 1) + dist);%this is an optimized control, allowing the first node to go ahead
+%                                                                                    %and move before StrongFlock, if the flock is just squished, which results
+%                                                                                    %in faster convergence;
+%                                                                                    %the absolute version forces the flock to expand first, then move, 
+%                                                                                    %NOTE: this is necessary to use the sum of squares common Lyapunov function
+%                                 error = abs(q_delay(asdf) - (q_delay(asdf - 1) + dist));%resulting in slower convergence
+%                                 
+%                                 if (error > max_sep)
+%                                     max_sep = error;
+%                                 end
+%                             end
+                            %if et(1) <= 2*jumpError && max_sep <= jumpError
+                            %    u(i,:) = q_delay(i) - 0.1*(q_delay(i) - q_goal(1,:));
+                            %elseif max_sep <= jumpError
+                            if max_sep <= jumpError
+%                                 max_sep
+%                                 jumpError
+%                                 kjump
+%                                 t_i
+%                                 t_j
+                                %return
                                 
-                                uchange = min(q_delay(i) - alp(i,:)*(q_delay(i) - q_goal(1,:)), q_delay(i + 1) - eps);
+                                flocking_weak_count = flocking_weak_count + 1;
                                 
-                                 if abs(q_delay(i) - uchange) < delta/4
-                                     u(i,:) = uchange;
-                                 else
-                                     u(i,:) = q_delay(i) + sign(uchange) * delta/4;
-                                 end
+                                %if flocking_weak_count >= 5
+                                    %uchange = q_delay(i) - alp(i,:) * (q_delay(i) - q_goal(1,:));
+                                    %uchange = q_delay(i) - alp(i,:) * (q_delay(i) - q_goal(1,:));
+
+                                    uchange = min(q_delay(i) - (alp(i,:)/N)*(q_delay(i) - q_goal(1,:)), q_delay(i + 1) - eps);
+
+                                    if abs(q_delay(i) - uchange) < jumpError/2
+                                        u(i,:) = uchange;
+                                    else
+                                        u(i,:) = q_delay(i) + sign(uchange) * jumpError/2;
+                                    end
+
+                                    flocking_weak_count = 0;
+                                %end
                             else
                                 u(i,:) = q_delay(i);
                             end
@@ -974,10 +1039,10 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                 vd=plot(time_traj(1:size(q_history(:,i,1))),vdot_history(:,1),'c.');
                 v2=plot(time_traj(1:size(q_history(:,i,1))),v2_history(:,1),'k');
                 v2d=plot(time_traj(1:size(q_history(:,i,1))),v2dot_history(:,1),'k.');
-                %v3=plot(time_traj(1:size(q_history(:,i,1))),v3_history(:,1),'g');
-                %v3d=plot(time_traj(1:size(q_history(:,i,1))),v3dot_history(:,1),'g.');
-                %legend([v,vd,v2,v2d,v3,v3d],'v', 'vd', 'v2', 'v2d', 'v3', 'v3d');
-                legend([v,vd],'v', 'vd', 'v2', 'v2d', 'v3', 'v3d');
+                v3=plot(time_traj(1:size(q_history(:,i,1))),v3_history(:,1),'g');
+                v3d=plot(time_traj(1:size(q_history(:,i,1))),v3dot_history(:,1),'g.');
+                legend([v,vd,v2,v2d,v3,v3d],'v', 'vd', 'v2', 'v2d', 'v3', 'v3d');
+                %legend([v,vd],'v', 'vd', 'v2', 'v2d', 'v3', 'v3d');
                 max(vdot_history)
                 max(v2dot_history)
                 max(v3dot_history)
