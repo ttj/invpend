@@ -1,17 +1,17 @@
-function [error] = errorTransform(q, r_lattice, goal)
+function [error] = errorTransform(q, r_lattice, goal, leader)
     n = size(q,1); %# agents
     m = size(q,2); %# dimensions
     error = zeros(size(q));
 
     for i = 1 : n
-        if i == 1
+        if i == leader
             %error(i) = 0;
             %error(i) = 0 + 0.01*sqrt(1 + norm(q(i,:) - goal, 2)) - 1;
             %error(i) = norm(q(i,:) - goal, 2);
             
             error(i) = q(i,:) - goal;
-        else
-            error(i) = q(i,:) - (q(i-1,:) + r_lattice); %original transform
+        elseif i < leader
+            error(i) = q(i+1,:) - (q(i,:) + r_lattice);
             
             %error(i) = q(i,:) - (q(i-1,:) + r_lattice) + q(i,:) - goal -
             %i*r_lattice; (error converges to -r_lattice)
@@ -30,6 +30,8 @@ function [error] = errorTransform(q, r_lattice, goal)
             %error(i) = q(i,:) - (q(i-1,:) + r_lattice) + 0.01*(sqrt(1 + norm(q(i,:) - goal,2))) - 1;
             
             %error(i) = q(i,:) - (q(i-1,:) + r_lattice) + norm(q(i,:) - goal, 2) - i*r_lattice;
+        elseif i > leader
+            error(i) = q(i,:) - (q(i-1,:) + r_lattice); %original transform
         end
     end
     
