@@ -1,4 +1,4 @@
-function E = deviationEnergy(q, q_goal, r_comm, r_lattice, delta)
+function E = deviationEnergy(framework, q, q_goal, r_comm, r_lattice, delta)
     n = size(q,1); %# agents
     m = size(q,2); %# dimensions
 %     E = zeros(size(q));
@@ -14,4 +14,8 @@ function E = deviationEnergy(q, q_goal, r_comm, r_lattice, delta)
     %E = abs(q(:,:) - q_goal(:,:));
     
     E = q(:,:) - q_goal(:,:);
+    
+    if framework == 3
+        E = q(:,:);
+    end
 end
