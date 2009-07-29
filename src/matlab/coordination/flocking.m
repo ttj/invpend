@@ -1,4 +1,4 @@
-function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lattice, r_safety, tdiv, tmax, updates, plotControls, tswitch, delay, constrain)
+function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lattice, r_safety, delta, tdiv, tmax, updates, plotControls, tswitch, delay, constrain)
 %Flocking and Consensus Problem Simulations
 %
 %Taylor Johnson
@@ -74,7 +74,6 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         v_max = 100;     %maximum velocity
         a_max = 1000;     %maximum acceleration
         %a_max = inf;
-        delta=r_lattice/5
     elseif framework == 1
         system_type = 0; %0 continuous, 1 discrete-event system
         numLyap = 0;
@@ -108,19 +107,30 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         %                control can stop [diff eq]) + (distance traveled
         %                during communications delay)
         r_lattice=r_init + r_d;
-        delta=r_lattice/5
     elseif framework == 2
         system_type = 1; %0 continuous, 1 discrete-event system
+        
+        time_varying = 0;
+        
+        HEAD_LEADER_NO_FOLLOWERS = 1;
+        HEAD_LEADER = 2;
+        MIDDLE = 3;
+        TAIL_LEADER = 4;
         
         Tc = 1;
         
         alp_min = 0.001;
         alp_max = 0.999;
-        eps = 0.25;
-        dist = r_lattice;
-        delta = r_lattice/5;
-        
         jumpError = delta/2; %max error between any node before node 1 jumps
+        jumpLast = 0; %did the lead node jump last round?
+        
+        alp_c = alp_max % * rand(1,1);
+        alp(:,:) = ones(N,m)*alp_c;
+        %alp(leadNode) = min(alp);
+        jumpErrors = ones(N,1) * jumpError% * rand(1,1)
+        dists = ones(N,1) * r_lattice% * rand(1,1)
+        
+        update_count = 1;
         
         step_max = 100000; %note, if we constrain the states like this, there will arrise a 
                            %stronger condition on the initial states: there must be a lower
@@ -136,13 +146,16 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         
         kjump = 1;
         
-        leadNode = ceil(N/3);
+        %leadNode = ceil(N/3);
+        leadNode = 1;
         
-        numLyap = 3;
+        numLyap = 6;
+        
+        nodeType = zeros(N, 1);
+
     elseif framework == 3 %inverted pendulum dynamics
         system_type = 0;
         leadNode = 1;
-        delta=r_lattice/5;
         numLyap = 1;
         
         m = 4; %requires m = 4
@@ -420,27 +433,31 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                 if c0 == 1
                     q(c0,c1) = 0;
                 else
-                    q(c0,c1) = q(c0 - 1,c1) + eps + rand(1,1)*(dist*2.5 - eps);
-                    %q(c0,c1) = q(c0 - 1,c1) + eps;
+                    q(c0,c1) = q(c0 - 1,c1) + r_safety + rand(1,1)*(r_comm*2.5);
+                    %q(c0,c1) = q(c0 - 1,c1) + r_safety;
+                    %q(c0,c1) = q(c0 - 1,c1) + r_lattice - jumpError;
                     
                     %if mod(c0, 2) == 1
-                    %    q(c0,c1) = q(c0 - 1,c1) + eps;
+                    %    q(c0,c1) = q(c0 - 1,c1) + r_safety;
                     %else
-                    %    q(c0,c1) = q(c0 - 1,c1) + dist*1.25;
+                    %    q(c0,c1) = q(c0 - 1,c1) + r_lattice*1.25;
                     %end
                     
-                    %q(c0,c1) = q(c0 - 1) + (dist);
+                    %q(c0,c1) = q(c0 - 1) + (r_lattice);
                     
-                    if (abs(q(c0,c1) - q(c0 - 1,c1))) < eps
+                    if (abs(q(c0,c1) - q(c0 - 1,c1))) < r_safety
                         'bad safety initial condition'
-                        q(c0,c1) = q(c0 - 1, c1) + eps; %needs to be above eps
+                        q(c0,c1) = q(c0 - 1, c1) + r_safety; %needs to be above r_safety
                     end
                 end
             end
         end
+        %space farthest out to be at weak flocking so we can see if it holds or gets violated by the others moving out
+        %q(N,1) = q(N-1,1) + r_lattice - 0.99*delta;
+        
         q
         
-        %q(1:N) = [1:N]'*(dist*3)
+        %q(1:N) = [1:N]'*(r_lattice*3)
 
         %q(1:N/3) = [1:N/3]'*(r_init)
         %q(N/3:2*N/3) = [N/3:2*N/3]'*(r_init+2) + 25
@@ -448,7 +465,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         
         for c0 = 1:m
             %q_goal(:,c0) = -25 + [0:N-1]'.*r_lattice; %based on node 1 as goal
-            goal = -25;
+            goal = -25*jumpError - rand(1,1)*jumpError; %one jump only
             q_goal(:,c0) = goal + [-leadNode + 1: N - leadNode]'.*r_lattice;
             %q_goal(leadNode,c0) = goal;
             %q_goal(1:leadNode-1,c0) = goal + [0:leadNode-1]'.*r_lattice;
@@ -460,49 +477,9 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         q_goal(leadNode)
     elseif framework == 3
         
-        for c0 = 1 : N
-            for c1 = 1 : m
-                if c0 == 1
-                    q(c0,c1) = 0;
-                else
-                    q(c0,c1) = q(c0 - 1,c1) + eps + rand(1,1)*(dist*2.5 - eps);
-                    %q(c0,c1) = q(c0 - 1,c1) + eps;
-                    
-                    %if mod(c0, 2) == 1
-                    %    q(c0,c1) = q(c0 - 1,c1) + eps;
-                    %else
-                    %    q(c0,c1) = q(c0 - 1,c1) + dist*1.25;
-                    %end
-                    
-                    %q(c0,c1) = q(c0 - 1) + (dist);
-                    
-                    if (abs(q(c0,c1) - q(c0 - 1,c1))) < eps
-                        'bad safety initial condition'
-                        q(c0,c1) = q(c0 - 1, c1) + eps; %needs to be above eps
-                    end
-                end
-            end
-        end
-        q
+        %set up initial conditions and goal
         
-        %q(1:N) = [1:N]'*(dist*3)
-
-        %q(1:N/3) = [1:N/3]'*(r_init)
-        %q(N/3:2*N/3) = [N/3:2*N/3]'*(r_init+2) + 25
-        %q(2*N/3:N) = [2*N/3:N]'*(1) + 25
-        
-        for c0 = 1:m
-            %q_goal(:,c0) = -25 + [0:N-1]'.*r_lattice; %based on node 1 as goal
-            goal = -25;
-            q_goal(:,c0) = goal + [-leadNode + 1: N - leadNode]'.*r_lattice;
-            %q_goal(leadNode,c0) = goal;
-            %q_goal(1:leadNode-1,c0) = goal + [0:leadNode-1]'.*r_lattice;
-            %q_goal(leadNode+1:N,c0) = goal + [leadNode+1:N]'.*r_lattice;
-        end
-        leadNode
-        N
-        q_goal
-        q_goal(leadNode)
+        q_goal = 0;
     end
 
     %q=[0:(r_lattice-delta):(r_lattice-delta)*(N-1)]';
@@ -611,9 +588,9 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     uNew_history = zeros([round(u_steps), N, m]);
     q_history = zeros([round(steps), N, m]);
     e_history = zeros([round(steps), N, m]);
-    for a = 1 : numLyap+1
-        v_history = zeros([a round(steps), 1, 1]); %R^(N*m) -> R
-        vdot_history = zeros([a round(steps), 1, 1]);
+    for a = 1 : numLyap
+        v_history = zeros([a, round(steps)+1, 1, 1]); %R^(N*m) -> R
+        vdot_history = zeros([a, round(steps)+1, 1, 1]);
     end
     alp_history = zeros([round(steps), N, m]);
     p_history = zeros([round(steps), N, m]);
@@ -822,26 +799,142 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
 
         for t_j=(t_i-1)*tdiv+1 : 1 : tdiv+(t_i-1)*tdiv+1
             tt=t_j*(tcyc/tdiv);
-            
-            et = errorTransform(framework, q, r_lattice, q_goal(leadNode,:), leadNode);
-            %et = et(2:N);
-            %et = 1000*(errorTransform(framework, q, r_lattice, q_goal(1,:)).^2) + 0.1*((q - q_goal).^2);
-            %et = 1000*errorTransform(framework, q, r_lattice, q_goal(1,:)) + 0.1*((q - q_goal));
-            %et = 10000*errorTransform(framework, q, r_lattice, q_goal(1,:)) + 0.01*((q - q_goal));
-            %e_history(t_j,:,:) = [0; et];
-            %e_history(t_j,:,:) = q - q_goal;
-            e_history(t_j,:,:) = et;
-            
+
             if framework == 2
-                %alp(:,:) = max(alp_min, min(rand(N,m), alp_max)); %cool effect: any alpha between 0 and 1 works
-                alp(:,:) = ones(N,m)*0.9;
-                %alp(leadNode) = min(alp);
+                if time_varying == 1
+                    alp(:,:) = max(alp_min, min(rand(N,m), alp_max)); %cool effect: any alpha between 0 and 1 works
+                    jumpErrors = ones(N,1) * rand(1,1) * jumpError;
+                    %dists = ones(N,1) * rand(1,1) * r_lattice; %TODO: this can cause safety to be violated in a few cases--make sure that the "proximity sensors" are using the current state info instead of delayed and this should be prevented.
+                end
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                for idxi = 1 : N
+                    nbrs_i = neighborsNearest(idxi, q, r_comm);
+
+                    if (size(nbrs_i, 1) == 0)
+                        nodeType(idxi) = HEAD_LEADER_NO_FOLLOWERS;
+                        nbrs_head_i = idxi;
+                        nbrs_tail_i = idxi;
+                    elseif (size(nbrs_i, 1) == 2)
+                        nodeType(idxi) = MIDDLE;
+                        nbrs_head_i = neighborsHead(idxi, q, r_comm);
+                        nbrs_tail_i = neighborsTail(idxi, q, r_comm);
+                    elseif (nbrs_i(1) < idxi)
+                        nodeType(idxi) = TAIL_LEADER;
+                        nbrs_head_i = neighborsHead(idxi, q, r_comm);
+                        nbrs_tail_i = idxi;
+                    elseif (nbrs_i(1) > idxi)
+                        nodeType(idxi) = HEAD_LEADER;
+                        nbrs_head_i = idxi;
+                        nbrs_tail_i = neighborsTail(idxi, q, r_comm);
+                    end
+                end
+
+                et = errorTransform(framework, nodeType, q, dists, q_goal(leadNode,:), leadNode, r_comm)
+                %et = et(2:N);
+                %et = 1000*(errorTransform(framework, q, r_lattice, q_goal(1,:)).^2) + 0.1*((q - q_goal).^2);
+                %et = 1000*errorTransform(framework, q, r_lattice, q_goal(1,:)) + 0.1*((q - q_goal));
+                %et = 10000*errorTransform(framework, q, r_lattice, q_goal(1,:)) + 0.01*((q - q_goal));
+                %e_history(t_j,:,:) = [0; et];
+                %e_history(t_j,:,:) = q - q_goal;
+                e_history(t_j,:,:) = et;
+% 
+%                             %calculate the next time to jump for node 1 (requires fixed alpha k)
+%                             if t_i == 1
+%                                 %jumpError
+%                                 %norm(e_history(1,:,:), inf)
+%                                 %rhobar
+%                                 %A
+%                                 kjump = ceil(log( jumpError / norm(et(2:N), inf))/log(rhobar)); %todo: change to leadnode
+%                                 %return
+%                             elseif t_i > kjump
+%                                 %if norm(et, inf) <= jumpError
+%                                 norm(e_history(t_i,2:N,:), inf);
+%                                 (log( jumpError / norm(e_history(t_i,2:N,:), inf))/log(rhobar));
+%                                 kjump = kjump + ceil(log( jumpError / norm(e_history(t_i,2:N,:), inf))/log(rhobar)); %todoL change to lead node
+%                                 %return
+%                             end
+
+                %v_history(1, t_j,:,:) = sum(et'*et);
+                %v_history(1, t_j,:,:) = sum((q - q_goal).^2);
+                %v_history(1, t_j,:,:) = sum(abs(et(1)).*abs(et(2:N).^2));
+
+                %v_history(2, t_j,:,:) = et(1:N)'*P*et(1:N); %todo, leadnode
+                %v_history(2, t_j,:,:) = q'*P*q;
+                %v_history(2, t_j,:,:) = et'*P*et;
+
+                %v_history(3, t_j,:,:) = sum(et.^2);
+                %v_history(3, t_j,:,:) = (abs(et(1)).^(N + mod(N,2)) + sum(et(2:N).^2))/2; %force to be even power
+                %v_history(3, t_j,:,:) = sum(abs(et));
+                %v_history(3, t_j,:,:) = ((et(1)).^(2) + sum(et(2:N).^2)/N);
+
+                %v_history(4, t_j,:,:) = (((de(1)).^(N) + sum(de(2:N).^2)))^(1/N); %need to heavily weight 1st node here, then scale back down
+                %v_history(4, t_j,:,:) = (((de(1)).^(N) + sum(et(2:N).^2)))^(1/N);
+
+                %v_history(1, t_j,:,:) = sum(et(1:1)'*et(1:1));
+                for idxi = 1 : N
+                    if nodeType(idxi) == HEAD_LEADER || nodeType(idxi) == HEAD_LEADER_NO_FOLLOWERS
+                        v_history(1, t_j,:,:) = v_history(1, t_j,:,:) + sum(et(idxi:idxi)'*et(idxi:idxi));
+                        v_history(2, t_j,:,:) = v_history(2, t_j,:,:) + sum(et(1:1));
+                    else
+                        v_history(3, t_j,:,:) = v_history(3, t_j,:,:) + sum(et(idxi:idxi)'*et(idxi:idxi));
+                        v_history(4, t_j,:,:) = v_history(4, t_j,:,:) + sum(et(idxi:idxi).^2);
+                    end
+                end
+                v_history(5, t_j,:,:) = sum(et'*et);
+                v_history(6, t_j,:,:) = sum(abs(et(1:N)));
+
+                if t_j <= 1
+                    for a = 1 : numLyap
+                        vdot_history(a, t_j,:,:) =  0;
+                    end
+                    %v_history(6, t_j,:,:) = N*jumpError;
+                    %v_history(6, t_j,:,:) = 0;
+                else
+                    for a = 1 : numLyap
+                        vdot_history(a, t_j,:,:) = v_history(a, t_j, :, :) - v_history(a, t_j - 1, :, :);
+                    end
+                    %v_history(6, t_j,:,:) = v_history(4,t_j - 1,:,:) + (N*jumpError);
+                    %v_history(6, t_j,:,:) = v_history(4,t_j - 1,:,:) * (2*N*jumpError);
+                    %vdot_history(2, t_j,:,:) = v_history(2, t_j, :, :) - v_history(2, t_j - 1, :, :);
+                    %vdot_history(2, t_j,:,:) = q'*(A'*P + P*A)*q;
+                    %vdot_history(3, t_j,:,:) = v_history(3, t_j, :, :) - v_history(3, t_j - 1, :, :);
+                end
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                    
                 %A = diag(1 - alp(:,:));
                 A = zeros(N);
                 %make the diagonal matrix
                 for z = 1 : N
                     if z == leadNode
-                        A(z, z) = 1 - alp(1)/2;
+                        %A(z, z) = 1 - alp(1)/2;
                         A(z, z) = 0;
                     else
                         if z ~= leadNode && z < N
@@ -873,22 +966,6 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                 if min(eig(P), 0) < 0
                     'P not positive definite'
                 end
-
-                %calculate the next time to jump for node 1 (requires fixed alpha k)
-                if t_i == 1
-                    %jumpError
-                    %norm(e_history(1,:,:), inf)
-                    %rhobar
-                    %A
-                    kjump = ceil(log( jumpError / norm(et(2:N), inf))/log(rhobar)); %todo: change to leadnode
-                    %return
-                elseif t_i > kjump
-                    %if norm(et, inf) <= jumpError
-                    norm(e_history(t_i,2:N,:), inf);
-                    (log( jumpError / norm(e_history(t_i,2:N,:), inf))/log(rhobar));
-                    kjump = kjump + ceil(log( jumpError / norm(e_history(t_i,2:N,:), inf))/log(rhobar)); %todoL change to lead node
-                    %return
-                end
                 
                 %passino model specific history
                 alp_history(t_j,:,:) = alp(:,:);
@@ -898,34 +975,6 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
             
             %store all state variables over time
             q_history(t_j,:,:) = q(:,:);
-
-            if framework == 2
-                v_history(1, t_j,:,:) = sum(et'*et);
-                %v_history(1, t_j,:,:) = sum((q - q_goal).^2);
-                %v_history(1, t_j,:,:) = sum(abs(et(1)).*abs(et(2:N).^2));
-
-                v_history(2, t_j,:,:) = et(1:N)'*P*et(1:N); %todo, leadnode
-                %v_history(2, t_j,:,:) = q'*P*q;
-                %v_history(2, t_j,:,:) = et'*P*et;
-
-                v_history(3, t_j,:,:) = sum(et.^2);
-                %v_history(3, t_j,:,:) = (abs(et(1)).^(N + mod(N,2)) + sum(et(2:N).^2))/2; %force to be even power
-                %v_history(3, t_j,:,:) = sum(abs(et));
-                %v_history(3, t_j,:,:) = ((et(1)).^(2) + sum(et(2:N).^2)/N);
-
-                if t_j <= 1
-                    vdot_history(1, t_j,:,:) =  0;
-                    vdot_history(2, t_j,:,:) =  0;
-                    vdot_history(3, t_j,:,:) =  0;
-                else
-                    vdot_history(1, t_j,:,:) = v_history(1, t_j, :, :) - v_history(1, t_j - 1, :, :);
-
-                    vdot_history(2, t_j,:,:) = v_history(2, t_j, :, :) - v_history(2, t_j - 1, :, :);
-                    %vdot_history(2, t_j,:,:) = q'*(A'*P + P*A)*q;
-
-                    vdot_history(3, t_j,:,:) = v_history(3, t_j, :, :) - v_history(3, t_j - 1, :, :);
-                end
-            end
             p_history(t_j,:,:) = p(:,:);
             qr_history(t_j,:,:) = qr(:,:);
             pr_history(t_j,:,:) = pr(:,:);
@@ -1134,18 +1183,33 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                             end
                         end
                         
-                        if i == leadNode
+%                         if i >= 2 && norm(q_delay(i) - q_delay(i - 1), 2) <= r_comm %node might THINK it's actually node 1
+%                             uchange = min(q_delay(i + 1) - r_safety, q_delay(i) - alp(i,:) * (q_delay(i) - (q_delay(i + 1) - r_lattice)));
+%                             if abs(q_delay(i) - uchange) < step_max
+%                                 u(i,:) = uchange;
+%                             else
+%                                 u(i,:) = q_delay(i) + sign(uchange) * step_max;
+%                             end
+%                         else                        
+                        
+                        if nodeType(i) == HEAD_LEADER_NO_FOLLOWERS
+                            u(i,:) = q_delay(i) - sign(q_delay(i) - q_goal(1,:))*min(abs(q_delay(i) - q_goal(1,:)), jumpErrors(i));
+                        elseif nodeType(i) == HEAD_LEADER %i == leadNode
                             %max_sep = 0;
-                            etl = [et(1:leadNode-1); et(leadNode+1:N)]; %todo: fix, this will error on leadNode=1
+                            %etl = [et(1:leadNode-1); et(leadNode+1:N)]; %todo: fix, this will error on leadNode=1
+                            %etl = [et(1:i-1); et(i+1:N)]; %todo: fix, this will error on leadNode=1
+                            etl = [et(i+1:neighborsTail(i, q, r_comm))]; %todo: fix, this will error on leadNode=1
                             max_sep = norm(etl, inf); %todo: lead node
+                            %max_sep = max(abs(etl)); %note for vectors: inf_norm == max(abs)
+                            %sum(abs(et(2:N)))/N
                             
 %                             for asdf=2:N
-%                                 %error = q_delay(asdf) - (q_delay(asdf - 1) + dist);%this is an optimized control, allowing the first node to go ahead
+%                                 %error = q_delay(asdf) - (q_delay(asdf - 1) + r_lattice);%this is an optimized control, allowing the first node to go ahead
 %                                                                                    %and move before StrongFlock, if the flock is just squished, which results
 %                                                                                    %in faster convergence;
 %                                                                                    %the absolute version forces the flock to expand first, then move, 
 %                                                                                    %NOTE: this is necessary to use the sum of squares common Lyapunov function
-%                                 error = abs(q_delay(asdf) - (q_delay(asdf - 1) + dist));%resulting in slower convergence
+%                                 error = abs(q_delay(asdf) - (q_delay(asdf - 1) + r_lattice));%resulting in slower convergence
 %                                 
 %                                 if (error > max_sep)
 %                                     max_sep = error;
@@ -1154,7 +1218,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                             %if et(1) <= 2*jumpError && max_sep <= jumpError
                             %    u(i,:) = q_delay(i) - 0.1*(q_delay(i) - q_goal(1,:));
                             %elseif max_sep <= jumpError
-                            if max_sep <= jumpError
+                            if max_sep <= jumpErrors(i) && jumpLast == 0 && u(i,:) ~= q_goal(1,:)
 %                                 max_sep
 %                                 jumpError
 %                                 kjump
@@ -1169,44 +1233,52 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                                     %uchange = q_delay(i) - alp(i,:) * (q_delay(i) - q_goal(1,:));
                                     %uchange = q_delay(i) - (alp(i,:)/N)*(q_delay(i) - q_goal(1,:))
 
-                                    %uchange = max(q_delay(i - 1) + eps, min(q_delay(i) - (alp(i,:))*(q_delay(i) - q_goal(i,:)), q_delay(i + 1) - eps))
-                                    uchange = q_delay(i) - (alp(i,:))*(q_delay(i) - q_goal(i,:));
-
-                                    if abs(q_delay(i) - uchange) < jumpError/2
-                                        u(i,:) = uchange;
-                                    else
-                                        u(i,:) = q_delay(i) + sign(uchange) * jumpError/2;
-                                    end
+                                    %uchange = max(q_delay(i - 1) + r_safety, min(q_delay(i) - (alp(i,:))*(q_delay(i) - q_goal(i,:)), q_delay(i + 1) - r_safety))
+                                    %uchange = q_delay(i) - (alp(i,:))*(q_delay(i) - q_goal(i,:));
+%                                     uchange = q_delay(i) - (q_delay(i) - q_goal(i,:)); %jump to goal
+% 
+%                                     if abs(q_delay(i) - uchange) < jumpError
+%                                         u(i,:) = uchange;
+%                                     else
+%                                         u(i,:) = q_delay(i) + sign(uchange) * jumpError;
+%                                     end
+                                    u(i,:) = q_delay(i) - sign(q_delay(i) - q_goal(1,:))*min(abs(q_delay(i) - q_goal(1,:)), jumpErrors(i));
 
                                     flocking_weak_count = 0;
                                 %end
+                                jumpLast = 0;%todo
+                                updates_v(update_count,:) = [t_i u(i)];
+                                update_count = update_count + 1;
                             else
                                 u(i,:) = q_delay(i);
+                                jumpLast = 0;
                             end
                             
-                            %if norm(q_delay(1) - q_delay(2), 2) <= (dist + eps)
+                            %if norm(q_delay(1) - q_delay(2), 2) <= (r_lattice + r_safety)
                             %    u(i,:) = q_delay(i);
                             %else
                             %    u(i,:) = q_delay(i); %update to same location
                             %end
-                        elseif i == N
-                            %u(i,:) = q_delay(N) - alp(i,:) * (q_delay(N) - (q_delay(N - 1) + dist));
-                            uchange = max(q_delay(N - 1) + eps, q_delay(N) - alp(i,:) * (q_delay(i) - (q_delay(i - 1) + dist)));
+                        elseif nodeType(i) == TAIL_LEADER %i == N && i ~= leadNode
+                            %u(i,:) = q_delay(N) - alp(i,:) * (q_delay(N) - (q_delay(N - 1) + r_lattice));
+                            %uchange = max(q_delay(i - 1) + r_safety, q_delay(i) - alp(i,:) * (q_delay(i) - (q_delay(i - 1) + dists(i))));
+                            uchange = q_delay(i) - alp(i,:) * (q_delay(i) - (q_delay(i - 1) + dists(i)));
                             if abs(q_delay(i) - uchange) < step_max
                                 u(i,:) = uchange;
                             else
                                 u(i,:) = q_delay(i) + sign(uchange) * step_max;
                             end
-                        elseif i == 1
-                            uchange = min(q_delay(i + 1) - eps, q_delay(i) - alp(i,:) * (q_delay(i) - (q_delay(i + 1) - dist)));
-                            if abs(q_delay(i) - uchange) < step_max
-                                u(i,:) = uchange;
-                            else
-                                u(i,:) = q_delay(i) + sign(uchange) * step_max;
-                            end
+%                         elseif i == 1 && i ~= leadNode
+%                             uchange = min(q_delay(i + 1) - r_safety, q_delay(i) - alp(i,:) * (q_delay(i) - (q_delay(i + 1) - r_lattice)));
+%                             if abs(q_delay(i) - uchange) < step_max
+%                                 u(i,:) = uchange;
+%                             else
+%                                 u(i,:) = q_delay(i) + sign(uchange) * step_max;
+%                             end
                         else %2...N-1
                             %u(i,:) = q_delay(i) - alp(i,:) * (q_delay(i) - (1/2)*(q_delay(i - 1) + q_delay(i + 1)));
-                            uchange = max(q_delay(i - 1) + eps, min(q_delay(i) - alp(i,:) * (q_delay(i) - (1/2)*(q_delay(i - 1) + q_delay(i + 1))), q_delay(i + 1) - eps));
+                            %uchange = max(q_delay(i - 1) + r_safety, min(q_delay(i) - alp(i,:) * (q_delay(i) - (1/2)*(q_delay(i - 1) + q_delay(i + 1))), q_delay(i + 1) - r_safety));
+                            uchange = q_delay(i) - alp(i,:) * (q_delay(i) - (1/2)*(q_delay(i - 1) + q_delay(i + 1)));
                             if abs(q_delay(i) - uchange) < step_max
                                 u(i,:) = uchange;
                             else
@@ -1253,6 +1325,8 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
             elseif system_type == 1
                 %no velocity, next position is directly computed
                 q = u;
+            elseif system_type == 2
+                %
             end
 
             if constrain ~= 0
@@ -1309,7 +1383,9 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
             figure;
             hold on;
             if m == 1
-                for i=1:N
+                plot(time_traj(1:size(q_history(:,1,1))),q_history(:,N,1),'k');
+                plot(time_traj(1:size(q_history(:,N,1))),q_history(:,1,1),'g');
+                for i=2:N-1
                     if mod(i,2)==0
                         %plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1),'c');
                         plot(time_traj(1:size(q_history(:,i,1))),q_history(:,i,1),'r');
@@ -1334,7 +1410,9 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                 
                 figure;
                 hold on;
-                for i=1:N
+                plot(time_traj(1:size(q_history(:,1,1))),de_history(:,1,1),'k');
+                plot(time_traj(1:size(q_history(:,N,1))),de_history(:,N,1),'g');
+                for i=2:N-1
                     if mod(i,2)==0
                         plot(time_traj(1:size(q_history(:,i,1))),de_history(:,i,1),'r');
                     else
@@ -1346,7 +1424,14 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                 
                 figure;
                 hold on;
-                for i=1:N
+                plot(time_traj(1:size(q_history(:,1,1))),e_history(:,1,1),'k'); %color separately
+                if (N >= 2)
+                    plot(time_traj(1:size(q_history(:,2,1))),e_history(:,2,1),'y');
+                end
+                if (N >= 3)
+                    plot(time_traj(1:size(q_history(:,N,1))),e_history(:,N,1),'g');
+                end
+                for i=3:N-1
                     if mod(i,2)==0
                         plot(time_traj(1:size(q_history(:,i,1))),e_history(:,i,1),'r');
                     else
@@ -1354,9 +1439,11 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                     end
                 end
                 
-                for a = 1 : numLyap+1
-                    v(a)=plot(time_traj(1:size(q_history(:,i,1))),v_history(a,:,1),'c');
-                    vd(a)=plot(time_traj(1:size(q_history(:,i,1))),vdot_history(a,:,1),'c.');
+                colors = 'bgcmykbgcmyk';
+                
+                for a = 1 : numLyap
+                    v(a)=plot(time_traj(1:size(q_history(:,i,1))),v_history(a,:,1),colors(a));
+                    vd(a)=plot(time_traj(1:size(q_history(:,i,1))),vdot_history(a,:,1),strcat(colors(a),'.'));
                     %v2=plot(time_traj(1:size(q_history(:,i,1))),v2_history(:,1),'k');
                     %v2d=plot(time_traj(1:size(q_history(:,i,1))),v2dot_history(:,1),'k.');
                     %v3=plot(time_traj(1:size(q_history(:,i,1))),v3_history(:,1),'g');
@@ -1364,6 +1451,8 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                     max(vdot_history(a,:,:))
                     vlast(a) = inf;
                     ibad(a) = 1;
+                    vlegend(a,:) = strcat('v',int2str(a))
+                    vdlegend(a,:) = strcat('vd',int2str(a));
 
                     for asdf = 1 : size(time_traj(1:size(q_history(:,i,1))))
                         if v_history(a,asdf,1) > vlast
@@ -1378,11 +1467,17 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                         vlast(a) = v_history(a,asdf,1);
                     end
                 end
-                legend([v,vd],'v', 'vd', 'v2', 'v2d', 'v3', 'v3d');
-                %legend([v,vd],'v', 'vd', 'v2', 'v2d', 'v3', 'v3d');
+                k_const_vmul2 = ones(size(q_history(:,1,1)))*(N-1)*jumpError*2; %delta
+                k_const_v = ones(size(q_history(:,1,1)))*(N-1)*jumpError; %delta/2
+                k_const_vdiv2 = ones(size(q_history(:,1,1)))*(N-1)*jumpError/2; %delta/4
+                plot(time_traj(1:size(q_history(:,i,1))),k_const_vmul2,'r:')
+                plot(time_traj(1:size(q_history(:,i,1))),k_const_v,'m:')
+                plot(time_traj(1:size(q_history(:,i,1))),k_const_vdiv2,'c:')
+                %bar(updates_v(:,1), updates_v(:,2), 0.05);
+                legend([v,vd], strvcat(vlegend, vdlegend));
                 
                 %do this second to get all bad points plotted on very top
-                for a = 1 : numLyap+1
+                for a = 1 : numLyap
                     if ibad(a) > 1
                         plot(vbad(a,:,1), vbad(a,:,2), 'xr');
                     end
@@ -1477,6 +1572,8 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     de
     qc=Ave(q)
     pc=Ave(p)
+    updates_v
+    size(updates_v)
 end
 
 
