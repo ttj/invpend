@@ -1,4 +1,10 @@
-function [error] = errorTransform(framework, q, r_lattice, goal, leader)
+function [error] = errorTransform(framework, nodeType, q, r_lattices, goal, leader, r)
+    %constants
+    HEAD_LEADER_NO_FOLLOWERS = 1;
+    HEAD_LEADER = 2;
+    MIDDLE = 3;
+    TAIL_LEADER = 4;
+
     n = size(q,1); %# agents
     m = size(q,2); %# dimensions
     
@@ -6,14 +12,20 @@ function [error] = errorTransform(framework, q, r_lattice, goal, leader)
         error = zeros(size(q));
 
         for i = 1 : n
-            if i == leader
+            if nodeType(i) == TAIL_LEADER
+                i_tail = i;
+            else
+                i_tail = neighborsTail(i, q, r);
+            end
+            
+            if nodeType(i) == HEAD_LEADER || nodeType(i) == HEAD_LEADER_NO_FOLLOWERS
                 %error(i) = 0;
                 %error(i) = 0 + 0.01*sqrt(1 + norm(q(i,:) - goal, 2)) - 1;
                 %error(i) = norm(q(i,:) - goal, 2);
 
                 error(i) = q(i,:) - goal;
-            elseif i < leader
-                error(i) = q(i+1,:) - (q(i,:) + r_lattice);
+            %elseif i < leader %FOR CASE WHEN ONLY NODE WITH X_G IS IN MIDDLE
+            %    error(i) = q(i+1,:) - (q(i,:) + r_lattices(i_tail));
 
                 %error(i) = q(i,:) - (q(i-1,:) + r_lattice) + q(i,:) - goal -
                 %i*r_lattice; (error converges to -r_lattice)
@@ -32,8 +44,9 @@ function [error] = errorTransform(framework, q, r_lattice, goal, leader)
                 %error(i) = q(i,:) - (q(i-1,:) + r_lattice) + 0.01*(sqrt(1 + norm(q(i,:) - goal,2))) - 1;
 
                 %error(i) = q(i,:) - (q(i-1,:) + r_lattice) + norm(q(i,:) - goal, 2) - i*r_lattice;
-            elseif i > leader
-                error(i) = q(i,:) - (q(i-1,:) + r_lattice); %original transform
+            %elseif i > leader
+            elseif nodeType(i) == MIDDLE || nodeType(i) == TAIL_LEADER
+                error(i) = q(i,:) - (q(i-1,:) + r_lattices(i_tail)); %original transform
             end
         end
 
