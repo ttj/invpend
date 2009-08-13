@@ -64,6 +64,12 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     kappa = r_comm / r_lattice;
     r_flock = r_lattice; %synonym
     
+    %quantization constants
+    quantizer_precision = 4; %number of bits precision (# possible values)
+    QUANT_MODE_NONE = 0;
+    QUANT_MODE_FLOOR = 1;
+    quant_mode = QUANT_MODE_NONE;
+    
     if framework == 0
         system_type = 0; %0 continuous, 1 discrete-event system
         numLyap = 0;
@@ -109,7 +115,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         %                during communications delay)
         r_lattice=r_init + r_d;
     elseif framework == 2
-        system_type = 1; %0 continuous, 1 discrete-event system, 3 with velocity
+        system_type = 4; %0 continuous, 1 discrete-event system, 3 with velocity
         
         %N = N + 12 % we need 12 additional nodes to study each of the 4 combination cases
         
@@ -128,7 +134,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         jumpLast = 0; %did the lead node jump last round?
         
         %alp_c = alp_max% * rand(1,1);
-        alp_c = 0.9
+        alp_c = 1
         alp(:,:) = ones(N,m)*alp_c;
         %alp(leadNode) = min(alp);
         jumpErrors = ones(N,1) * jumpError% * rand(1,1)
@@ -481,10 +487,12 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                     if c0 == 1
                         %q(c0,c1) = q(c0 - 1, c1) + 7.5*r_comm;
                         q(c0, c1) = 0;
-                    else 
-                        q(c0,c1) = q(c0 - 1,c1) + r_safety + rand(1,1)*(r_comm * 5);
+                    else
+                        %init123
+                        %q(c0,c1) = q(c0 - 1,c1) + r_safety + rand(1,1)*r_safety
+                        q(c0,c1) = q(c0 - 1,c1) + r_safety + rand(1,1)*(r_comm)*10;
                         %q(c0,c1) = q(c0 - 1,c1) + r_safety;
-                        %q(c0,c1) = q(c0 - 1,c1) + r_lattice - jumpError;
+                        %q(c0,c1) = q(c0 - 1,c1) + r_lattice + jumpError*rand(1,1);
 
                         %if mod(c0, 2) == 1
                         %    q(c0,c1) = q(c0 - 1,c1) + r_safety;
@@ -857,7 +865,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
             if framework == 2
                 if time_varying == 1
                     alp(:,:) = max(alp_min, min(rand(N,m), alp_max)); %cool effect: any alpha between 0 and 1 works
-                    jumpErrors = ones(N,1) * rand(1,1) * jumpError;
+                    %jumpErrors = ones(N,1) * rand(1,1) * jumpError;
                     %dists = ones(N,1) * rand(1,1) * r_lattice; %TODO: this can cause safety to be violated in a few cases--make sure that the "proximity sensors" are using the current state info instead of delayed and this should be prevented.
                 end
 
@@ -885,7 +893,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                     end
                     
                     et = errorTransform(framework, nodeType, q, dists, q_goal(leadNode,:), leadNode, r_comm);
-                elseif system_type == 1
+                elseif system_type == 4
                     nodeType(1) = HEAD_LEADER;
                     for idxi = 2 : N - 1
                         nodeType(idxi) = MIDDLE;
@@ -909,21 +917,27 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                         else
                             A(z, z) = 1 - alp(z) - alp(z - 1)/2;
                         end
-                        A(z+1, z) = alp(z)/2;
-                        A(z, z+1) = alp(z)/2;
+                        
+                        if z < N
+                            A(z+1, z) = alp(z)/2;
+                            A(z, z+1) = alp(z)/2;
+                        end
                     end
                 end
                 A = A(2:N, 2:N);
+                %latex(sym(A))
+                %pretty(sym(A))
 
-                %rhobar = max(abs(eig(A)));
-                %rhobar = norm(eig(A), inf);
+                %rhobar = max(abs(eig(A)))
+                %rhobar = norm(eig(A), inf)
                 rhobar = norm(A, 2);
                 if rhobar > 1
                     'A unstable'
                 end
 
-                Q = eye(size(A));
+                Q = 1/2*eye(size(A));
                 P = dlyap(A', Q);
+                %sum(P)
                 if min(eig(P), 0) < 0
                     'P not positive definite'
                 end
@@ -985,9 +999,9 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                     v_history(6, t_j,:,:) = sum(abs(et(1:N)));
                 else
                     v_history(1, t_j,:,:) = sum(et'*et);
-                    v_history(2, t_j,:,:) = sum(et(2:N)'*et(2:N));
+                    %v_history(2, t_j,:,:) = sum(et(2:N)'*et(2:N));
                     v_history(3, t_j,:,:) = sum(et(2:N).^2);
-                    
+
                     %want constant factor for v3
                     if t_j > 1
                         last_const = const_fact;
@@ -1010,10 +1024,14 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                         min_const = +inf;
                         max_const = -inf;
                     end
-                    
+                    %lyap123
+                    v_history(2, t_j,:,:) = (const_fact.^t_j)*sum(et(2:N).^2);
+
                     v_history(4, t_j,:,:) = (rhobar.^t_j)*norm(e_history(1,2:N,:)', 2);
-                    v_history(5, t_j,:,:) = norm(et(2:N), 2);
-                    v_history(6, t_j,:,:) = et(2:N)'*P*et(2:N);
+                    %v_history(5, t_j,:,:) = norm(et(2:N), 2);
+                    v_history(5, t_j,:,:) = et(1:1).^2 + sum(et(2:N).^2);
+                    %v_history(6, t_j,:,:) = et(2:N)'*P*et(2:N);
+                    v_history(6, t_j,:,:) = (rhobar.^t_j)*sum(et(2:N).^2);
                 end
 
                 if t_j <= 1
@@ -1362,7 +1380,13 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                         elseif nodeType(i) == TAIL_LEADER %i == N && i ~= leadNode
                             %u(i,:) = q_delay(N) - alp(i,:) * (q_delay(N) - (q_delay(N - 1) + r_lattice));
                             %uchange = max(q_delay(i - 1) + r_safety, q_delay(i) - alp(i,:) * (q_delay(i) - (q_delay(i - 1) + dists(i))));
-                            uchange = q_delay(i) - alp(i,:) * (q_delay(i) - (q_delay(i - 1) + dists(i)));
+                            if system_type == 3
+                                uchange = q_delay(i) - alp(i,:) * (q_delay(i) - (q_delay(i - 1) + dists(i)));
+                            else
+                                uchange = q_delay(i - 1) + dists(i);
+                                %uchange = q_delay(i) - alp(i,:) * (q_delay(i) - (q_delay(i - 1) + dists(i)));
+                            end
+
                             if abs(q_delay(i) - uchange) < step_max
                                 u(i,:) = uchange;
                             else
@@ -1378,7 +1402,13 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                         else %2...N-1
                             %u(i,:) = q_delay(i) - alp(i,:) * (q_delay(i) - (1/2)*(q_delay(i - 1) + q_delay(i + 1)));
                             %uchange = max(q_delay(i - 1) + r_safety, min(q_delay(i) - alp(i,:) * (q_delay(i) - (1/2)*(q_delay(i - 1) + q_delay(i + 1))), q_delay(i + 1) - r_safety));
-                            uchange = q_delay(i) - alp(i,:) * (q_delay(i) - (1/2)*(q_delay(i - 1) + q_delay(i + 1)));
+                            if system_type == 3
+                                uchange = q_delay(i) - alp(i,:) * (q_delay(i) - (1/2)*(q_delay(i - 1) + q_delay(i + 1)));
+                            else
+                                uchange = (1/2)*(q_delay(i - 1) + q_delay(i + 1));
+                                %uchange = q_delay(i) - alp(i,:) * (q_delay(i) - (1/2)*(q_delay(i - 1) + q_delay(i + 1)));
+                            end
+                            
                             if abs(q_delay(i) - uchange) < step_max
                                 u(i,:) = uchange;
                             else
@@ -1430,9 +1460,13 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
             elseif system_type == 3
                 %adding dynamics to discrete version--move towards the compute control value
                 %q = q + (tcyc/tdiv).*(u - q); %this just guarantees each node gets to u by next control cycle update
-                %q = q + (tcyc/tdiv).*(u - q)*rand(1,1); %this seems to work
+                q = q + (tcyc/tdiv).*(u - q)*rand(1,1); %this seems to work
                 %q = q + max( (tcyc/tdiv).*(u - q), (tcyc/tdiv).*(u - q)*rand(1,1));
-                q = q + (tcyc/tdiv).*(u - q)*rand(1,1)./alp;
+                %q = q + (tcyc/tdiv).*(u - q)*rand(1,1)./alp;
+            elseif system_type == 4
+                %q = q + (tcyc/tdiv).*(u - q).*min(max(0.001, rand(1,1)),0.999); %any number of velocities, and "maybe" reach goal
+                %q = q + (tcyc/tdiv).* quantize( ((u - q).*min(max(0.001, rand(1,1)),0.999)) , quant_mode, quantizer_precision);
+                q = q + (tcyc/tdiv).* quantize( ((u - q)) , quant_mode, quantizer_precision);
             end
 
             if constrain ~= 0
