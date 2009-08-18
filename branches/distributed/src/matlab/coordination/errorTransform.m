@@ -18,7 +18,8 @@ function [error] = errorTransform(framework, nodeType, q, r_lattices, goal, lead
                 i_tail = neighborsTail(i, q, r);
             end
             
-            if nodeType(i) == HEAD_LEADER || nodeType(i) == HEAD_LEADER_NO_FOLLOWERS
+            %if nodeType(i) == HEAD_LEADER || nodeType(i) == HEAD_LEADER_NO_FOLLOWERS
+            if i == 1
                 %error(i) = 0;
                 %error(i) = 0 + 0.01*sqrt(1 + norm(q(i,:) - goal, 2)) - 1;
                 %error(i) = norm(q(i,:) - goal, 2);
@@ -45,8 +46,9 @@ function [error] = errorTransform(framework, nodeType, q, r_lattices, goal, lead
 
                 %error(i) = q(i,:) - (q(i-1,:) + r_lattice) + norm(q(i,:) - goal, 2) - i*r_lattice;
             %elseif i > leader
-            elseif nodeType(i) == MIDDLE || nodeType(i) == TAIL_LEADER
-                error(i) = q(i,:) - (q(i-1,:) + r_lattices(i_tail)); %original transform
+            else %if nodeType(i) == MIDDLE || nodeType(i) == TAIL_LEADER
+                %error(i) = q(i,:) - (q(i-1,:) + r_lattices(i_tail)); %original transform
+                error(i) = q(i,:) - (q(i-1,:) + r_lattices(n)); %original transform
             end
         end
 
