@@ -115,24 +115,24 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         %                during communications delay)
         r_lattice=r_init + r_d;
     elseif framework == 2
-        system_type = 3; %0 continuous, 1 discrete-event system, 3 with velocity
-        
+        system_type = 4; %0 continuous, 1 discrete-event system, 3 with velocity
+
         group_ic = 1;
         counter_ic = 0;
-        
+
         if group_ic == 1
             N = N + 12 % we need 12 additional nodes to study each of the 4 combination cases
         end
-        
+
         time_varying = 0;
-        
+
         HEAD_LEADER_NO_FOLLOWERS = 1;
         HEAD_LEADER = 2;
         MIDDLE = 3;
         TAIL_LEADER = 4;
-        
+
         Tc = 1;
-        
+
         alp_min = 0.001;
         alp_max = 0.999;
         jumpError = delta/2; %max error between any node before node 1 jumps
@@ -467,8 +467,8 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                     if c0 == 13
                         q(c0,c1) = q(c0 - 1, c1) + 7.5*r_comm;
                     else
-                        %q(c0,c1) = q(c0 - 1,c1) + r_safety + rand(1,1)*(r_comm)*10;
-                        q(c0,c1) = q(c0 - 1,c1) + r_safety + rand(1,1)*(r_comm * 2);
+                        q(c0,c1) = q(c0 - 1,c1) + r_safety + rand(1,1)*(r_comm)*10;
+                        %q(c0,c1) = q(c0 - 1,c1) + r_safety + rand(1,1)*(r_comm * 2);
                         %q(c0,c1) = q(c0 - 1,c1) + r_safety + 0.001*r_safety;
                         %q(c0,c1) = q(c0 - 1,c1) + r_lattice - jumpError;
 
@@ -519,9 +519,12 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
             %collision avoidance counterexample
             if counter_ic == 1
                 q(1, 1) = 0;
-                q(2, 1) = r_safety + 1;
-                q(3, 1) = 2*r_safety + 3;
-                q(4, 1) = 20000;
+                q(2, 1) = 10;
+                q(3, 1) = 1000;
+                %q(4, 1) = 20000;
+                %q(2, 1) = r_safety;
+                %q(3, 1) = 2*r_safety;
+                %q(4, 1) = 20000;
             end
         end
 
@@ -888,7 +891,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
 
             if framework == 2
                 if time_varying == 1
-                    alp(:,:) = max(alp_min, min(rand(N,m), alp_max)); %cool effect: any alpha between 0 and 1 works
+                    alp(:,:) = max(alp_min, min(rand(N,m)*alp_max, alp_max)); %cool effect: any alpha between 0 and 1 works
                     %jumpErrors = ones(N,1) * rand(1,1) * jumpError;
                     %dists = ones(N,1) * rand(1,1) * r_lattice; %TODO: this can cause safety to be violated in a few cases--make sure that the "proximity sensors" are using the current state info instead of delayed and this should be prevented.
                 end
@@ -922,6 +925,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                     for idxi = 2 : N - 1
                         nodeType(idxi) = MIDDLE;
                     end
+                    %nodeType(5) = TAIL_LEADER; %testing modified tail leader control (x_N[k+1])
                     nodeType(N) = TAIL_LEADER;
                     
                     et = errorTransform(framework, nodeType, q, dists, q_goal(leadNode,:), leadNode, inf);
@@ -931,27 +935,28 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                 %make the diagonal matrix
                 for z = 2 : N
                     if z == 2 %was: z == leadNode
-                        A(z, z) = 1 - alp(z)/2;
+                        A(z, z) = 1 - (alp(z)/2);
                         A(z+1, z) = alp(z)/2;
                         A(z, z+1) = alp(z)/2;
-                        %A(z, z) = 0;
                     else
                         if z ~= leadNode && z < N
-                            A(z, z) = 1 - alp(z+1)/2 - alp(z)/2;
+                            A(z, z) = 1 - (alp(z)/2) - (alp(z-1)/2);
                         else
-                            %A(z, z) = 1 - alp(z) - alp(z - 1)/2;
-                            A(z, z) = 1/2; %TODO: change to appropriate alpha version
+                            A(z, z) = 1 - alp(z) - (alp(z - 1)/2); %old version from paper, broken safety
+                            %A(z, z) = 1 - (alp(z)/2) - (alp(z - 1)/2); %new version with safety fix
                         end
-                        
-                        if z < N - 1
+
+                        if z < N
                             A(z+1, z) = alp(z)/2;
-                            A(z, z+1) = alp(z)/2;
-                        elseif z == N - 1
                             A(z, z+1) = alp(z)/2;
                         end
                     end
                 end
+                %c = [1 - alp(2)/2; 1 - alp(3)/2 - alp(2)/2; 1 - alp(4) - alp(3)/2]
+                %1 - alp(5)/2 - alp(4)/2
+                %b = [alp(2)/2; alp(3)/2; alp(4)/2; alp(5)/2; alp(6)/2; alp(7)/2; alp(8)/2; alp(9)/2]
                 A = A(2:N, 2:N);
+                eig(A);
                 
                 %latex(sym(A))
                 %pretty(sym(A))
@@ -963,6 +968,9 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                 rhobar = norm(A, 2);
                 if rhobar > 1
                     'A unstable'
+                    eig(A)
+                    alp
+                    A
                 end
 
                 Q = eye(size(A));
@@ -1431,12 +1439,14 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                             %u(i,:) = q_delay(N) - alp(i,:) * (q_delay(N) - (q_delay(N - 1) + r_lattice));
                             %uchange = max(q_delay(i - 1) + r_safety, q_delay(i) - alp(i,:) * (q_delay(i) - (q_delay(i - 1) + dists(i))));
                             if system_type == 3
+                                uchange = q_delay(i) - alp(i,:) * (q_delay(i) - (q_delay(i) + q_delay(i - 1) + dists(i))/2);
                                 %uchange = q_delay(i) - alp(i,:) * (q_delay(i) - (q_delay(i - 1) + dists(i)));
-                                uchange = (q_delay(i - 1) + (q_delay(i) + dists(i)))/2;
+                                %uchange = (q_delay(i - 1) + (q_delay(i) + dists(i)))/2;
                             else
                                 uchange = (q_delay(i - 1) + (q_delay(i) + dists(i)))/2;
                                 %uchange = q_delay(i - 1) + dists(i);
                                 %uchange = q_delay(i) - alp(i,:) * (q_delay(i) - (q_delay(i - 1) + dists(i)));
+                                %uchange = q_delay(i) - alp(i,:) * (q_delay(i) - (1/2)*(q_delay(i) + q_delay(i - 1) + dists(i)));
                             end
 
                             if abs(q_delay(i) - uchange) < step_max
@@ -1648,7 +1658,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                     max(vdot_history(a,:,:))
                     vlast(a) = inf;
                     ibad(a) = 1;
-                    vlegend(a,:) = strcat('v',int2str(a))
+                    vlegend(a,:) = strcat('v',int2str(a));
                     vdlegend(a,:) = strcat('vd',int2str(a));
 
                     for asdf = 1 : size(time_traj(1:size(q_history(:,i,1))))
@@ -1771,9 +1781,9 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     pc=Ave(p)
     %updates_v;
     %size(updates_v)
-    const_fact
-    min_const
-    max_const
+    %const_fact
+    %min_const
+    %max_const
     rhobar
     pretty(sym(q_history(1:10,:,:),'d')) %display values of position state
     pretty(sym(q_history(t_j - 10:t_j,:,:),'d'))
