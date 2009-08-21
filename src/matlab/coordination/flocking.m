@@ -64,11 +64,25 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     kappa = r_comm / r_lattice;
     r_flock = r_lattice; %synonym
     
+    group_ic = 1;
+    counter_ic = 0;
+
+    if group_ic == 1
+        N = N + 12 % we need 12 additional nodes to study each of the 4 combination cases
+    end
+    
     %quantization constants
     quantizer_precision = 4; %number of bits precision (# possible values)
     QUANT_MODE_NONE = 0;
     QUANT_MODE_FLOOR = 1;
     quant_mode = QUANT_MODE_NONE;
+    if delta > 1
+        quant_eps = delta^(-N)
+    elseif delta < 1
+        quant_eps = delta^N
+    else
+        quant_eps = delta/N
+    end
     
     if framework == 0
         system_type = 0; %0 continuous, 1 discrete-event system
@@ -116,13 +130,6 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         r_lattice=r_init + r_d;
     elseif framework == 2
         system_type = 4; %0 continuous, 1 discrete-event system, 3 with velocity
-
-        group_ic = 1;
-        counter_ic = 0;
-
-        if group_ic == 1
-            N = N + 12 % we need 12 additional nodes to study each of the 4 combination cases
-        end
 
         time_varying = 0;
 
@@ -942,8 +949,8 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                         if z ~= leadNode && z < N
                             A(z, z) = 1 - (alp(z)/2) - (alp(z-1)/2);
                         else
-                            A(z, z) = 1 - alp(z) - (alp(z - 1)/2); %old version from paper, broken safety
-                            %A(z, z) = 1 - (alp(z)/2) - (alp(z - 1)/2); %new version with safety fix
+                            %A(z, z) = 1 - alp(z) - (alp(z - 1)/2); %old version from paper, broken safety
+                            A(z, z) = 1 - (alp(z)/2) - (alp(z - 1)/2); %new version with safety fix
                         end
 
                         if z < N
@@ -1047,7 +1054,8 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                     v_history(4, t_j,:,:) = sum(abs(de)) + sum(abs(et));
                     %v_history(5, t_j,:,:) = sum(et(2:N)'*et(2:N));
                     v_history(5, t_j,:,:) = sum(de'*de);
-                    v_history(6, t_j,:,:) = sum(abs(de));
+                    %v_history(6, t_j,:,:) = sum(abs(de));
+                    v_history(6, t_j,:,:) = et(2:N)'*P*et(2:N);
                     
                     %v_history(6, t_j,:,:) = sum(abs(et(1:N)));
                 else
@@ -1369,7 +1377,13 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
 %                         else
 
                         if nodeType(i) == HEAD_LEADER_NO_FOLLOWERS
-                            u(i,:) = q_delay(i) - sign(q_delay(i) - q_goal(1,:))*min(abs(q_delay(i) - q_goal(1,:)), jumpErrors(i));
+                            uchange = q_delay(i) - sign(q_delay(i) - q_goal(1,:))*min(abs(q_delay(i) - q_goal(1,:)), jumpErrors(i));
+                            
+                            if abs(q_delay(i) - uchange) <= quant_eps
+                                u(i,:) = q_delay(i); %don't change if smaller than quant_eps movement
+                            else
+                                u(i,:) = uchange;
+                            end
                         elseif nodeType(i) == HEAD_LEADER %i == leadNode
                             %max_sep = 0;
                             %etl = [et(1:leadNode-1); et(leadNode+1:N)]; %todo: fix, this will error on leadNode=1
@@ -1418,7 +1432,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
 %                                     else
 %                                         u(i,:) = q_delay(i) + sign(uchange) * jumpError;
 %                                     end
-                                    u(i,:) = q_delay(i) - sign(q_delay(i) - q_goal(1,:))*min(abs(q_delay(i) - q_goal(1,:)), jumpErrors(i));
+                                    uchange = q_delay(i) - sign(q_delay(i) - q_goal(1,:))*min(abs(q_delay(i) - q_goal(1,:)), jumpErrors(i));
 
                                     flocking_weak_count = 0;
                                 %end
@@ -1426,8 +1440,14 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                                 updates_v(update_count,:) = [t_i u(i)];
                                 update_count = update_count + 1;
                             else
-                                u(i,:) = q_delay(i);
+                                uchange = q_delay(i);
                                 jumpLast = 0;
+                            end
+                            
+                            if abs(q_delay(i) - uchange) <= quant_eps
+                                u(i,:) = q_delay(i); %don't change if smaller than quant_eps movement
+                            else
+                                u(i,:) = uchange;
                             end
                             
                             %if norm(q_delay(1) - q_delay(2), 2) <= (r_lattice + r_safety)
@@ -1454,6 +1474,10 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                             else
                                 u(i,:) = q_delay(i) + sign(uchange) * step_max;
                             end
+                            
+                            if abs(q_delay(i) - uchange) <= quant_eps
+                                u(i,:) = q_delay(i); %don't change if smaller than quant_eps movement
+                            end
 %                         elseif i == 1 && i ~= leadNode
 %                             uchange = min(q_delay(i + 1) - r_safety, q_delay(i) - alp(i,:) * (q_delay(i) - (q_delay(i + 1) - r_lattice)));
 %                             if abs(q_delay(i) - uchange) < step_max
@@ -1476,6 +1500,10 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                                 u(i,:) = uchange;
                             else
                                 u(i,:) = q_delay(i) + sign(uchange) * step_max;
+                            end
+                            
+                            if abs(q_delay(i) - uchange) <= quant_eps
+                                u(i,:) = q_delay(i); %don't change if smaller than quant_eps movement
                             end
                         end
                     end
@@ -1521,6 +1549,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
             elseif system_type == 2
                 %
             elseif system_type == 3
+                %ctrl123
                 %adding dynamics to discrete version--move towards the compute control value
                 %q = q + (tcyc/tdiv).*(u - q); %this just guarantees each node gets to u by next control cycle update
                 %q = q + (tcyc/tdiv).*(u - q)*rand(1,1); %this seems to work
@@ -1531,7 +1560,12 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                 %q = q + (tcyc/tdiv).*(u - q).*min(max(0.001, rand(1,1)),0.999); %any number of velocities, and "maybe" reach goal
                 %q = q + (tcyc/tdiv).* quantize( ((u - q).*min(max(0.001, rand(1,1)),0.999)) , quant_mode, quantizer_precision);
                 %q = q + (tcyc/tdiv).*quantize( ((u - q)) , quant_mode, quantizer_precision);
-                q = u;
+                %q = u;
+                %q = q + (tcyc/tdiv).*(u - q)*rand(1,1);
+                v_c = 5;
+                %q = max(u, q + (u - q)/norm(u - q, 2)*v_c); %only synchronus
+                q=u;
+                %q = q + (tcyc/tdiv).*(max(u, q + (u - q)/norm(u - q, 2)*v_c) - q); %with asynchrony
             end
 
             if constrain ~= 0
