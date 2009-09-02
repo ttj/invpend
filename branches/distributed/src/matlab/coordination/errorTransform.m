@@ -20,11 +20,11 @@ function [error] = errorTransform(framework, nodeType, q, r_lattices, goal, lead
             
             %if nodeType(i) == HEAD_LEADER || nodeType(i) == HEAD_LEADER_NO_FOLLOWERS
             if i == 1
-                %error(i) = 0;
+                error(i) = 0;
                 %error(i) = 0 + 0.01*sqrt(1 + norm(q(i,:) - goal, 2)) - 1;
                 %error(i) = norm(q(i,:) - goal, 2);
 
-                error(i) = q(i,:) - goal;
+                %error(i) = q(i,:) - goal;
             %elseif i < leader %FOR CASE WHEN ONLY NODE WITH X_G IS IN MIDDLE
             %    error(i) = q(i+1,:) - (q(i,:) + r_lattices(i_tail));
 
@@ -48,7 +48,7 @@ function [error] = errorTransform(framework, nodeType, q, r_lattices, goal, lead
             %elseif i > leader
             else %if nodeType(i) == MIDDLE || nodeType(i) == TAIL_LEADER
                 %error(i) = q(i,:) - (q(i-1,:) + r_lattices(i_tail)); %original transform
-                error(i) = q(i,:) - (q(i-1,:) + r_lattices(n)); %original transform
+                error(i) = abs(q(i,:) - (q(i-1,:) + r_lattices(n))); %original transform
             end
         end
 
