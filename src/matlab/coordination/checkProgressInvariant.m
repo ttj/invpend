@@ -5,8 +5,8 @@ function [ out ] = checkProgressInvariant(q_last, q_now, q_goal, delta)
 
     numMoves = sum((q_last' ~= q_now));
     
-    'moves';
-    (q_last' ~= q_now);
+    'moves'
+    (q_last' ~= q_now)
     
     %todo: add check to see if within quantization error of final goal, if so, not moving is fine, and this detects termination
     %abs(q_now - q_goal);
