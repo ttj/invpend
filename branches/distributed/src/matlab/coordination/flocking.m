@@ -67,7 +67,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     
     group_ic = 0;
     counter_ic = 0;
-    quant_ic = 1;
+    quant_ic = 0;
     
     terminate = 0;
     terminate_rounds = 5; %number of rounds after termination to continue
@@ -83,6 +83,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     %quantization constants
     if quantization == 0
         quant_mode = QUANT_MODE_NONE;
+        quant_beta = ones(N,1)*1000;
     else
         quantizer_precision = 4; %number of bits precision (# possible values)
         quant_mode = QUANT_MODE_BETA;
@@ -117,7 +118,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
 
         v_max = 5;      %maximum velocity
         a_max = 10;     %maximum acceleration
-        
+
         %invalid initial conditions
         if (r_comm <= r_safety)
             return;
@@ -159,24 +160,26 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         jumpLast = 0; %did the lead node jump last round?
         
         %alp_c = alp_max% * rand(1,1);
-        alp_c = rand(1,1);
+        %alp_c = rand(1,1);
+        alp_c = 1;
         alp(:,:) = ones(N,m)*alp_c;
         %alp(2) = 0.00001
         %return
         %alp(leadNode) = min(alp);
         jumpErrors = ones(N,1) * (jumpError)% * rand(1,1)
         dists = ones(N,1) * r_lattice% * rand(1,1)
-        
+
         update_count = 1;
-        
+
         step_max = 100000; %note, if we constrain the states like this, there will arrise a 
                            %stronger condition on the initial states: there must be a lower
                            %(safety) and upper (communications? kind of) bound on the 
                            %starting positions
-        
-        v_max = 1000;
+
+        v_max = quant_beta(1)/Tc
+        v_min = v_max*min(0.5, rand(1,1))
         a_max = 1000;
-        
+
         r_init = 5;
         
         flocking_weak_count = 0;
@@ -186,7 +189,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         %leadNode = ceil(N/3);
         leadNode = 1;
         
-        numLyap = 2;
+        numLyap = 4;
 
     elseif framework == 3 %inverted pendulum dynamics
         system_type = 0;
@@ -519,10 +522,16 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                         %init123
                         %q(c0,c1) = q(c0 - 1,c1) + r_safety + rand(1,1)*r_safety
                         %q(c0,c1) = q(c0 - 1,c1) + r_safety + rand(1,1)*(r_comm);
-                        q(c0,c1) = q(c0 - 1,c1) + rand(1,1)*(r_comm)*2;
-                        %q(c0,c1) = q(c0 - 1,c1) + r_safety;
+                        %q(c0,c1) = q(c0 - 1,c1) + rand(1,1)*(r_comm)*2;
+                        q(c0,c1) = q(c0 - 1,c1) + r_safety;
                         %q(c0,c1) = q(c0 - 1,c1) + rand(1,1)*(10)*r_safety;
+                        %q(c0,c1) = q(c0 - 1,c1) + r_safety + rand(1,1)*2*r_lattice;
                         %q(c0,c1) = q(c0 - 1,c1) + r_lattice + jumpError*rand(1,1);
+                        %if mod(c0,2)==1
+                        %    q(c0,c1) = (c0-1)*r_lattice + quant_beta(1)
+                        %else
+                        %    q(c0,c1) = (c0-1)*r_lattice
+                        %end
 
                         %if mod(c0, 2) == 1
                         %    q(c0,c1) = q(c0 - 1,c1) + r_safety;
@@ -553,6 +562,21 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
             
             %quantization constant progress counterexample
             if quant_ic == 1
+                %middle moves last
+                q(1, 1) = 0;
+                q(2, 1) = r_flock+(delta);
+                q(3, 1) = 2*r_flock;
+
+                %last moves last, middle moves second-to-last
+                %q(1, 1) = 0;
+                %q(2, 1) = r_flock;
+                %q(3, 1) = 2*r_flock+delta;
+
+                %both nodes move as last move
+                %q(1, 1) = 0;
+                %q(2, 1) = r_flock + quant_beta(1);
+                %q(3, 1) = q(2, 1) + r_flock + quant_beta(1);
+
                 %one-step progress and then no move counterexample against beta=delta/4, with d=10, delta=1, epsilon=5 => beta=1/4 (for the |u_i - x_i| <= beta version)
                 %q(1, 1) = 0;
                 %q(2, 1) = r_flock - quant_beta;
@@ -643,6 +667,8 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     else
         u = q;
     end
+    velocity_tmp = zeros(N, m);
+    velocity_last = zeros(N, m);
     uGradient = zeros(N, m);
     uConsensus = zeros(N, m);
     uGamma = zeros(N, m);
@@ -680,6 +706,12 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     qd=ones(N,m).*coord_max;
     pd=ones(N,m).*(v_max/5);
     %pd=zeros(N,m)
+    
+    %failure detection
+    FAILURE_TYPE_NONE = 0;
+    FAILURE_TYPE_ACTUATOR_STUCK = 1;
+    failed=zeros(N,1);
+    suspected=zeros(N,1);
     
     qr=qd;
     pr=pd;
@@ -724,12 +756,15 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     end
     alp_history = zeros([round(steps), N, m]);
     p_history = zeros([round(steps), N, m]);
+    vel_history = zeros([round(steps), N, m]);
+    failed_history = zeros([round(steps), N, m]);
+    suspected_history = zeros([round(steps), N, m]);
     qr_history = zeros([round(steps), N, m]);
     pr_history = zeros([round(steps), N, m]);
     de_history = zeros([round(steps), N, m]);
     de_norm_history = zeros([round(steps), N, m]);
     nodeType_history = zeros([round(steps), N, m]);
-    
+
     %uPeriod = (1:N)'.*Tc %different update periods for all particles
     uPeriod = ones(N,1)*Tc %same update period for all particles
     %uPeriod = rand(N,1)*Tc %random update period for all particles (doesn't work as no particle will ever get update time)
@@ -761,6 +796,11 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     for t=0:tcyc:tmax-tcyc        
         t_i=round(t/tcyc)+1;
         
+        if t_i > round(max(tmax/2,rand(1,1)*tmax))
+        %if t_i >= 4
+            failed(N) = 1;
+        end
+        
         if terminate >= terminate_rounds
             tmax = t;
             u_steps=round(((tmax-tcyc)/tcyc))+1;
@@ -773,6 +813,9 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
             uGamma_history = uGamma_history(1:round(u_steps), 1:N, 1:m);
             uNew_history = uNew_history(1:round(u_steps), 1:N, 1:m);
             q_history = q_history(1:round(steps), 1:N, 1:m);
+            failed_history = failed_history(1:round(steps), 1:N, 1:m);
+            suspected_history = suspected_history(1:round(steps), 1:N, 1:m);
+            vel_history = vel_history(1:round(steps), 1:N, 1:m);
             e_history = e_history(1:round(steps), 1:N, 1:m);
             v_history = v_history(1:ai, 1:round(steps), 1, 1); %R^(N*m) -> R
             vdot_history = vdot_history(1:ai, 1:round(steps), 1, 1);
@@ -1137,6 +1180,8 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                 else
                     v_history(1, t_j,:,:) = max(abs(de));
                     v_history(2, t_j,:,:) = max(abs(et));
+                    v_history(3, t_j,:,:) = sum(abs(de));
+                    v_history(4, t_j,:,:) = sum(abs(et));
                     %v_history(1, t_j,:,:) = sum(et'*et);
                     %v_history(2, t_j,:,:) = sum(et(2:N)'*et(2:N));
                     %v_history(3, t_j,:,:) = sum(et(2:N).^2);
@@ -1252,6 +1297,9 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
             %store all state variables over time
             q_history(t_j,:,:) = q(:,:);
             p_history(t_j,:,:) = p(:,:);
+            failed_history(t_j,:,:) = failed;
+            suspected_history(t_j,:,:) = suspected;
+            vel_history(t_j,:,:) = velocity_tmp(:,:);
             qr_history(t_j,:,:) = qr(:,:);
             pr_history(t_j,:,:) = pr(:,:);
             de_history(t_j,:,:) = de(:,:);
@@ -1305,6 +1353,18 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                         q_delay = q;
                         p_delay = p;
                         u_delay = u;
+                        if t_j > 1
+                            q_last = q_history(t_j - 1,:,:)';
+                            p_last = p_history(t_j - 1,:,:)';
+                        else
+                            q_last = q;
+                            p_last = p;
+                        end
+                        if t_i > 1
+                            u_last = u_history(t_i - 1,:,:)';
+                        else
+                            u_last = u;
+                        end
                     else
                         if framework == 0
                             q_delay_tmp = q_history(round(t_j - (uPeriod(i) + uOffset(i)*tdiv)/Tc + 1),:,:);
@@ -1646,10 +1706,44 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                 %q = q + (tcyc/tdiv).*quantize( ((u - q)) , quant_mode, quantizer_precision);
                 %q = u;
                 %q = q + (tcyc/tdiv).*(u - q)*rand(1,1);
-                %v_c = 5;
                 %q = max(u, q + (u - q)/norm(u - q, 2)*v_c); %only synchronus
-                q=u;
-                %q = q + (tcyc/tdiv).*(max(u, q + (u - q)/norm(u - q, 2)*v_c) - q); %with asynchrony
+                %q=u;
+
+                if t_j >= 2
+                    suspected = (((abs(q_last - (q + p)) <= abs(q - (q + p))))) % & (abs(q_last - (q + p)) > quant_beta)
+                    %suspected = suspected | ((abs(q_last - u_last) < quant_beta) & q_delay ~= q_last)
+                    %if max(failed) > 0
+                    %    failed
+                    %    return
+                    %elseif max(suspected) > 0
+                    %    suspected
+                    %    return
+                    %end
+                end
+                
+
+                %velocity_tmp = (sign(u - q).*rand(N,1)*v_c)
+                %velocity_tmp = (sign(u_delay - q_delay).*(v_min + (v_max - v_min).*rand(N,1)))
+                %velocity_tmp = (tcyc/tdiv).*(max(u, q + (u - q)/norm(u - q, 2)*v_c) - q); %with asynchrony
+                %velocity_tmp = (tcyc/tdiv).*(max(u, q_delay + (u - q_delay)/norm(u - q_delay, 2)*v_c) - q_delay); %with asynchrony
+                %for i_tmp = 1 : N
+                %    if failed(i_tmp) == 1
+                %        velocity_tmp(i_tmp) = 0;
+                %        %velocity_tmp(i_tmp) = velocity_last(i_tmp); %todo: change based on failure type
+                %    end
+                %end
+                
+                for i_tmp = 1 : N
+                   if failed(i_tmp) == 1
+                       u(i_tmp) = q(i_tmp);
+                       %velocity_tmp(i_tmp) = velocity_last(i_tmp); %todo: change based on failure type
+                   end
+                end
+                
+                %velocity_last = velocity_tmp;
+
+                %q = q + velocity_tmp;
+                q = u;
                 
                 
                 %v_c = ones(N,1)*25;
@@ -1858,6 +1952,19 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                         end
                     end
                     legend('alp1');
+                    
+                    figure;
+                    hold on;
+                    for i=1:N
+                        if mod(i,2)==0
+                            plot(time_traj(1:size(failed_history(:,i,1))),failed_history(:,i,1),'r');
+                            plot(time_traj(1:size(suspected_history(:,i,1))),suspected_history(:,i,1),'b');
+                        else
+                            plot(time_traj(1:size(failed_history(:,i,1))),failed_history(:,i,1),'m');
+                            plot(time_traj(1:size(suspected_history(:,i,1))),suspected_history(:,i,1),'g');
+                        end
+                    end
+                    legend('failed','suspected','failed','suspected');
                 end
             elseif m == 2
                 for i=1:N
@@ -1941,8 +2048,8 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     %const_fact
     %min_const
     %max_const
-    pretty(sym(q_history(1:10,:,:),'d')) %display values of position state
-    pretty(sym(q_history(t_j - 10:t_j,:,:),'d'))
+    pretty(sym(q_history(1:5,:,:),'d')) %display values of position state
+    pretty(sym(q_history(t_j - 5:t_j,:,:),'d'))
     goal
 end
 
@@ -1986,3 +2093,5 @@ end
 %P = I - a_k * a_k'
 %qhat_ik = mu * q_i + (1 - mu) * y_k
 %phat_ik  = mu * P * p_i
+
+
