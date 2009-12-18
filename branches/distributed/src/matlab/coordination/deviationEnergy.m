@@ -11,8 +11,12 @@ function E = deviationEnergy(framework, q, q_goal, r_comm, r_lattice, delta)
 %     end
     %E = E .* (1/(norm(proximityNetEdges(q, r, d),1) + 1));
 
-    E = abs(q(:,:) - q_goal(:,:));
-    
+    %E = abs(q(:,:) - q_goal(:,:));
+    fv = (0:1:n-1)'*r_lattice
+    %E = abs(q(:,:) - q(1,:) - fv)
+    E = q(:,:) - q(1,:) - fv
+    E(1) = 0;
+
     %E = q(:,:) - q_goal(:,:);
     
     if framework == 3
