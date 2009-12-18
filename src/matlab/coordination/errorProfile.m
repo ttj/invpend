@@ -20,22 +20,22 @@ function [out] = errorProfile(q, e, d)
     %e <= e_max.*e_factorL
     %e <= e_max.*e_factorR
     
-    e
-    d
+    e;
+    d;
     
     if (sum(sort(e) - e) ~= 0)
-        'errors unsorted'
+        'errors unsorted';
 
         if (sum(sort(d) - d) ~= 0)
-            'not e => not d'
+            'not e => not d';
         end
     end
 
     if (sum(sort(d) - d) ~= 0)
-        'deviation errors unsorted'
+        'deviation errors unsorted';
         
         if (sum(sort(e) - e) ~= 0)
-            'not d => not e'
+            'not d => not e';
         end
     end
     

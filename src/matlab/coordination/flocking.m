@@ -517,13 +517,22 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                 for c1 = 1 : m
                     if c0 == 1
                         %q(c0,c1) = q(c0 - 1, c1) + 7.5*r_comm;
-                        q(c0, c1) = 0;
+                        q(c0, c1) = 51;
+                    %elseif c0 == 2
+                    %    q(c0, c1) = r_flock*(N-1);
                     else
                         %init123
                         %q(c0,c1) = q(c0 - 1,c1) + r_safety + rand(1,1)*r_safety
                         %q(c0,c1) = q(c0 - 1,c1) + r_safety + rand(1,1)*(r_comm);
-                        %q(c0,c1) = q(c0 - 1,c1) + rand(1,1)*(r_comm)*2;
+                        %q(c0,c1) = q(c0 - 1,c1) + rand(1,1)*(r_comm)/2;
                         q(c0,c1) = q(c0 - 1,c1) + r_safety;
+                        %q(c0,c1) = q(c0 - 1,c1) + 2*r_flock;
+                        %q(c0,c1) = q(c0 - 1,c1) + r_flock + r_safety;
+                        %q(c0,c1) = q(c0 - 1,c1) + r_flock + (N*c0)+v_min;% + rand(1,1)*r_flock;
+                        %q(c0,c1) = q(c0 - 1,c1) + r_flock^(N+1-c0);
+                        %q(c0,c1) = q(c0 - 1,c1) + r_flock*(N+1-c0)
+                        %return
+                        %q(c0,c1) = q(c0 - 1,c1) + r_safety;
                         %q(c0,c1) = q(c0 - 1,c1) + rand(1,1)*(10)*r_safety;
                         %q(c0,c1) = q(c0 - 1,c1) + r_safety + rand(1,1)*2*r_lattice;
                         %q(c0,c1) = q(c0 - 1,c1) + r_lattice + jumpError*rand(1,1);
@@ -548,6 +557,10 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                     end
                 end
             end
+            
+            q(2,1) = q(1,1) + r_safety;
+            
+            %q(N,1) = (N-1)*r_flock;
             
             %collision avoidance counterexample
             if counter_ic == 1
@@ -617,7 +630,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
         for c0 = 1:m
             %q_goal(:,c0) = -25 + [0:N-1]'.*r_lattice; %based on node 1 as goal
             %goal = -13*jumpError - rand(1,1)*jumpError; %one jump only
-            goal = 0;
+            goal = 1;
             %goal = -quant_beta*0.99;
             %goal = -;
             q_goal(:,c0) = goal + [-leadNode + 1: N - leadNode]'.*r_lattice;
@@ -796,9 +809,9 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
     for t=0:tcyc:tmax-tcyc        
         t_i=round(t/tcyc)+1;
         
-        if t_i > round(max(tmax/2,rand(1,1)*tmax))
-        %if t_i >= 4
-            failed(N) = 1;
+        %if t_i > round(max(tmax/2,rand(1,1)*tmax))
+        if t_i >= 4
+            %failed(N) = 1;
         end
         
         if terminate >= terminate_rounds
@@ -1080,10 +1093,10 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                 %c = [1 - alp(2)/2; 1 - alp(3)/2 - alp(2)/2; 1 - alp(4) - alp(3)/2]
                 %1 - alp(5)/2 - alp(4)/2
                 %b = [alp(2)/2; alp(3)/2; alp(4)/2; alp(5)/2; alp(6)/2; alp(7)/2; alp(8)/2; alp(9)/2]
-                A = A(2:N, 2:N);
-                eig(A);
+                A = A(2:N, 2:N)
+                eig(A)
                 eig(A^2-eye(size(A)));
-                
+
                 %latex(sym(A))
                 %pretty(sym(A))
                 %[sU,sA]=schur(A)
@@ -1101,6 +1114,7 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
 
                 Q = eye(size(A));
                 P = dlyap(A,Q);
+
                 %sP = dlyap(sA', Q);
                 %P
                 %A*P*A' - P
@@ -1708,18 +1722,31 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                 %q = q + (tcyc/tdiv).*(u - q)*rand(1,1);
                 %q = max(u, q + (u - q)/norm(u - q, 2)*v_c); %only synchronus
                 %q=u;
-
-                if t_j >= 2
-                    suspected = (((abs(q_last - (q + p)) <= abs(q - (q + p))))) % & (abs(q_last - (q + p)) > quant_beta)
-                    %suspected = suspected | ((abs(q_last - u_last) < quant_beta) & q_delay ~= q_last)
-                    %if max(failed) > 0
-                    %    failed
-                    %    return
-                    %elseif max(suspected) > 0
-                    %    suspected
-                    %    return
-                    %end
-                end
+% 
+%                 if t_j >= 2
+%                     u_last;
+%                     q_last;
+%                     p_last;
+%                     
+%                     u;
+%                     q;
+%                     p;
+%                     
+%                     abs(q_last - (u_last + p_last));
+%                     abs(q - (u_last + p_last));
+%                     abs(q_last - (u_last + p_last)) <= abs(q - (u_last + p_last));
+% 
+%                     suspected = (((abs(q_last - (q + p)) <= abs(q - (q + p))))) & (abs(q_last - (q + p)) > quant_beta);
+% 
+%                     %suspected = suspected | ((abs(q_last - u_last) < quant_beta) & q_delay ~= q_last)
+%                     %if max(failed) > 0
+%                     %    failed
+%                     %    return
+%                     %elseif max(suspected) > 0
+%                     %    suspected
+%                     %    return
+%                     %end
+%                 end
                 
 
                 %velocity_tmp = (sign(u - q).*rand(N,1)*v_c)
@@ -1733,17 +1760,22 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                 %    end
                 %end
                 
-                for i_tmp = 1 : N
-                   if failed(i_tmp) == 1
-                       u(i_tmp) = q(i_tmp);
-                       %velocity_tmp(i_tmp) = velocity_last(i_tmp); %todo: change based on failure type
-                   end
-                end
+%                 for i_tmp = 1 : N
+%                    if failed(i_tmp) == 1
+%                        u(i_tmp) = q(i_tmp);
+%                        %velocity_tmp(i_tmp) = velocity_last(i_tmp); %todo: change based on failure type
+%                    end
+%                 end
                 
                 %velocity_last = velocity_tmp;
 
                 %q = q + velocity_tmp;
-                q = u;
+                %q = u;
+                %vchoose = v_min + (v_max - v_min).*rand(1,1);
+                 vchoose = v_max;
+                 sign(u-q)
+                 q = q + vchoose*sign(u - q);
+                q = u; %to change back, for 586
                 
                 
                 %v_c = ones(N,1)*25;
