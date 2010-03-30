@@ -102,8 +102,8 @@ b2=1.94; b4=4.44; %real matrix
 %x01=0.1; x02=0.15; x03=0.05; x04=0.05;
 %x01=0.05; x02=0.05; x03=-0.1; x04=-0.1; %edge of larger safety
 %x01=-0.15; x02=-0.21; x03=0.4; x04=1.25;
-%x01=-0.19; x02=-0.2418; x03=0.3; x04=1.41; %extrema safety
-x01=-1; x02=-0.2581; x03=0.13; x04=1.17; %extrema experimental
+x01=-0.19; x02=-0.2418; x03=0.3; x04=1.41; %extrema safety
+%x01=-1; x02=-0.2581; x03=0.13; x04=1.17; %extrema experimental
 
 A=eval(As);
 Aw=eval(Asw);
