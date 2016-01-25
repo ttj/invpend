@@ -1311,8 +1311,8 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
             %store all state variables over time
             q_history(t_j,:,:) = q(:,:);
             p_history(t_j,:,:) = p(:,:);
-            failed_history(t_j,:,:) = failed;
-            suspected_history(t_j,:,:) = suspected;
+%            failed_history(t_j,:,:) = failed;
+ %           suspected_history(t_j,:,:) = suspected;
             vel_history(t_j,:,:) = velocity_tmp(:,:);
             qr_history(t_j,:,:) = qr(:,:);
             pr_history(t_j,:,:) = pr(:,:);
@@ -1368,14 +1368,14 @@ function [ out ] = flocking(framework, N, m, coord_min, coord_max, r_comm, r_lat
                         p_delay = p;
                         u_delay = u;
                         if t_j > 1
-                            q_last = q_history(t_j - 1,:,:)';
-                            p_last = p_history(t_j - 1,:,:)';
+                            q_last = q_history(t_j - 1,:,:);
+                            p_last = p_history(t_j - 1,:,:);
                         else
                             q_last = q;
                             p_last = p;
                         end
                         if t_i > 1
-                            u_last = u_history(t_i - 1,:,:)';
+                            u_last = u_history(t_i - 1,:,:);
                         else
                             u_last = u;
                         end
